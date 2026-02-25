@@ -1,0 +1,140 @@
+@import "tailwindcss";
+
+/* ── Font face variables (set by next/font in layout.tsx) ──────── */
+/* Accessed via var(--font-display), var(--font-body), var(--font-data) */
+
+/* ── Design tokens: Dark mode (default) ────────────────────────── */
+:root {
+  /* Base */
+  --bg-primary: #1a1714;
+  --bg-panel: #242018;
+  --bg-card: #2e2820;
+  --bg-card-hover: #3a332a;
+
+  /* Borders */
+  --border: #4a4035;
+  --border-accent: #6b5d4d;
+
+  /* Text */
+  --text-primary: #e8e0d4;
+  --text-muted: #9a8e7e;
+  --text-dim: #6b5d4d;
+
+  /* Accent (Amber/Gold — signature color) */
+  --accent: #d4a257;
+  --accent-glow: rgba(212, 162, 87, 0.15);
+  --accent-bright: #e8b96a;
+
+  /* Persona colors */
+  --claude: #b48eda;
+  --claude-glow: rgba(180, 142, 218, 0.12);
+  --gpt: #6abf8a;
+  --gpt-glow: rgba(106, 191, 138, 0.12);
+  --gemini: #5a9fd4;
+  --gemini-glow: rgba(90, 159, 212, 0.12);
+
+  /* Status */
+  --danger: #d45757;
+  --success: #6abf8a;
+  --warning: #d4a257;
+
+  /* Instruments */
+  --gauge-track: #3a332a;
+  --gauge-fill: #d4a257;
+  --needle: #e8e0d4;
+}
+
+/* ── Design tokens: Light mode ──────────────────────────────────── */
+[data-theme="light"] {
+  --bg-primary: #f4efe8;
+  --bg-panel: #ece5db;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f9f6f1;
+  --border: #d4cdc0;
+  --border-accent: #b8a88e;
+  --text-primary: #2e2820;
+  --text-muted: #6b5d4d;
+  --text-dim: #9a8e7e;
+  --accent: #b8862e;
+  --accent-glow: rgba(184, 134, 46, 0.1);
+  --accent-bright: #d4a257;
+  --claude: #8b5fc7;
+  --claude-glow: rgba(139, 95, 199, 0.08);
+  --gpt: #3a8f5a;
+  --gpt-glow: rgba(58, 143, 90, 0.08);
+  --gemini: #3a7fb8;
+  --gemini-glow: rgba(58, 127, 184, 0.08);
+  --danger: #c44040;
+  --success: #3a8f5a;
+  --warning: #b8862e;
+  --gauge-track: #e8e0d4;
+  --gauge-fill: #b8862e;
+  --needle: #2e2820;
+}
+
+/* ── Tailwind v4 custom tokens ──────────────────────────────────── */
+/* Maps CSS vars → Tailwind utility classes */
+@theme {
+  /* Board palette */
+  --color-board-bg: var(--bg-primary);
+  --color-board-panel: var(--bg-panel);
+  --color-board-card: var(--bg-card);
+  --color-board-card-hover: var(--bg-card-hover);
+  --color-board-border: var(--border);
+  --color-board-border-accent: var(--border-accent);
+
+  /* Text */
+  --color-text-primary: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-text-dim: var(--text-dim);
+
+  /* Accent */
+  --color-accent: var(--accent);
+  --color-accent-glow: var(--accent-glow);
+  --color-accent-bright: var(--accent-bright);
+
+  /* Personas */
+  --color-persona-claude: var(--claude);
+  --color-persona-claude-glow: var(--claude-glow);
+  --color-persona-gpt: var(--gpt);
+  --color-persona-gpt-glow: var(--gpt-glow);
+  --color-persona-gemini: var(--gemini);
+  --color-persona-gemini-glow: var(--gemini-glow);
+
+  /* Status */
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+
+  /* Instruments */
+  --color-gauge-track: var(--gauge-track);
+  --color-gauge-fill: var(--gauge-fill);
+
+  /* Font families (populated by next/font CSS vars in layout.tsx) */
+  --font-display: var(--font-playfair);
+  --font-body: var(--font-source-serif);
+  --font-data: var(--font-space-mono);
+}
+
+/* ── Base styles ────────────────────────────────────────────────── */
+html {
+  font-family: var(--font-body), Georgia, serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Focus ring — accent colored, 2px */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

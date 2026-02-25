@@ -1,0 +1,85 @@
+# STATUS.md — AI Interview Prep Workbench
+
+> Current work. Updated daily.
+
+Last updated: 2026-02-24
+
+---
+
+## Current Phase: 1 — Foundation
+
+---
+
+## Now
+
+*(Security hardening complete — ready for next Phase 1 batch)*
+
+## Next
+
+- [ ] User management page (admin) — list users, assign roles, revoke access
+- [ ] Beta code management page (admin) — generate, list, track usage
+- [ ] Provider abstraction layer — config-driven model selection, DB-first with env fallback
+- [ ] Provider config UI (admin) — add/edit/test providers, connection test button
+- [ ] Provider model registry — list available models per provider, cost per 1M tokens
+- [ ] Persona mapping UI (admin) — map Analyst/Builder/Synthesizer to provider+model
+- [ ] Provider presets — Frontier (Claude/GPT/Gemini), Budget (DeepSeek x3), Free (Groq), Custom
+- [ ] Langfuse tracing wrapper for all providers (works identically regardless of provider)
+- [ ] Workspace UI (domain selector / switcher)
+- [ ] Mode selector UI (Quick/Compare/Debate/Deep) — wired but only Quick works
+- [ ] Quick mode — single model query with Langfuse tracing (uses active persona mapping)
+- [ ] Basic cost tracking (per-call, uses provider model cost config)
+- [ ] Domain CONTEXT.md file structure (MCP-ready)
+
+## Blocked
+
+*(Nothing blocked)*
+
+## Done (This Week)
+
+- [x] REQUIREMENTS.md written (2026-02-24)
+- [x] CLAUDE.md written (2026-02-24)
+- [x] ARCHITECTURE.md written (2026-02-24)
+- [x] STATUS.md written (2026-02-24)
+- [x] EVALS.md written (2026-02-24)
+- [x] Slash commands created (2026-02-24)
+- [x] Project scaffold — Next.js 15, TypeScript strict, Biome, Vitest, Tailwind v4 (2026-02-24)
+- [x] Turso + Drizzle ORM schema — all 12 tables, portability rules enforced (2026-02-24)
+- [x] NextAuth.js v5 — Google OAuth, DrizzleAdapter, database sessions (2026-02-24)
+- [x] Beta invite code gate — POST endpoint, cookie, server-side signIn enforcement (2026-02-24)
+- [x] RBAC middleware — explicit public path allowlist, role-checked redirect (2026-02-24)
+- [x] Login page UI — 2-step flow: beta code → Google OAuth, Retro-Future Lab design (2026-02-24)
+- [x] Security hardening — atomic beta code claim, ON DELETE cascades, $defaultFn on all timestamps, runtime role validation (2026-02-24)
+
+---
+
+## Decisions
+
+| Date | Decision | Rationale |
+|------|----------|-----------|
+| 2026-02-24 | 100% TypeScript, no Python sidecar | deepeval-ts + Confident AI cloud eliminates need. Langfuse LLM-as-judge for Phase 1-2. |
+| 2026-02-24 | Parallel debate, not sequential | Research proves independent responses avoid anchoring bias. A-HMAD framework validates. |
+| 2026-02-24 | Turso + Drizzle ORM | Free, edge-replicated. Drizzle abstracts for future Postgres migration. |
+| 2026-02-24 | Langfuse over LangSmith | Open source, self-hosted, framework-agnostic, already known from Evidence-Bound. |
+| 2026-02-24 | Trigger.dev over Inngest | Native MCP integration, TypeScript-first, streaming support. |
+| 2026-02-24 | Biome over ESLint + Prettier | Single tool for lint + format. Faster. |
+| 2026-02-24 | Config-driven provider abstraction | DeepSeek ($0.27/M) and Groq (free tier) as budget alternatives. OpenAI SDK compatible — just change base URL. |
+| 2026-02-24 | NextAuth.js v5 + Google OAuth | Standard, well-supported. Beta invite codes gate access. |
+| 2026-02-24 | RBAC: Admin + User roles | Standard pattern, extensible to N roles via DB. Admin manages providers, users, evals. |
+| 2026-02-24 | sessions uses sessionToken PK, accounts uses (provider, providerAccountId) composite PK | @auth/drizzle-adapter requires these exact conventions; these tables are adapter-owned. |
+| 2026-02-24 | Beta code enforcement in signIn callback (server-side) | UI gate is bypassable via direct OAuth URL; server-side check closes the bypass vector. |
+| 2026-02-24 | Admin bootstrap via ADMIN_EMAIL env var in createUser event | Fires once per user; no self-service admin path needed for MVP beta. |
+| 2026-02-24 | Atomic beta code claim (TOCTOU prevention) | Single UPDATE WHERE usedBy IS NULL prevents race condition on concurrent sign-ins. |
+| 2026-02-24 | Explicit public path allowlist in middleware | Prefix-based `/api/auth` matching is a security footgun; explicit list prevents accidental exposure. |
+| 2026-02-24 | ON DELETE cascade/set null on all FK references | Prevents orphaned rows; cascade for owned data, set null for optional references. |
+
+---
+
+## Risks
+
+| Risk | Status | Mitigation |
+|------|--------|------------|
+| Sycophancy collapse | Mitigated | 8-layer anti-sycophancy stack in REQUIREMENTS.md §4 |
+| Serverless timeouts | Mitigated | Trigger.dev durable execution |
+| API costs | Monitoring | Mode system + cost dashboard + budget alerts |
+| Edge Runtime + DB in middleware | Deferred | Session callback queries Turso; safe on Node.js host, breaks on Vercel Edge. Split auth config in Phase 4 security hardening. |
+| Beta code brute-force | Deferred | No rate limiting on /api/auth/beta-code. Add Upstash Redis rate limiter in Phase 4. |
