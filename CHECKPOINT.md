@@ -547,6 +547,33 @@ Last updated: 2026-02-25
 **Notes:** `manual wsskeptic` flagged status-board placeholders vs DESIGN_SYSTEM signature components; fixed by introducing `PersonaStatusCard` with `PersonaBadge`, `StatusLight`, and `GaugeMeter` primitives. Branch was rebased onto current `main` before status logging to avoid stale `STATUS.md`.
 **Outcome:** complete
 
+### 2026-02-25 14:10 - Mode Selector UI (Quick/Compare/Debate/Deep)
+
+**Task ID:** PH1-MODE-SELECTOR-UI
+**Agent:** Codex
+**Branch:** feat/ph1-mode-selector-ui-codex-clean
+**Scope:** Add prominent mode selector toggle UI (Quick/Compare/Debate/Deep) wired to URL state, preserving workspace selection; only Quick marked live
+**Status:** Complete
+**Started:** 2026-02-25 14:00
+**Ended:** 2026-02-25 14:10
+**Cycle Time:** 0h 10m
+**FR / Requirement:** `REQUIREMENTS.md` Mode selector UI (Quick/Compare/Debate/Deep) — wired but only Quick works
+**Allowed files:** `src/app/page.tsx`, `src/app/board-shell.tsx`, `src/app/mode-selector-toggle.tsx`, `src/app/workspace-switcher-panel.tsx`, `src/lib/modes/selection.ts`, `__tests__/modes/selection.test.ts`, `STATUS.md`, `CHECKPOINT.md`
+**Out of scope:** `/api/quick` changes, Compare/Debate/Deep execution paths, SSE streaming behavior, debate graph/state schema, cost ticker backend integration, command bar real request wiring
+**Tests (TDD/eval):**
+- `__tests__/modes/selection.test.ts` - 7 tests (mode query normalization, fallback selection, only-Quick-live metadata)
+**Verification (first pass?):**
+- [ ] lint (`manual wsverify`: `npm run lint` blocked by repo-wide CRLF/Biome formatting noise in Windows worktree; slice-specific `biome check` passed after fixes)
+- [x] typecheck (`manual wsverify`)
+- [x] test (`manual wsverify`: 214/214 passed)
+- [x] build (`manual wsverify`)
+- [ ] evals (N/A - UI/infrastructure slice)
+- First-pass all gates: No (fresh worktree needed `npm install`; full lint blocked by repo-wide CRLF formatting)
+**Review (gatekeeper):** Pending Claude/human. `manual wsskeptic` self-review completed (deviation recorded; coder != gatekeeper rule still applies for merge)
+**Findings fixed:** Critical: 0, High: 0, Low: 1
+**Notes:** `manual wsresearch` skipped per `wspr` decision rule (UI-only slice). `manual wsverify` caught Biome a11y semantic issue in mode toggle (`role=\"group\"` on `div`) and it was fixed by switching to `fieldset` + `legend`. Workspace switcher form now preserves `mode` query param when changing workspaces.
+**Outcome:** complete
+
 ## Next Session
 
 **Resume from:** Basic cost tracking + merge Quick mode branch to main

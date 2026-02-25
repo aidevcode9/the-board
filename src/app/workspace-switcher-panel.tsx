@@ -1,8 +1,10 @@
+import type { BoardMode } from '@/lib/modes/selection';
 import type { WorkspaceOption, WorkspaceSelectionSource } from '@/lib/workspaces/selection';
 
 type WorkspaceSwitcherPanelProps = {
   workspaces: WorkspaceOption[];
   activeWorkspace: WorkspaceOption | null;
+  activeMode: BoardMode;
   selectionSource: WorkspaceSelectionSource;
   requestedWorkspaceId: string | null;
 };
@@ -10,6 +12,7 @@ type WorkspaceSwitcherPanelProps = {
 export function WorkspaceSwitcherPanel({
   workspaces,
   activeWorkspace,
+  activeMode,
   selectionSource,
   requestedWorkspaceId,
 }: WorkspaceSwitcherPanelProps) {
@@ -37,6 +40,7 @@ export function WorkspaceSwitcherPanel({
 
       <WorkspaceSelectorForm
         activeWorkspaceId={activeWorkspace?.id ?? null}
+        activeMode={activeMode}
         isEmpty={isEmpty}
         workspaces={workspaces}
       />
@@ -55,13 +59,16 @@ function WorkspaceSelectorForm({
   workspaces,
   isEmpty,
   activeWorkspaceId,
+  activeMode,
 }: {
   workspaces: WorkspaceOption[];
   isEmpty: boolean;
   activeWorkspaceId: string | null;
+  activeMode: BoardMode;
 }) {
   return (
     <form className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]" method="get">
+      <input name="mode" type="hidden" value={activeMode} />
       <label className="grid gap-2" htmlFor="workspace">
         <span className="font-data text-[11px] tracking-widest text-text-muted uppercase">
           Workspace

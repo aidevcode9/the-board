@@ -1,6 +1,7 @@
 import { BoardShell } from '@/app/board-shell';
 import { auth } from '@/lib/auth/config';
 import { db } from '@/lib/db/client';
+import { normalizeModeQueryParam, selectBoardMode } from '@/lib/modes/selection';
 import {
   type WorkspaceOption,
   normalizeWorkspaceQueryParam,
@@ -9,7 +10,7 @@ import {
 import { redirect } from 'next/navigation';
 
 type HomePageProps = {
-  searchParams?: Promise<{ workspace?: string | string[] }>;
+  searchParams?: Promise<{ workspace?: string | string[]; mode?: string | string[] }>;
 };
 
 export default async function HomePage({ searchParams }: HomePageProps) {
@@ -23,6 +24,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   const resolvedSearchParams = (await searchParams) ?? {};
   const requestedWorkspaceId = normalizeWorkspaceQueryParam(resolvedSearchParams.workspace);
+  const requestedMode = normalizeModeQueryParam(resolvedSearchParams.mode);
+  const { activeMode, selectionSource: modeSelectionSource } = selectBoardMode(requestedMode);
   const rows = await db.query.workspaces.findMany({
     columns: {
       id: true,
@@ -53,6 +56,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   return (
     <BoardShell
       activeWorkspace={activeWorkspace}
+      activeMode={activeMode}
+      modeSelectionSource={modeSelectionSource}
       operatorName={session.user.name ?? session.user.email}
       requestedWorkspaceId={requestedWorkspaceId}
       selectionSource={selectionSource}
