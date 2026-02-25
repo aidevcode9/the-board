@@ -71,6 +71,7 @@ Last updated: 2026-02-24
 | 2026-02-24 | Atomic beta code claim (TOCTOU prevention) | Single UPDATE WHERE usedBy IS NULL prevents race condition on concurrent sign-ins. |
 | 2026-02-24 | Explicit public path allowlist in middleware | Prefix-based `/api/auth` matching is a security footgun; explicit list prevents accidental exposure. |
 | 2026-02-24 | ON DELETE cascade/set null on all FK references | Prevents orphaned rows; cascade for owned data, set null for optional references. |
+| 2026-02-24 | Langfuse v4 SDK (OTel-based, GA Aug 2025) | Future-proof: `@langfuse/tracing` + `@langfuse/otel` + `@opentelemetry/sdk-node`. Not the older `langfuse` v3 package. OTel spans export to any backend. |
 
 ---
 

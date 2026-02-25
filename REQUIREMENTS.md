@@ -35,7 +35,7 @@ These pillars form a flywheel: debates produce learning artifacts → high-quali
 | **Orchestration** | LangGraph.js | Graph-based debate flow, durable state, conditional edges, HITL breakpoints |
 | **Durable Execution** | Trigger.dev v3 | No serverless timeouts (debates run 30-90s), native retry, MCP integration |
 | **Database** | Turso (Edge SQLite) + Drizzle ORM | Zero cost, edge-replicated, Drizzle abstracts for future Postgres migration |
-| **Observability** | Langfuse (self-hosted) | Open-source, framework-agnostic, LLM-as-judge evaluators, cost tracking |
+| **Observability** | Langfuse v4 SDK (OTel-based, self-hosted) | `@langfuse/tracing` + `@langfuse/otel` + `@opentelemetry/sdk-node`. OTel-native, framework-agnostic, LLM-as-judge evaluators, cost tracking |
 | **Evals (Phase 1-2)** | Langfuse LLM-as-Judge | TypeScript-native, zero additional services, already in stack |
 | **Evals (Phase 3+)** | deepeval-ts + Confident AI Cloud | Research-backed metrics (faithfulness, hallucination), async, scalable |
 | **Context** | MCP TypeScript SDK | `update_domain_knowledge` tool, self-improving CONTEXT.md files |

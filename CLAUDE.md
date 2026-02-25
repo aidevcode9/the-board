@@ -217,7 +217,7 @@ COMMIT  → Only after eval threshold met
 - **Orchestration:** LangGraph.js
 - **Durable Execution:** Trigger.dev v3
 - **Database:** Turso (Edge SQLite) + Drizzle ORM
-- **Observability:** Langfuse (self-hosted)
+- **Observability:** Langfuse v4 SDK (OTel-based) — `@langfuse/tracing` + `@langfuse/otel` + `@opentelemetry/sdk-node`
 - **Evals:** Langfuse LLM-as-Judge → deepeval-ts (Phase 3+)
 - **Context:** MCP TypeScript SDK
 - **Security:** LLM Guard + Promptfoo (Phase 4)
