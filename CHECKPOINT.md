@@ -575,6 +575,92 @@ Last updated: 2026-02-25
 **Outcome:** complete
 **Commits:** `cbc22a3` feat(ui): wire mode selector toggle
 
+### 2026-02-25 15:00 - Process Hardening (ws* Codex execution mode)
+
+**Task ID:** PH1-WS-PROCESS
+**Agent:** Codex
+**Branch:** chore/ws-process-codex-clean
+**Scope:** Codex workflow/docs/config/script hardening for ws* execution
+**Status:** Started
+**Started:** 2026-02-25 15:00
+**FR / Requirement:** Process/tooling workflow hardening
+**Files changed:**
+- AGENTS.md
+- CLAUDE.md
+- scripts/ws/status-claim.mjs
+- scripts/ws/status-complete.mjs
+- skills/wspr/references/wspr.md
+**Out of scope:** App feature changes, API/runtime behavior, debate graph/schema
+**Tests (TDD/eval):**
+- Script smoke runs (status-claim, hygiene-sweep, checkpoint-append)
+**Verification (first pass?):**
+- [ ] lint
+- [ ] typecheck
+- [ ] test
+- [ ] build
+- [ ] evals (N/A)
+- First-pass all gates: TBD
+**Review (gatekeeper):** TBD (gatekeeper pending)
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- PR created to reduce manual ws* bookkeeping errors and worktree contamination risk
+**Outcome:** in-progress
+
+---
+
+### 2026-02-25 15:00 - Process Hardening (ws* Codex execution mode)
+
+**Task ID:** PH1-WS-PROCESS
+**Agent:** Codex
+**Branch:** chore/ws-process-codex-clean
+**Scope:** Codex workflow/docs/config/script hardening for ws* execution
+**Status:** Complete
+**Started:** 2026-02-25 15:00
+**Ended:** 2026-02-25 15:08
+**Cycle Time:** 0h08m
+**FR / Requirement:** Process/tooling workflow hardening
+**Files changed:**
+- .gitattributes
+- AGENTS.md
+- CLAUDE.md
+- skills/wspr/references/wspr.md
+- skills/wsstart/references/wsstart.md
+- skills/wsstatus/references/wsstatus.md
+- skills/wsverify/references/wsverify.md
+- skills/wsskeptic/references/wsskeptic.md
+- skills/wscommit/references/wscommit.md
+- skills/wsmistake/references/wsmistake.md
+- scripts/ws/status-claim.mjs
+- scripts/ws/status-complete.mjs
+- scripts/ws/checkpoint-append.mjs
+- scripts/ws/hygiene-sweep.mjs
+- package.json
+**Out of scope:** App feature changes, API/runtime behavior, debate graph/schema
+**Tests (TDD/eval):**
+- Script smoke: status-claim.mjs (override claim on STATUS.md)
+- Script smoke: status-complete.mjs (temp STATUS copy)
+- Script smoke: checkpoint-append.mjs (start + completion entries)
+- Script smoke: hygiene-sweep.mjs (allow-prefix classification)
+- manual wsverify: targeted Biome on package.json + scripts/ws/*.mjs
+- manual wsverify: npm run typecheck / test / build
+**Verification (first pass?):**
+- [ ] lint (`manual wsverify`: full `npm run lint` blocked by unrelated repo-wide CRLF/Biome formatting noise in untouched files; targeted Biome on `package.json` + `scripts/ws/*.mjs` passed)
+- [x] typecheck (`manual wsverify`)
+- [x] test (`manual wsverify`: 250/250 passed)
+- [x] build (`manual wsverify`)
+- [ ] evals (N/A - process/docs/scripts slice)
+- First-pass all gates: No (full lint pending due unrelated CRLF noise)
+**Review (gatekeeper):** Pending Claude/human gatekeeper (manual wsskeptic self-review completed)
+**Findings fixed:** Critical: 0, High: 0, Low: 2
+**Notes:**
+- manual wsskeptic (process profile) found 2 LOW issues in scripts (placeholder style, checkpoint heading timestamp); both fixed
+- manual wsverify lint deviation: npm run lint failed on unrelated repo-wide CRLF/Biome formatting noise in untouched files
+- Recovered from accidental apply_patch edits in shared worktree by copying patch to isolated worktree and restoring shared files; no shared leftover process files remain
+**Outcome:** complete
+**Commits:** `fe0eafe chore(process): harden ws workflow for codex execution`
+
+---
+
 ## Next Session
 
 **Resume from:** Basic cost tracking + merge Quick mode branch to main

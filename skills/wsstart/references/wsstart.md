@@ -1,32 +1,35 @@
 ---
-description: Start working on a new task
+description: Start working on a new task slice
 ---
 
-Start working on a new task.
+Start a new PR-sized task slice with bounded scope and bookkeeping.
 
-Steps:
-1. Read STATUS.md to see what's in "Next"
-2. Read CLAUDE.md to understand project context
-3. Ask me which task I want to work on (or I'll tell you)
-4. Create a new branch: `git checkout -b feat/[short-description]` or `fix/[short-description]`
-5. Move the task from "Next" to "Now" in STATUS.md
-6. Enter Plan mode and create a plan for implementing this task:
-   - What files need to change?
-   - What's the implementation approach?
-   - What tests are needed? (Vitest — follow naming: `describe('component') > it('should behavior')`)
-   - What evals are needed? (If LLM/debate code — define golden query + expected behavior)
-   - Any risks or concerns?
-   - All persona system prompts in their own files? (src/lib/personas/)
-   - What Langfuse tracing is needed? (Every LLM call must be traced)
-   - What key areas should be logged?
-   - Any variables to add to .env.example?
-   - Does this touch LangGraph state? (If yes — update ARCHITECTURE.md)
-   - Does this touch anti-sycophancy? (If yes — extra scrutiny required)
-7. Show me the plan and wait for approval before implementing
+## Runtime notes
+- Repo `skills/` is the source of truth for project `ws*` skills.
+- In runtimes without native slash-command execution, follow this procedure manually and label the step (for example `manual wsstart`).
+- If `wspr` already selected the slice, do not ask the user to choose a task again.
 
-**Testing strategy for this task:**
-- Infrastructure/API/DB code → TDD (write test first, watch it fail, implement, watch it pass)
-- LLM orchestration code → Eval-driven (define expected behavior in EVALS.md first, implement until eval passes)
-- UI code → Manual verification instructions + screenshot
+## Steps
+1. Read `STATUS.md` and `CLAUDE.md` (project context + current claims).
+2. Determine task source:
+   - If invoked from `wspr`, use the selected item directly.
+   - If invoked standalone and no task is specified, ask which task slice to start.
+3. Produce a bounded plan before coding:
+   - Goal + acceptance criteria
+   - Allowed files list
+   - Tests to add/update
+   - Evals to run (if orchestration changes)
+   - Out-of-scope list
+4. Create/switch branch (branch-per-slice).
+5. Update `STATUS.md` claim (`Next -> Now`) using the current format.
+   - Prefer `node scripts/ws/status-claim.mjs ...` when available.
+6. Append a start entry to `CHECKPOINT.md`.
+   - Prefer `node scripts/ws/checkpoint-append.mjs ... --status "Started" --outcome "in-progress"` when available.
+7. Show the plan and wait for approval unless the user has already delegated autonomous execution.
 
-Don't start coding until I approve the plan.
+## Testing strategy (must match AGENTS.md)
+- Infrastructure/API/DB/UI state -> TDD (fail first)
+- LLM orchestration -> eval-driven (golden/eval criteria first)
+- UI slices -> include manual verification steps
+
+Do not start coding until planning is complete and approved (or explicitly delegated).

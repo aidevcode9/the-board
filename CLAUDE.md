@@ -68,6 +68,13 @@
   - Convention: `feat/<task-id>-claude` or `feat/<task-id>-codex`
 - **Cross-review required:** The coder and the gatekeeper/reviewer must be different for the same task. If Claude codes it, Codex or human reviews (and vice versa).
 
+### `ws*` Skill Execution (Shared Process)
+- Repo `skills/` is the source of truth for project `ws*` skills. Global `.codex/skills` copies are fallback only.
+- Do not silently skip required `ws*` steps. If slash commands are unavailable in the current runtime, run a clearly labeled manual replacement (for example `manual wsverify`, `manual wsskeptic`) by following the repo skill docs.
+- `wspr pick top Next` must be run from a clean, synced `main` worktree. Do not pick from a dirty feature branch.
+- After merge/handoff, run a shared-worktree hygiene sweep (`git status --short --untracked-files=all` or `scripts/ws/hygiene-sweep.mjs`) and remove your leftovers before handoff.
+- If local Windows line endings create unrelated Biome noise, record the `wsverify` deviation explicitly and treat full lint as pending until a clean environment/CI run.
+
 ### Claiming Work
 1. Pick an unclaimed item from `Next` in STATUS.md (human/orchestrator owns ordering).
 2. Add a claim line to `Now`: `[Claude] <task slice> — branch: <branch-name> — started: YYYY-MM-DD HH:MM`
@@ -483,9 +490,10 @@ Types: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`
 
 | Date | Mistake | Rule Added |
 |------|---------|------------|
-| — | — | — |
-
-*This table will be populated as we build. Every mistake becomes a permanent rule.*
+| 2026-02-25 | Treated missing native `wsskeptic` execution as an implicit skip instead of an explicit workflow deviation | Required `ws*` steps must be either run as labeled `manual ws*` replacements or marked blocked |
+| 2026-02-25 | Checked global skill directory first and missed repo-local `skills/wsmistake` | Repo `skills/` is source of truth for project `ws*` skills; global copies are fallback only |
+| 2026-02-25 | Left Codex changes in shared worktree after merge | Post-merge shared-worktree hygiene sweep is mandatory before handoff |
+*Continue appending here. Every mistake becomes a permanent rule.*
 
 ---
 

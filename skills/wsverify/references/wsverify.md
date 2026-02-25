@@ -1,62 +1,46 @@
 ---
-description: Verify implementation (lint, types, tests, build)
+description: Verify implementation (lint, types, tests, build, evals when relevant)
 ---
 
 Verify the current implementation works correctly.
 
-Steps:
+## Policy
+- `AGENTS.md` quality gates still apply in full before merge.
+- In runtimes without native slash commands, label this step `manual wsverify`.
+- Do not silently downgrade a failing gate; record deviations explicitly.
+
+## Steps
 1. Run linter: `npm run lint`
 2. Run type checker: `npm run typecheck`
 3. Run tests: `npm run test`
 4. Run build: `npm run build`
 5. If LLM code was touched: verify Langfuse tracing
-   - Check that traced wrapper is used (not raw API calls)
-   - Confirm trace includes debate metadata (mode, phase, persona, domain)
-6. If debate engine was touched: run eval suite
-   - `npm run eval` — full suite
-   - `npm run eval:sycophancy` — if anti-sycophancy code changed
-7. If there are failures:
-   - Analyze the error
-   - Suggest a fix
-   - Ask if I want you to fix it
-8. If all pass:
-   - Report summary
-   - Update project documentation as necessary
-   - Confirm ready for `/wsskeptic` then commit
+   - Traced wrapper used (no raw SDK calls)
+   - Trace includes mode, phase, persona, domain, tokens, latency, cost
+6. If debate engine / prompts / anti-sycophancy changed: run eval suite(s)
+   - `npm run eval`
+   - relevant subsets (`eval:debate`, `eval:sycophancy`, `eval:persona`)
+7. For UI changes: provide manual browser verification steps (`localhost:3000`)
+8. If failures occur:
+   - Analyze the failure
+   - Fix if within scope (max two iterations before asking)
+   - Re-run affected gates
 
-For UI changes, also describe how to manually verify in the browser (localhost:3000).
+## Local environment reliability rule (Windows / line endings)
+If `npm run lint` fails due to unrelated repo-wide line-ending formatting noise:
+- Record it explicitly as a `wsverify` deviation
+- Run targeted Biome checks on changed files
+- Treat full lint as pending (not passed) until resolved in CI or a clean environment
 
-## Verification Commands
-
-```bash
-# Quick verification (all gates)
-npm run lint && npm run typecheck && npm run test && npm run build
-
-# Individual
-npm run lint                   # Biome lint
-npm run typecheck              # tsc --noEmit
-npm run test                   # Vitest
-npm run build                  # Next.js build
-
-# Evals (if LLM code touched)
-npm run eval                   # Full golden eval suite
-npm run eval:debate            # Debate quality
-npm run eval:sycophancy        # Anti-sycophancy
-npm run eval:persona           # Persona consistency
-
-# Database (if schema touched)
-npm run db:push                # Push to Turso
-```
-
-## Output Format
-
-```
-✅ lint — passed
-✅ typecheck — passed
-✅ tests — 14/14 passed
-✅ build — passed
-✅ Langfuse tracing — verified (if applicable)
-✅ evals — 8/8 passed (if applicable)
-
-Ready for /wsskeptic → /wscommit
+## Output format (findings + status)
+```text
+manual wsverify
+- lint: pass | fail | pending (with reason)
+- typecheck: pass | fail
+- test: pass | fail
+- build: pass | fail
+- tracing: verified | N/A
+- evals: pass | fail | N/A
+- UI manual verification: <steps or N/A>
+- Deviations: <none or explicit list>
 ```

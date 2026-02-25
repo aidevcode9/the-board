@@ -12,9 +12,13 @@ Steps:
    - Why is the correct approach better?
 3. Add to CLAUDE.md under "Mistakes" section:
    - Format: `| DATE | [What went wrong] | [What to do instead] |`
-4. If the mistake reveals a pattern, consider adding to "Red Flags" too
-5. If the mistake relates to debate integrity or sycophancy, add to "Invariants" as well
-6. Fix the immediate issue
-7. Confirm: "Added to CLAUDE.md. I won't make this mistake again."
+4. If the mistake reveals a workflow/process pattern, update the governing source too:
+   - `AGENTS.md` (contract/rules)
+   - relevant `skills/ws*/references/*.md` file(s)
+   - `CHECKPOINT.md` notes if it affected an active slice
+5. If the mistake reveals a pattern, consider adding to "Red Flags" too
+6. If the mistake relates to debate integrity or sycophancy, add to "Invariants" as well
+7. Fix the immediate issue
+8. Confirm what was updated (for example: `CLAUDE.md`, `AGENTS.md`, `skills/wspr/...`)
 
 This is how knowledge compounds. Every mistake becomes a rule.

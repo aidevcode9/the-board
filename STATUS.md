@@ -73,6 +73,8 @@ Last updated: 2026-02-25
 
 ---
 
+- [x] Process hardening for ws* Codex execution mode — owner: Codex — 2026-02-25 — commit: fe0eafe — cycle: 0h08m
+
 ## Velocity Snapshot (This Week)
 
 > Update from completed `CHECKPOINT.md` entries (append weekly or daily). Keep this lightweight.
