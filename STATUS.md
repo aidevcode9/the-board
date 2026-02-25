@@ -31,7 +31,7 @@ Last updated: 2026-02-25
 
 ## Now
 
-- [Codex] Workspace UI (domain selector / switcher) — branch: feat/ph1-workspace-ui-codex — started: 2026-02-25 20:15
+*(No active claims)*
 
 ## Next
 
@@ -67,6 +67,7 @@ Last updated: 2026-02-25
 - [x] Provider presets — Frontier (Claude/GPT/Gemini), Budget (DeepSeek x3), Free (Groq), Custom — with DB transaction safety (2026-02-24)
 - [x] Quick mode API + Langfuse tracing — owner: Claude — 2026-02-24 — commit: cdbfba3 — cycle: 0h35m
 - [x] Basic cost tracking — already complete: calculateCost() + 8 tests, DB columns, Quick mode integration, Langfuse tracing — 2026-02-25
+- [x] Workspace UI (domain selector / switcher) — owner: Codex — 2026-02-25 — commit: 481aa63 — cycle: 0h44m
 - [x] Domain CONTEXT.md file structure — owner: Claude — 2026-02-25 — PR: #2 — cycle: 0h25m
 
 ---
@@ -114,3 +115,4 @@ Last updated: 2026-02-25
 | API costs | Monitoring | Mode system + cost dashboard + budget alerts |
 | Edge Runtime + DB in middleware | Deferred | Session callback queries Turso; safe on Node.js host, breaks on Vercel Edge. Split auth config in Phase 4 security hardening. |
 | Beta code brute-force | Deferred | No rate limiting on /api/auth/beta-code. Add Upstash Redis rate limiter in Phase 4. |
+

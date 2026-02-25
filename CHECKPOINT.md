@@ -520,6 +520,33 @@ Last updated: 2026-02-25
 
 ---
 
+### 2026-02-25 20:59 - Workspace UI (Domain Selector / Switcher)
+
+**Task ID:** PH1-WORKSPACE-UI
+**Agent:** Codex
+**Branch:** feat/ph1-workspace-ui-codex-clean
+**Scope:** Protected home page workspace/domain selector + active workspace resolution + board shell placeholders
+**Status:** Complete
+**Started:** 2026-02-25 20:15
+**Ended:** 2026-02-25 20:59
+**Cycle Time:** 0h 44m
+**FR / Requirement:** Phase 1 workspace UI slice (domain selector / switcher)
+**Allowed files:** `src/app/page.tsx`, `src/app/board-shell.tsx`, `src/app/status-board-primitives.tsx`, `src/app/workspace-switcher-panel.tsx`, `src/lib/workspaces/selection.ts`, `__tests__/workspaces/selection.test.ts`, `STATUS.md`, `CHECKPOINT.md`
+**Out of scope:** Quick mode API, mode selector behavior, debate graph, SSE, prompt changes, schema changes
+**Tests (TDD/eval):**
+- `__tests__/workspaces/selection.test.ts` - 6 tests (query normalization + active workspace fallback)
+**Verification (first pass?):**
+- [ ] lint (`manual wsverify`: `npm run lint` blocked by repo-wide CRLF formatting in isolated Windows worktree; workspace slice logic not implicated)
+- [x] typecheck (`manual wsverify`)
+- [x] test (`manual wsverify`: workspace selection tests passed)
+- [x] build (`manual wsverify`)
+- [ ] evals (N/A - infrastructure/UI slice)
+- First-pass all gates: No
+**Review (gatekeeper):** Pending Claude/human. `manual wsskeptic` self-review completed (deviation recorded; coder != gatekeeper rule still applies for merge)
+**Findings fixed:** Critical: 0, High: 0, Low: 1
+**Notes:** `manual wsskeptic` flagged status-board placeholders vs DESIGN_SYSTEM signature components; fixed by introducing `PersonaStatusCard` with `PersonaBadge`, `StatusLight`, and `GaugeMeter` primitives. Branch was rebased onto current `main` before status logging to avoid stale `STATUS.md`.
+**Outcome:** complete
+
 ## Next Session
 
 **Resume from:** Basic cost tracking + merge Quick mode branch to main
