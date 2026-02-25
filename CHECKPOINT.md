@@ -573,6 +573,7 @@ Last updated: 2026-02-25
 **Findings fixed:** Critical: 0, High: 0, Low: 1
 **Notes:** `manual wsresearch` skipped per `wspr` decision rule (UI-only slice). `manual wsverify` caught Biome a11y semantic issue in mode toggle (`role=\"group\"` on `div`) and it was fixed by switching to `fieldset` + `legend`. Workspace switcher form now preserves `mode` query param when changing workspaces.
 **Outcome:** complete
+**Commits:** `cbc22a3` feat(ui): wire mode selector toggle
 
 ## Next Session
 

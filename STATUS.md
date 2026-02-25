@@ -69,7 +69,7 @@ Last updated: 2026-02-25
 - [x] Basic cost tracking — already complete: calculateCost() + 8 tests, DB columns, Quick mode integration, Langfuse tracing — 2026-02-25
 - [x] Workspace UI (domain selector / switcher) — owner: Codex — 2026-02-25 — commit: 481aa63 — cycle: 0h44m
 - [x] Domain CONTEXT.md file structure — owner: Claude — 2026-02-25 — PR: #2 — cycle: 0h25m
-- [x] Mode selector UI (Quick/Compare/Debate/Deep) — wired but only Quick works — owner: Codex — 2026-02-25 — commit: pending — cycle: 0h10m
+- [x] Mode selector UI (Quick/Compare/Debate/Deep) — wired but only Quick works — owner: Codex — 2026-02-25 — commit: cbc22a3 — cycle: 0h10m
 
 ---
 
