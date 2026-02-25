@@ -125,18 +125,22 @@ export const personaMappings = sqliteTable(
 
 // ── Workspaces & Debates ──────────────────────────────────────────────────────
 
-export const workspaces = sqliteTable('workspaces', {
-  id: text('id').primaryKey().$defaultFn(createId),
-  name: text('name').notNull(),
-  domain: text('domain').notNull(), // 'system-design' | 'ai-ethics' | etc.
-  contextPath: text('context_path'), // path to domain CONTEXT.md file
-  createdBy: text('created_by')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  createdAt: integer('created_at', { mode: 'timestamp' })
-    .notNull()
-    .$defaultFn(() => new Date()),
-});
+export const workspaces = sqliteTable(
+  'workspaces',
+  {
+    id: text('id').primaryKey().$defaultFn(createId),
+    name: text('name').notNull(),
+    domain: text('domain').notNull(), // 'system-design' | 'ai-ethics' | etc.
+    contextPath: text('context_path'), // path to domain CONTEXT.md file
+    createdBy: text('created_by')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [uniqueIndex('workspace_domain_user_idx').on(table.domain, table.createdBy)],
+);
 
 export const debates = sqliteTable('debates', {
   id: text('id').primaryKey().$defaultFn(createId),
@@ -188,7 +192,7 @@ export const debateResponses = sqliteTable('debate_responses', {
   phase: text('phase').notNull(), // 'independent' | 'review' | 'synthesis' | 'validation'
   round: integer('round').notNull(),
   model: text('model').notNull(), // 'claude' | 'gpt' | 'gemini'
-  role: text('role').notNull(), // 'lead' | 'challenger' | 'synthesizer'
+  role: text('role').notNull(), // Quick: persona slot ('analyst'|'builder'|'synthesizer'); Debate: 'lead'|'challenger'|'synthesizer'
   content: text('content').notNull(),
   confidence: real('confidence'),
   promptTokens: integer('prompt_tokens'),
