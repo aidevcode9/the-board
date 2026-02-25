@@ -166,10 +166,76 @@ Last updated: 2026-02-24
 
 **Commits:** `7cf6324` feat(config): Phase 1 foundation — Next.js 15, auth, DB, design system
 
+### 2026-02-24 17:30 — Admin Pages (User Management + Beta Code Management)
+
+**Status:** ✅ Complete
+**Files changed:**
+- `src/lib/admin/schemas.ts` (new — Zod schemas: updateUserRoleSchema, generateBetaCodeSchema, helpers)
+- `src/app/api/admin/users/route.ts` (new — GET list users, PUT update role)
+- `src/app/api/admin/beta-codes/route.ts` (new — GET list codes, POST create code)
+- `src/app/admin/layout.tsx` (new — admin layout with nav, defense-in-depth auth)
+- `src/app/admin/page.tsx` (new — redirect to /admin/users)
+- `src/app/admin/users/page.tsx` (new — server component, fetches users)
+- `src/app/admin/users/user-table.tsx` (new — client component, role toggle)
+- `src/app/admin/beta-codes/page.tsx` (new — server component, fetches codes)
+- `src/app/admin/beta-codes/beta-code-manager.tsx` (new — client component, create + list)
+- `src/lib/auth/config.ts` (updated — session.user.id explicitly assigned)
+- `__tests__/admin/schemas.test.ts` (new — 20 TDD tests)
+
+**Verification:**
+- [x] lint — passed (34 files, 0 errors)
+- [x] typecheck — passed (0 errors)
+- [x] tests — 62/62 passed (20 admin schema + 9 middleware + 10 auth + 21 schema + 2 smoke)
+- [x] build — passed (all admin routes visible: /admin, /admin/users, /admin/beta-codes, /api/admin/*)
+
+**Skeptic review:** 0 critical, 3 high (all fixed), 5 low (tracked)
+- HIGH fixed: session.user.id explicitly assigned in callback
+- HIGH fixed: beta-codes route uses session.user.id directly (not email lookup)
+- HIGH fixed: Zod error details removed from production API responses
+
+**Commits:** `685fd3d` feat(ui): add admin pages for user management and beta codes
+
+### 2026-02-24 17:45 — Provider Abstraction Layer (IN PROGRESS)
+
+**Status:** ⚠️ Partial — interrupted, resumable
+**Files changed so far:**
+- `src/lib/providers/types.ts` (new — Zod schemas, LLMClient interface, env fallback map)
+- `src/lib/providers/cost.ts` (new — calculateCost from token usage + model pricing)
+
+**Packages installed:**
+- `@anthropic-ai/sdk` — Anthropic Claude API
+- `openai` — OpenAI, DeepSeek, Groq, LM Studio (all OpenAI-compatible)
+- `@google/generative-ai` — Google Gemini API
+- `@langfuse/tracing` — Langfuse v4 core OTel-based tracing
+- `@langfuse/otel` — LangfuseSpanProcessor (OTel → Langfuse)
+- `@opentelemetry/sdk-node` — OpenTelemetry Node.js SDK
+
+**Decision: Langfuse v4 (OTel-based, GA August 2025)**
+- Using `@langfuse/tracing` + `@langfuse/otel` + `@opentelemetry/sdk-node`
+- NOT using the older `langfuse` v3 package
+- OTel init in `src/lib/providers/telemetry.ts` (not yet created)
+- `observeOpenAI` from `@langfuse/openai` for OpenAI-compat providers (not yet installed)
+- Manual tracing via `startActiveObservation` for Anthropic + Google
+
+**Still TODO (in order):**
+1. Write TDD tests for config resolution, cost calculation, factory
+2. Implement config.ts (DB → env fallback resolution)
+3. Implement factory.ts (createLLMClient switch on sdkType)
+4. Implement provider clients: anthropic.ts, openai-compat.ts, google.ts
+5. Implement telemetry.ts (OTel + Langfuse init)
+6. Implement traced.ts (wraps LLMClient calls with Langfuse observations)
+7. Quality gates + skeptic review
+8. Commit
+
+**Notes:**
+- Research confirmed: DeepSeek, Groq, LM Studio all use `sdkType: 'openai'` with different baseUrl
+- Google SDK: using `@google/generative-ai` (not `@google/genai`) — the one already in REQUIREMENTS.md
+- Cost calculation is at our application layer using providerModels.inputCostPer1M/outputCostPer1M
+
 ---
 
 ## Next Session
 
-**Resume from:** Phase 1 remaining tasks (see STATUS.md)
-**Context needed:** Turso cloud DB is live, Google OAuth working, admin user bootstrapped
-**Blockers to check:** None
+**Resume from:** Provider abstraction layer (Batch 2, step 1 of TODO above)
+**Context needed:** LLM SDK packages + Langfuse v4 OTel packages installed. types.ts and cost.ts written. Need tests + remaining implementation.
+**Blockers to check:** None — all packages installed, types defined

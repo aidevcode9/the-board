@@ -21,12 +21,18 @@
     "eval:persona": "vitest run evals/persona/"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
     "@auth/drizzle-adapter": "^1.11.1",
+    "@google/generative-ai": "^0.24.1",
+    "@langfuse/otel": "^4.6.1",
+    "@langfuse/tracing": "^4.6.1",
     "@libsql/client": "^0.17.0",
+    "@opentelemetry/sdk-node": "^0.212.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "drizzle-orm": "^0.45.1",
     "next": "15.1.7",
     "next-auth": "^5.0.0-beta.30",
+    "openai": "^6.25.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "^3.24.1"
