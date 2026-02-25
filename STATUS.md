@@ -2,7 +2,7 @@
 
 > Current work. Updated daily.
 
-Last updated: 2026-02-24
+Last updated: 2026-02-25
 
 ---
 
@@ -36,8 +36,6 @@ Last updated: 2026-02-24
 ## Next
 
 - [ ] Mode selector UI (Quick/Compare/Debate/Deep) — wired but only Quick works
-- [ ] Basic cost tracking (per-call, uses provider model cost config)
-- [ ] Domain CONTEXT.md file structure (MCP-ready)
 
 ## Blocked
 
@@ -68,6 +66,8 @@ Last updated: 2026-02-24
 - [x] Persona mapping UI (admin) — CRUD mappings, preset quick-apply (Frontier/Budget/Free), activate/deactivate (2026-02-24)
 - [x] Provider presets — Frontier (Claude/GPT/Gemini), Budget (DeepSeek x3), Free (Groq), Custom — with DB transaction safety (2026-02-24)
 - [x] Quick mode API + Langfuse tracing — owner: Claude — 2026-02-24 — commit: cdbfba3 — cycle: 0h35m
+- [x] Basic cost tracking — already complete: calculateCost() + 8 tests, DB columns, Quick mode integration, Langfuse tracing — 2026-02-25
+- [x] Domain CONTEXT.md file structure — owner: Claude — 2026-02-25 — PR: #2 — cycle: 0h25m
 
 ---
 
