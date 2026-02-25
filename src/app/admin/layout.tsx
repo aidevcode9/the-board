@@ -46,6 +46,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               Beta Codes
             </Link>
             <Link
+              href={'/admin/providers' as Route}
+              className="font-data text-[11px] uppercase tracking-widest text-text-muted transition-colors hover:text-accent"
+            >
+              Providers
+            </Link>
+            <Link
               href="/"
               className="font-data text-[11px] uppercase tracking-widest text-text-dim transition-colors hover:text-text-muted"
             >

@@ -1,10 +1,12 @@
+import { db } from '@/lib/db/client';
+import { providers } from '@/lib/db/schema';
 import { createId } from '@paralleldrive/cuid2';
+import { and, eq } from 'drizzle-orm';
 import type { ProviderConfig } from './types';
 import { ENV_FALLBACK_MAP, ProviderConfigSchema } from './types';
 
 // ── Provider Config Resolution ──────────────────────────────────────────────
-// DB-first with env var fallback. Phase 1 uses env fallback only;
-// DB resolution will be added when admin provider CRUD is implemented.
+// DB-first with env var fallback.
 
 /**
  * Resolve a provider config from environment variables.
@@ -37,14 +39,18 @@ export function resolveProviderFromEnv(providerName: string): ProviderConfig | n
 
 /**
  * Resolve a provider config. Checks DB first, falls back to env vars.
- * Phase 1: env-only. DB query will be added in provider config UI task.
  */
 export async function resolveProviderConfig(providerName: string): Promise<ProviderConfig | null> {
-  // TODO: Phase 1 provider config UI — query DB first:
-  // const dbConfig = await db.query.providers.findFirst({
-  //   where: (p, { eq, and }) => and(eq(p.name, providerName), eq(p.isActive, true)),
-  // });
-  // if (dbConfig) return ProviderConfigSchema.parse(dbConfig);
+  // DB-first: check for an active provider config by name
+  const dbRow = await db.query.providers.findFirst({
+    where: and(eq(providers.name, providerName), eq(providers.isActive, true)),
+  });
 
+  if (dbRow) {
+    const parsed = ProviderConfigSchema.safeParse(dbRow);
+    if (parsed.success) return parsed.data;
+  }
+
+  // Fallback to env vars
   return resolveProviderFromEnv(providerName);
 }

@@ -277,10 +277,57 @@ Last updated: 2026-02-24
 - jsdom vitest environment causes OpenAI/Anthropic SDK to reject (browser detection) — factory tests use `@vitest-environment node`
 - All files under 160 lines (well within 250-line limit)
 
+### 2026-02-24 18:45 — Provider Config UI + Model Registry (Admin)
+
+**Status:** ✅ Complete
+**Files changed:**
+- `src/lib/admin/schemas.ts` (updated — added createProvider, updateProvider, createProviderModel, updateProviderModel schemas + maskApiKey helper)
+- `src/lib/providers/config.ts` (updated — resolveProviderConfig now queries DB first, falls back to env)
+- `src/app/api/admin/providers/route.ts` (new — GET list providers, POST create provider)
+- `src/app/api/admin/providers/[id]/route.ts` (new — GET single, PUT update, DELETE provider)
+- `src/app/api/admin/providers/[id]/test/route.ts` (new — POST test connection with result persistence)
+- `src/app/api/admin/providers/[id]/models/route.ts` (new — GET list models, POST add model)
+- `src/app/api/admin/providers/[id]/models/[modelId]/route.ts` (new — PUT update, DELETE model)
+- `src/app/admin/providers/page.tsx` (new — server component, fetches providers)
+- `src/app/admin/providers/provider-manager.tsx` (new — client component, state management)
+- `src/app/admin/providers/add-provider-form.tsx` (new — expandable form with SDK type select)
+- `src/app/admin/providers/provider-card.tsx` (new — test/enable/disable/delete actions)
+- `src/app/admin/providers/model-list.tsx` (new — model table with enable/disable/delete)
+- `src/app/admin/providers/add-model-row.tsx` (new — inline add model form, extracted per 250-line rule)
+- `src/app/admin/layout.tsx` (updated — added Providers nav link)
+- `__tests__/admin/provider-schemas.test.ts` (new — 27 TDD tests)
+
+**Verification:**
+- [x] lint — passed (61 files, 0 errors)
+- [x] typecheck — passed (0 errors)
+- [x] tests — 128/128 passed (27 new provider schema tests + 101 existing)
+- [x] build — passed (all provider routes visible in build output)
+
+**Skeptic review:** 0 critical, 4 high (all fixed), 7 low (tracked)
+- HIGH fixed: maskApiKey revealed too many chars (first 3 + last 3) — changed to show only last 4
+- HIGH fixed: testConnection route lacked try/catch — added with DB failure persistence
+- HIGH fixed: model-list.tsx exceeded 250 lines — extracted AddModelRow to own file
+- HIGH fixed: No confirm() on model delete — added cascade warning dialog
+
+**Accepted risks (deferred):**
+- No unique constraint on (providerId, modelId) — admin can add duplicate models
+- No integration tests for API route handlers — schemas tested, routes rely on pattern consistency
+- Empty update body accepted (no-op DB write) — harmless
+- resolveProviderFromEnv generates new CUID2 each call — fine for current usage
+
+**Notes:**
+- API keys NEVER sent unmasked to client — GET routes mask via maskApiKey()
+- API key input uses type="password" — browser won't cache/autofill
+- SSRF validation on both POST and PUT of baseUrl
+- All admin routes check session?.user?.role === 'admin' (defense in depth with middleware)
+- confirm() before provider delete and model delete (cascade operations)
+- Test connection requires at least one active model configured first
+- Provider card shows last test result with latency
+
 ---
 
 ## Next Session
 
-**Resume from:** Provider config UI (admin) — next task in STATUS.md "Next" list
-**Context needed:** Provider abstraction layer complete. All clients, tracing, and SSRF protection in place.
+**Resume from:** Persona mapping UI (admin) + Provider presets
+**Context needed:** Provider config UI + model registry complete. DB-first config resolution active.
 **Blockers to check:** None

@@ -12,12 +12,10 @@ Last updated: 2026-02-24
 
 ## Now
 
-*(Provider abstraction complete — ready for next Phase 1 batch)*
+*(Provider config UI + model registry complete — ready for persona mapping batch)*
 
 ## Next
 
-- [ ] Provider config UI (admin) — add/edit/test providers, connection test button
-- [ ] Provider model registry — list available models per provider, cost per 1M tokens
 - [ ] Persona mapping UI (admin) — map Analyst/Builder/Synthesizer to provider+model
 - [ ] Provider presets — Frontier (Claude/GPT/Gemini), Budget (DeepSeek x3), Free (Groq), Custom
 - [ ] Workspace UI (domain selector / switcher)
@@ -47,6 +45,9 @@ Last updated: 2026-02-24
 - [x] Security hardening — atomic beta code claim, ON DELETE cascades, $defaultFn on all timestamps, runtime role validation (2026-02-24)
 - [x] Admin pages — user management + beta code management (2026-02-24)
 - [x] Provider abstraction layer — factory, 3 SDK clients, config resolution, Langfuse tracing wrapper, SSRF protection, 39 tests (2026-02-24)
+- [x] Provider config UI (admin) — CRUD + test connection, SSRF validation, API key masking, 27 schema tests (2026-02-24)
+- [x] Provider model registry — add/edit/delete models per provider, cost per 1M tokens, context window config (2026-02-24)
+- [x] DB-first provider config resolution — resolveProviderConfig() now queries DB first, falls back to env vars (2026-02-24)
 
 ---
 
