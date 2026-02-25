@@ -232,10 +232,55 @@ Last updated: 2026-02-24
 - Google SDK: using `@google/generative-ai` (not `@google/genai`) — the one already in REQUIREMENTS.md
 - Cost calculation is at our application layer using providerModels.inputCostPer1M/outputCostPer1M
 
+### 2026-02-24 18:00 — Provider Abstraction Layer (Complete)
+
+**Status:** ✅ Complete
+**Files changed:**
+- `src/lib/providers/config.ts` (new — resolveProviderFromEnv, resolveProviderConfig with DB-first stub)
+- `src/lib/providers/factory.ts` (new — createLLMClient switch on sdkType with exhaustiveness check)
+- `src/lib/providers/anthropic.ts` (new — AnthropicClient: generate, generateStream, testConnection)
+- `src/lib/providers/openai-compat.ts` (new — OpenAICompatClient: shared by OpenAI/DeepSeek/Groq/LM Studio)
+- `src/lib/providers/google.ts` (new — GoogleClient: message format conversion, systemInstruction)
+- `src/lib/providers/telemetry.ts` (new — OTel + Langfuse v4 lazy singleton init)
+- `src/lib/providers/traced.ts` (new — TracedLLMClient wraps any LLMClient with Langfuse generation observations)
+- `src/lib/providers/validate-url.ts` (new — SSRF protection for admin-configured provider URLs)
+- `src/lib/providers/index.ts` (new — barrel exports for provider module)
+- `__tests__/providers/cost.test.ts` (new — 8 tests, TDD)
+- `__tests__/providers/config.test.ts` (new — 11 tests, TDD)
+- `__tests__/providers/factory.test.ts` (new — 8 tests, TDD)
+- `__tests__/providers/validate-url.test.ts` (new — 12 tests, TDD)
+
+**Verification:**
+- [x] lint — passed (49 files, 0 errors)
+- [x] typecheck — passed (0 errors)
+- [x] tests — 101/101 passed (39 new provider tests + 62 existing)
+- [x] build — passed
+- [ ] Langfuse tracing — structural only (traced.ts wraps calls, no live Langfuse to verify)
+
+**Skeptic review:** 0 critical (after fix), 3 high (2 fixed, 1 deferred)
+- CRITICAL fixed: SSRF protection — validateProviderBaseUrl() blocks private IPs, metadata endpoints, non-HTTPS
+- HIGH fixed: SDK timeout (30s) + retry (maxRetries: 2) on Anthropic and OpenAI constructors
+- HIGH deferred: Google SDK lacks built-in timeout/retry — handled by Trigger.dev in Phase 2
+- HIGH deferred: Truncated response detection — needed for Phase 2 debate quality
+
+**Accepted risks (deferred):**
+- costUsd: 0 in GenerationResult — populated externally by caller + calculateCost()
+- Google SDK no timeout/retry — Phase 2 Trigger.dev handles at task level
+- Truncated response undetected — Phase 2 when synthesis quality matters
+- Error message sanitization in testConnection — Phase 1 provider config UI task
+
+**Notes:**
+- Anthropic SDK: system prompt separate from messages (not in messages array)
+- Google SDK: role "model" not "assistant", parts: [{text}] not content: string
+- OpenAI SDK: shared by DeepSeek, Groq, LM Studio (different baseUrl only)
+- Langfuse v4: OTel-based, startObservation with asType: "generation" for LLM calls
+- jsdom vitest environment causes OpenAI/Anthropic SDK to reject (browser detection) — factory tests use `@vitest-environment node`
+- All files under 160 lines (well within 250-line limit)
+
 ---
 
 ## Next Session
 
-**Resume from:** Provider abstraction layer (Batch 2, step 1 of TODO above)
-**Context needed:** LLM SDK packages + Langfuse v4 OTel packages installed. types.ts and cost.ts written. Need tests + remaining implementation.
-**Blockers to check:** None — all packages installed, types defined
+**Resume from:** Provider config UI (admin) — next task in STATUS.md "Next" list
+**Context needed:** Provider abstraction layer complete. All clients, tracing, and SSRF protection in place.
+**Blockers to check:** None

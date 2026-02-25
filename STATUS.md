@@ -12,18 +12,14 @@ Last updated: 2026-02-24
 
 ## Now
 
-*(Security hardening complete — ready for next Phase 1 batch)*
+*(Provider abstraction complete — ready for next Phase 1 batch)*
 
 ## Next
 
-- [ ] User management page (admin) — list users, assign roles, revoke access
-- [ ] Beta code management page (admin) — generate, list, track usage
-- [ ] Provider abstraction layer — config-driven model selection, DB-first with env fallback
 - [ ] Provider config UI (admin) — add/edit/test providers, connection test button
 - [ ] Provider model registry — list available models per provider, cost per 1M tokens
 - [ ] Persona mapping UI (admin) — map Analyst/Builder/Synthesizer to provider+model
 - [ ] Provider presets — Frontier (Claude/GPT/Gemini), Budget (DeepSeek x3), Free (Groq), Custom
-- [ ] Langfuse tracing wrapper for all providers (works identically regardless of provider)
 - [ ] Workspace UI (domain selector / switcher)
 - [ ] Mode selector UI (Quick/Compare/Debate/Deep) — wired but only Quick works
 - [ ] Quick mode — single model query with Langfuse tracing (uses active persona mapping)
@@ -49,6 +45,8 @@ Last updated: 2026-02-24
 - [x] RBAC middleware — explicit public path allowlist, role-checked redirect (2026-02-24)
 - [x] Login page UI — 2-step flow: beta code → Google OAuth, Retro-Future Lab design (2026-02-24)
 - [x] Security hardening — atomic beta code claim, ON DELETE cascades, $defaultFn on all timestamps, runtime role validation (2026-02-24)
+- [x] Admin pages — user management + beta code management (2026-02-24)
+- [x] Provider abstraction layer — factory, 3 SDK clients, config resolution, Langfuse tracing wrapper, SSRF protection, 39 tests (2026-02-24)
 
 ---
 
