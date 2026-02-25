@@ -12,12 +12,10 @@ Last updated: 2026-02-24
 
 ## Now
 
-*(Provider config UI + model registry complete — ready for persona mapping batch)*
+*(Persona mapping + presets complete — ready for workspace + mode selector batch)*
 
 ## Next
 
-- [ ] Persona mapping UI (admin) — map Analyst/Builder/Synthesizer to provider+model
-- [ ] Provider presets — Frontier (Claude/GPT/Gemini), Budget (DeepSeek x3), Free (Groq), Custom
 - [ ] Workspace UI (domain selector / switcher)
 - [ ] Mode selector UI (Quick/Compare/Debate/Deep) — wired but only Quick works
 - [ ] Quick mode — single model query with Langfuse tracing (uses active persona mapping)
@@ -48,6 +46,8 @@ Last updated: 2026-02-24
 - [x] Provider config UI (admin) — CRUD + test connection, SSRF validation, API key masking, 27 schema tests (2026-02-24)
 - [x] Provider model registry — add/edit/delete models per provider, cost per 1M tokens, context window config (2026-02-24)
 - [x] DB-first provider config resolution — resolveProviderConfig() now queries DB first, falls back to env vars (2026-02-24)
+- [x] Persona mapping UI (admin) — CRUD mappings, preset quick-apply (Frontier/Budget/Free), activate/deactivate (2026-02-24)
+- [x] Provider presets — Frontier (Claude/GPT/Gemini), Budget (DeepSeek x3), Free (Groq), Custom — with DB transaction safety (2026-02-24)
 
 ---
 

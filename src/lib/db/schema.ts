@@ -7,7 +7,7 @@
 // • API keys stored as text — encryption is a Phase 4 concern (see REQUIREMENTS.md §10)
 
 import { createId } from '@paralleldrive/cuid2';
-import { integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { integer, primaryKey, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 // ── Auth & RBAC ───────────────────────────────────────────────────────────────
 
@@ -106,18 +106,22 @@ export const providerModels = sqliteTable('provider_models', {
   isActive: integer('is_active', { mode: 'boolean' }).default(true),
 });
 
-export const personaMappings = sqliteTable('persona_mappings', {
-  id: text('id').primaryKey().$defaultFn(createId),
-  presetName: text('preset_name').notNull(), // 'frontier' | 'budget' | 'free' | 'custom'
-  personaSlot: text('persona_slot').notNull(), // 'analyst' | 'builder' | 'synthesizer'
-  providerModelId: text('provider_model_id')
-    .notNull()
-    .references(() => providerModels.id, { onDelete: 'cascade' }),
-  isDefault: integer('is_default', { mode: 'boolean' }).default(false),
-  createdAt: integer('created_at', { mode: 'timestamp' })
-    .notNull()
-    .$defaultFn(() => new Date()),
-});
+export const personaMappings = sqliteTable(
+  'persona_mappings',
+  {
+    id: text('id').primaryKey().$defaultFn(createId),
+    presetName: text('preset_name').notNull(), // 'frontier' | 'budget' | 'free' | 'custom'
+    personaSlot: text('persona_slot').notNull(), // 'analyst' | 'builder' | 'synthesizer'
+    providerModelId: text('provider_model_id')
+      .notNull()
+      .references(() => providerModels.id, { onDelete: 'cascade' }),
+    isDefault: integer('is_default', { mode: 'boolean' }).default(false),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [uniqueIndex('preset_persona_idx').on(table.presetName, table.personaSlot)],
+);
 
 // ── Workspaces & Debates ──────────────────────────────────────────────────────
 

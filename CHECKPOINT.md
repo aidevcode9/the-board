@@ -324,10 +324,55 @@ Last updated: 2026-02-24
 - Test connection requires at least one active model configured first
 - Provider card shows last test result with latency
 
+### 2026-02-24 19:15 — Persona Mapping + Presets (Admin)
+
+**Status:** ✅ Complete
+**Files changed:**
+- `src/lib/admin/schemas.ts` (updated — persona mapping schemas, preset definitions, PRESET_NAMES/PERSONA_SLOTS constants)
+- `src/lib/db/schema.ts` (updated — uniqueIndex on preset_name + persona_slot)
+- `src/app/api/admin/persona-mappings/route.ts` (new — GET list with SQL joins, POST create with duplicate check)
+- `src/app/api/admin/persona-mappings/[id]/route.ts` (new — PUT update with Zod ID validation, DELETE)
+- `src/app/api/admin/persona-mappings/activate/route.ts` (new — POST set default, db.transaction)
+- `src/app/api/admin/persona-mappings/apply-preset/route.ts` (new — POST create from template, db.transaction)
+- `src/app/admin/personas/page.tsx` (new — server component)
+- `src/app/admin/personas/persona-mapping-manager.tsx` (new — client component, preset grouping, activate/delete)
+- `src/app/admin/personas/preset-selector.tsx` (new — quick-apply Frontier/Budget/Free buttons)
+- `src/app/admin/layout.tsx` (updated — added Personas nav link)
+- `__tests__/admin/persona-mapping-schemas.test.ts` (new — 18 TDD tests)
+
+**Verification:**
+- [x] lint — passed (69 files, 0 errors)
+- [x] typecheck — passed (0 errors)
+- [x] tests — 146/146 passed (18 new persona mapping schema tests + 128 existing)
+- [x] build — passed (all persona mapping routes visible)
+- [ ] Langfuse tracing — N/A (no LLM calls)
+
+**Skeptic review:** 3 critical (all fixed), 6 high (all fixed), 8 low (tracked)
+- CRITICAL fixed: activate route not atomic — wrapped in db.transaction()
+- CRITICAL fixed: apply-preset route not atomic — wrapped in db.transaction()
+- CRITICAL fixed: No unique constraint on (presetName, personaSlot) — added uniqueIndex + 409 conflict check
+- HIGH fixed: [id] route param not validated — added Zod id schema (1-128 chars)
+- HIGH fixed: apply-preset leaked provider/model names — changed to generic messages
+- HIGH fixed: updatePersonaMappingSchema accepted empty object — added runtime empty check
+- HIGH fixed: fetchMappings silently swallowed errors — added error state on failure
+- HIGH fixed: preset-selector handleApply had no try/catch — added try/catch/finally
+- HIGH fixed: handleActivate/handleDelete had no try/catch — added try/catch
+
+**Accepted risks (deferred):**
+- MappingRow type manually defined in client (not inferred from API) — LOW, acceptable for now
+- N+1 query in apply-preset (6 queries for 3 slots) — LOW, negligible with 3 slots
+- No loading/disabled state on Activate/Remove buttons — LOW, deferred to polish phase
+
+**Notes:**
+- No Drizzle relations defined — used explicit SQL joins (.select().from().leftJoin()) instead
+- "custom" preset intentionally has no PRESET_DEFINITIONS entry — admin creates manually
+- createdAt typed as string (not Date) in client — JSON serialization returns ISO strings
+- Persona slot colors: analyst=purple (Claude), builder=green (GPT), synthesizer=blue (Gemini)
+
 ---
 
 ## Next Session
 
-**Resume from:** Persona mapping UI (admin) + Provider presets
-**Context needed:** Provider config UI + model registry complete. DB-first config resolution active.
+**Resume from:** Workspace UI + Mode selector + Quick mode
+**Context needed:** Provider config + persona mapping + presets all complete. DB-first config active.
 **Blockers to check:** None
