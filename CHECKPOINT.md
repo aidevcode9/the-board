@@ -451,8 +451,45 @@ Last updated: 2026-02-24
 
 ---
 
+### 2026-02-24 20:00 — Quick Mode API + Langfuse Tracing
+
+**Task ID:** PH1-QUICK-API
+**Agent:** Claude
+**Branch:** feat/ph1-quick-api-claude
+**Scope:** POST /api/quick endpoint — single-model query with Langfuse tracing, cost calculation, DB persistence
+**Status:** ✅ Complete
+**Started:** 2026-02-24 20:00
+**Ended:** 2026-02-24 20:35
+**Cycle Time:** 0h 35m
+**FR / Requirement:** Quick mode (Phase 1)
+**Allowed files:** `src/lib/quick/*`, `src/app/api/quick/route.ts`, `__tests__/quick/*`, `src/lib/db/schema.ts`
+**Out of scope:** Debate graph, SSE, streaming, workspace UI, mode selector UI
+**Tests (TDD):**
+- `__tests__/quick/schemas.test.ts` — 9 tests (Zod schema validation)
+- `__tests__/quick/execute.test.ts` — 11 tests (execution flow, mocked DB + provider)
+- `__tests__/quick/route.test.ts` — 10 tests (auth, validation, error handling)
+**Verification (first pass?):**
+- [x] lint
+- [x] typecheck
+- [x] test — 182/182 passed (+30 new)
+- [x] build
+- [ ] evals (N/A — no LLM orchestration)
+- First-pass all gates: No (lint import ordering, typecheck exactOptionalPropertyTypes — fixed in-cycle)
+**Review (gatekeeper):** /wsskeptic adversarial review
+**Findings fixed:** Critical: 3, High: 1, Low: 0 (accepted: HIGH-2 orphaned debate, HIGH-4 rate limiting, HIGH-5 systemPrompt)
+- CRITICAL-1: sdkType unsafe `as` cast → `SdkType.safeParse()` with null return on invalid
+- CRITICAL-2: debateResponses.role comment updated for Quick mode persona slot semantics
+- CRITICAL-3: Race in ensureWorkspace → unique index on (domain, createdBy) + insert-or-ignore + re-query
+- HIGH-1: `isActive ?? true` fallback removed — explicit `=== true` instead
+- HIGH-3: Validation error `details` removed — now returns only field names
+**Notes:** First real LLM call path in the project. TracedLLMClient gets battle-tested. Accepted risks documented in commit message.
+**Outcome:** complete
+**Commits:** `cdbfba3` feat(quick): implement Quick mode API with Langfuse tracing + 30 tests
+
+---
+
 ## Next Session
 
-**Resume from:** Workspace UI + Mode selector + Quick mode
-**Context needed:** Provider config + persona mapping + presets all complete. DB-first config active.
+**Resume from:** Basic cost tracking + merge Quick mode branch to main
+**Context needed:** Quick mode complete on feat/ph1-quick-api-claude. Codex working on workspace UI on feat/ph1-workspace-ui-codex.
 **Blockers to check:** None

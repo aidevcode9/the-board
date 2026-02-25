@@ -31,13 +31,11 @@ Last updated: 2026-02-24
 
 ## Now
 
-*(Use explicit claims when parallel work is active. Example: `[Codex] Quick mode API + tracing — branch: feat/quick-mode-codex — started: 2026-02-25 10:15`)*
+- [Codex] Workspace UI (domain selector / switcher) — branch: feat/ph1-workspace-ui-codex — started: 2026-02-25 20:15
 
 ## Next
 
-- [ ] Workspace UI (domain selector / switcher)
 - [ ] Mode selector UI (Quick/Compare/Debate/Deep) — wired but only Quick works
-- [ ] Quick mode — single model query with Langfuse tracing (uses active persona mapping)
 - [ ] Basic cost tracking (per-call, uses provider model cost config)
 - [ ] Domain CONTEXT.md file structure (MCP-ready)
 
@@ -69,6 +67,7 @@ Last updated: 2026-02-24
 - [x] DB-first provider config resolution — resolveProviderConfig() now queries DB first, falls back to env vars (2026-02-24)
 - [x] Persona mapping UI (admin) — CRUD mappings, preset quick-apply (Frontier/Budget/Free), activate/deactivate (2026-02-24)
 - [x] Provider presets — Frontier (Claude/GPT/Gemini), Budget (DeepSeek x3), Free (Groq), Custom — with DB transaction safety (2026-02-24)
+- [x] Quick mode API + Langfuse tracing — owner: Claude — 2026-02-24 — commit: cdbfba3 — cycle: 0h35m
 
 ---
 
