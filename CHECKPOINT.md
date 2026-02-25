@@ -14,6 +14,59 @@ Last updated: 2026-02-24
 
 ---
 
+## Multi-Agent Logging Contract (Codex + Claude)
+
+**Purpose:** Prevent collisions, preserve handoffs, and make output/velocity measurable from this file.
+
+**Rules (effective for new entries):**
+- `CHECKPOINT.md` is append-only. Do not edit another agent's past entries except typo fixes on your own same-session entry.
+- Every active task slice gets a start entry and an end entry (or one combined entry if very short).
+- Use one stable `Task ID` per slice so `STATUS.md`, branch names, and commits can be correlated.
+- Record actual `Started` and `Ended` timestamps so cycle time can be measured.
+- Record gate results (`lint`, `typecheck`, `test`, `build`) and whether they passed on the first verification pass.
+- If handing off unfinished work, mark `Outcome: handoff` and include a concrete `Handoff next step`.
+- Coder and reviewer should be different for the same slice (note reviewer in the entry).
+
+**Recommended Task ID pattern:**
+- `PH1-WORKSPACE-UI`
+- `PH1-QUICK-API`
+- `PH2-SSE-STREAM`
+
+---
+
+## Entry Template (Use For New Entries)
+
+```markdown
+### YYYY-MM-DD HH:MM — <Task Slice Name>
+
+**Task ID:** PH1-QUICK-API
+**Agent:** Codex | Claude
+**Branch:** feat/ph1-quick-api-codex
+**Scope:** <exact PR-sized slice text>
+**Status:** 🚧 Started | ✅ Complete | ⚠️ Handoff | ❌ Blocked
+**Started:** YYYY-MM-DD HH:MM
+**Ended:** YYYY-MM-DD HH:MM *(omit if still active)*
+**Cycle Time:** 1h 35m *(omit if still active)*
+**FR / Requirement:** FR-UI-001 *(or N/A)*
+**Allowed files:** `src/app/api/quick/route.ts`, `src/lib/...`
+**Out of scope:** Debate graph, SSE, prompt changes
+**Tests (TDD/eval):** Added/updated <list>
+**Verification (first pass?):**
+- [x] lint
+- [x] typecheck
+- [x] test
+- [x] build
+- [ ] evals (N/A)
+- First-pass all gates: Yes | No
+**Review (gatekeeper):** Human | Codex | Claude
+**Findings fixed:** Critical: 0, High: 1, Low: 2
+**Notes:** Risks accepted, implementation decisions, follow-up
+**Outcome:** complete | handoff | blocked
+**Handoff next step:** <specific next action> *(required for handoff/blocked)*
+```
+
+---
+
 ## Progress
 
 ### 2026-02-24 14:40 — Project Scaffold
@@ -368,6 +421,33 @@ Last updated: 2026-02-24
 - "custom" preset intentionally has no PRESET_DEFINITIONS entry — admin creates manually
 - createdAt typed as string (not Date) in client — JSON serialization returns ISO strings
 - Persona slot colors: analyst=purple (Claude), builder=green (GPT), synthesizer=blue (Gemini)
+
+### 2026-02-24 19:30 — Code Review Fixes (Span Leak, Error Handling, Constraints)
+
+**Status:** ✅ Complete
+**Files changed:**
+- `src/lib/providers/traced.ts` (updated — fixed stream tracing open-span leak with try/catch in generator)
+- `src/app/admin/providers/provider-card.tsx` (updated — added try/catch/finally to all handlers)
+- `src/app/admin/providers/add-provider-form.tsx` (updated — added try/catch/finally to handleCreate)
+- `src/app/admin/providers/model-list.tsx` (updated — added try/catch to fetchModels, handleDelete, handleToggleActive)
+- `src/app/admin/providers/add-model-row.tsx` (updated — added try/catch/finally to handleCreate)
+- `src/lib/db/schema.ts` (updated — added .unique() on providers.name)
+- `src/app/api/admin/providers/[id]/test/route.ts` (updated — parse sdkType through Zod instead of unsafe cast)
+
+**Verification:**
+- [x] lint — passed (69 files, 0 errors)
+- [x] typecheck — passed (0 errors)
+- [x] tests — 146/146 passed
+- [x] build — passed
+- [ ] Langfuse tracing — N/A (no LLM calls)
+
+**Issues fixed (from code review):**
+- HIGH: Stream tracing open-span leak — async generator error left Langfuse span unclosed. Added try/catch with `endGenerationWithError`, `streamError` flag prevents double-close.
+- HIGH: Provider UI components missing try/catch — 4 files (provider-card, add-provider-form, model-list, add-model-row) had no error handling on fetch calls. Added try/catch/finally to match persona-mapping component patterns.
+- MEDIUM: providers.name not unique — `resolveProviderConfig` and `apply-preset` query by name; duplicates cause non-deterministic results. Added `.unique()` constraint.
+- MEDIUM: Unsafe sdkType cast — `provider.sdkType as ProviderConfig['sdkType']` bypassed runtime validation. Changed to `SdkType.safeParse()` with 400 error on invalid value.
+
+**Commits:** `61b5182` fix: address code review findings — span leak, error handling, constraints
 
 ---
 

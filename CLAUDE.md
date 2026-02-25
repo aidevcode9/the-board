@@ -52,6 +52,40 @@
 
 ---
 
+## 🤝 Multi-Agent Coordination (Codex + Claude)
+
+> Both Codex and Claude are builders on this project. These rules prevent collisions and enable velocity measurement.
+
+### Shared State Files
+- **`STATUS.md`** — Shared task board. Keep edits minimal: claim in `Now`, complete in `Done`.
+- **`CHECKPOINT.md`** — Append-only execution ledger. Source of truth for velocity metrics.
+- **`AGENTS.md`** — Build & review contract. Authority order, invariants, frozen interfaces.
+
+### Operating Rules
+- **WIP-1:** Max 1 active task slice at a time. Finish or hand off before claiming another.
+- **No file overlap:** If a file is in another agent's active allowed-files list, do not touch it. If overlap is necessary, pause and re-scope.
+- **Branch-per-slice:** Never code on the same branch as the other agent.
+  - Convention: `feat/<task-id>-claude` or `feat/<task-id>-codex`
+- **Cross-review required:** The coder and the gatekeeper/reviewer must be different for the same task. If Claude codes it, Codex or human reviews (and vice versa).
+
+### Claiming Work
+1. Pick an unclaimed item from `Next` in STATUS.md (human/orchestrator owns ordering).
+2. Add a claim line to `Now`: `[Claude] <task slice> — branch: <branch-name> — started: YYYY-MM-DD HH:MM`
+3. Append a start entry to CHECKPOINT.md using the entry template.
+4. When done, move to `Done` with: `[x] <task slice> — owner: Claude — YYYY-MM-DD — PR/commit: <ref> — cycle: <HhMm>`
+
+### Handoffs
+- If pausing unfinished work, mark CHECKPOINT.md entry as `Outcome: handoff` with a concrete `Handoff next step`.
+- Remove your claim from `Now` in STATUS.md so the other agent can pick it up.
+
+### What Claude Edits (Minimal Footprint)
+- Own claim line in `Now` (add/remove)
+- Own completion line in `Done` (append)
+- Own entries in `CHECKPOINT.md` (append only — never edit another agent's entries)
+- Code files within own allowed-files list
+
+---
+
 ## 🤖 Autonomous Work Protocol
 
 When user indicates they'll check back later:
@@ -83,15 +117,13 @@ For each task:
 ```
 
 ### 3. Checkpoint Log
-After each completed task, append to `CHECKPOINT.md`:
-```markdown
-## [timestamp]
-- **Task:** [description]
-- **FR:** [FR-NNN]
-- **Status:** ✅ Complete | ⚠️ Blocked | ❌ Failed
-- **Tests:** [pass/fail count]
-- **Notes:** [any issues or decisions made]
-```
+After each completed task, append to `CHECKPOINT.md` using the **Entry Template** defined at the top of that file. Required fields:
+- Task ID, Agent, Branch, Scope, Status
+- Started/Ended timestamps (for cycle time)
+- Allowed files, Out of scope
+- Verification gates (first-pass yes/no)
+- Review gatekeeper + findings fixed
+- Outcome (complete/handoff/blocked)
 
 ### 4. Stop Conditions (Wait for User)
 - 🔴 Red flag from "Red Flags" section triggered
@@ -186,11 +218,12 @@ COMMIT  → Only after eval threshold met
 
 | Doc | Purpose | When to Check |
 |-----|---------|---------------|
+| AGENTS.md | Build & review contract, authority order, frozen interfaces | Always (overrides other docs on conflict) |
 | REQUIREMENTS.md | FRs with phases + priorities | Starting any feature |
 | ARCHITECTURE.md | Schemas, interfaces, LangGraph state | Implementing backend |
 | DESIGN_SYSTEM.md | Colors, typography, layout, components | Implementing any UI |
-| STATUS.md | Current tasks | Before picking work |
-| CHECKPOINT.md | Session progress | Resuming work |
+| STATUS.md | Shared task board + velocity snapshot | Before picking work |
+| CHECKPOINT.md | Append-only execution ledger + entry template | Resuming work, logging progress |
 | EVALS.md | Golden queries + eval criteria | Adding debate/LLM logic |
 
 ---
@@ -348,12 +381,15 @@ src/
 ├── trigger/                    # Trigger.dev tasks
 │   └── debate-task.ts          # Durable debate execution
 │
+├── AGENTS.md                   # Build & review contract (Codex + Claude)
 ├── REQUIREMENTS.md
 ├── ARCHITECTURE.md
 ├── STATUS.md
 ├── CHECKPOINT.md
 ├── EVALS.md
-└── .claude/commands/           # Slash commands
+├── .codex/config.toml          # Codex CLI config + skill registration
+├── skills/                     # Codex-native ws* skills (mirrors .claude/commands/)
+└── .claude/commands/           # Claude Code slash commands
     ├── wsorchestrate.md
     ├── wsresearch.md
     ├── wsstart.md
@@ -482,3 +518,8 @@ Types: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`
 - Duplicated logic across files (extract to `src/lib/`)
 - Importing concrete implementations instead of interfaces (DIP violation)
 - Directories organized by type (`controllers/`, `services/`) instead of by domain (`auth/`, `providers/`)
+- Touching files in another agent's active allowed-files list (check STATUS.md `Now` claims)
+- Editing another agent's CHECKPOINT.md entries
+- Working on same branch as the other agent
+- Reviewing your own PR (coder ≠ gatekeeper)
+- Claiming a second task before finishing or handing off the first (WIP-1 violation)

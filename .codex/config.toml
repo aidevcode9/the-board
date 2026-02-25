@@ -1,0 +1,46 @@
+# .codex/config.toml
+# Project-scoped defaults for Codex CLI.
+# Note: exact supported keys may vary by Codex version; adjust if your CLI warns.
+
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+network_access = true
+
+# Register repo skills explicitly (so Codex can discover/choose them)
+[[skills.config]]
+path = "skills/wspr"
+enabled = true
+
+[[skills.config]]
+path = "skills/wsorchestrate"
+enabled = true
+
+[[skills.config]]
+path = "skills/wsresearch"
+enabled = true
+
+[[skills.config]]
+path = "skills/wsstart"
+enabled = true
+
+[[skills.config]]
+path = "skills/wsskeptic"
+enabled = true
+
+[[skills.config]]
+path = "skills/wsverify"
+enabled = true
+
+[[skills.config]]
+path = "skills/wsstatus"
+enabled = true
+
+[[skills.config]]
+path = "skills/wscommit"
+enabled = true
+
+[[skills.config]]
+path = "skills/wsmistake"
+enabled = true

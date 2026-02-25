@@ -10,9 +10,28 @@ Last updated: 2026-02-24
 
 ---
 
+## Multi-Agent Coordination (Codex + Claude)
+
+- `STATUS.md` is the shared task board. Keep edits minimal and scoped to task claims/completions.
+- `CHECKPOINT.md` is append-only execution history and the source of truth for velocity metrics.
+- WIP limit: max 1 active task slice per agent at a time.
+- No overlapping allowed-files lists across active tasks (except `STATUS.md` and `CHECKPOINT.md`).
+- For any task, the coder and the gatekeeper/reviewer must be different.
+- Preferred ownership:
+  - Human/orchestrator manages `Next` ordering and priorities
+  - Agents only claim items in `Now` and move their own completed items to `Done`
+
+**Claim format for `Now`:**
+- `[Agent] <task slice> — branch: <branch-name> — started: YYYY-MM-DD HH:MM`
+
+**Done format (for new entries):**
+- `[x] <task slice> — owner: <Agent> — YYYY-MM-DD — PR/commit: <ref> — cycle: <HhMm>`
+
+---
+
 ## Now
 
-*(Persona mapping + presets complete — ready for workspace + mode selector batch)*
+*(Use explicit claims when parallel work is active. Example: `[Codex] Quick mode API + tracing — branch: feat/quick-mode-codex — started: 2026-02-25 10:15`)*
 
 ## Next
 
@@ -27,6 +46,8 @@ Last updated: 2026-02-24
 *(Nothing blocked)*
 
 ## Done (This Week)
+
+*For new entries, append owner + ref + cycle time using the format above so weekly throughput/cycle-time metrics are measurable.*
 
 - [x] REQUIREMENTS.md written (2026-02-24)
 - [x] CLAUDE.md written (2026-02-24)
@@ -48,6 +69,17 @@ Last updated: 2026-02-24
 - [x] DB-first provider config resolution — resolveProviderConfig() now queries DB first, falls back to env vars (2026-02-24)
 - [x] Persona mapping UI (admin) — CRUD mappings, preset quick-apply (Frontier/Budget/Free), activate/deactivate (2026-02-24)
 - [x] Provider presets — Frontier (Claude/GPT/Gemini), Budget (DeepSeek x3), Free (Groq), Custom — with DB transaction safety (2026-02-24)
+
+---
+
+## Velocity Snapshot (This Week)
+
+> Update from completed `CHECKPOINT.md` entries (append weekly or daily). Keep this lightweight.
+
+| Agent | Completed slices | Avg cycle time | First-pass gates | Tests added/updated | High/Critical findings fixed |
+|------|-------------------|----------------|------------------|---------------------|------------------------------|
+| Codex | — | — | — | — | — |
+| Claude | — | — | — | — | — |
 
 ---
 
