@@ -64,15 +64,28 @@ export class TracedLLMClient implements LLMClient {
 
     try {
       const innerResult = await this.inner.generateStream(params);
+      let streamError: unknown = null;
+
+      // Wrap stream to catch mid-stream errors and close the Langfuse span
+      const self = this;
       const tracedStream = (async function* (): AsyncIterable<StreamChunk> {
-        yield* innerResult.stream;
+        try {
+          yield* innerResult.stream;
+        } catch (err) {
+          streamError = err;
+          self.endGenerationWithError(generation, err);
+          throw err;
+        }
       })();
 
       return {
         stream: tracedStream,
         getResult: async () => {
           const result = await innerResult.getResult();
-          this.endGeneration(generation, result);
+          // Only end generation if the stream didn't already close it on error
+          if (!streamError) {
+            this.endGeneration(generation, result);
+          }
           return result;
         },
       };

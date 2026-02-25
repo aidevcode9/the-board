@@ -10,10 +10,16 @@ export function ModelList({ providerId }: { providerId: string }) {
   const [showAdd, setShowAdd] = useState(false);
 
   const fetchModels = useCallback(async () => {
-    const res = await fetch(`/api/admin/providers/${providerId}/models`);
-    if (res.ok) {
-      const data = (await res.json()) as { models: ModelRow[] };
-      setModels(data.models);
+    try {
+      const res = await fetch(`/api/admin/providers/${providerId}/models`);
+      if (res.ok) {
+        const data = (await res.json()) as { models: ModelRow[] };
+        setModels(data.models);
+      } else {
+        setError('Failed to load models');
+      }
+    } catch {
+      setError('Network error — could not load models');
     }
     setLoading(false);
   }, [providerId]);
@@ -30,27 +36,35 @@ export function ModelList({ providerId }: { providerId: string }) {
     ) {
       return;
     }
-    const res = await fetch(`/api/admin/providers/${providerId}/models/${model.id}`, {
-      method: 'DELETE',
-    });
-    if (res.ok) {
-      setModels((prev) => prev.filter((m) => m.id !== model.id));
-    } else {
-      const data = (await res.json()) as { error?: string };
-      setError(data.error ?? 'Failed to delete model');
+    try {
+      const res = await fetch(`/api/admin/providers/${providerId}/models/${model.id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setModels((prev) => prev.filter((m) => m.id !== model.id));
+      } else {
+        const data = (await res.json()) as { error?: string };
+        setError(data.error ?? 'Failed to delete model');
+      }
+    } catch {
+      setError('Network error — could not delete model');
     }
   }
 
   async function handleToggleActive(model: ModelRow) {
-    const res = await fetch(`/api/admin/providers/${providerId}/models/${model.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isActive: !model.isActive }),
-    });
-    if (res.ok) {
-      setModels((prev) =>
-        prev.map((m) => (m.id === model.id ? { ...m, isActive: !m.isActive } : m)),
-      );
+    try {
+      const res = await fetch(`/api/admin/providers/${providerId}/models/${model.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !model.isActive }),
+      });
+      if (res.ok) {
+        setModels((prev) =>
+          prev.map((m) => (m.id === model.id ? { ...m, isActive: !m.isActive } : m)),
+        );
+      }
+    } catch {
+      setError('Network error — could not update model');
     }
   }
 

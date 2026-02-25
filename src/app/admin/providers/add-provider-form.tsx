@@ -28,35 +28,39 @@ export function AddProviderForm({
     setCreating(true);
     onError('');
 
-    const res = await fetch('/api/admin/providers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name.trim(), sdkType, baseUrl: baseUrl.trim(), apiKey }),
-    });
-
-    if (res.ok) {
-      const data = (await res.json()) as { id: string };
-      onCreated({
-        id: data.id,
-        name: name.trim(),
-        sdkType,
-        baseUrl: baseUrl.trim(),
-        isActive: true,
-        lastTestedAt: null,
-        lastTestStatus: null,
-        lastTestLatencyMs: null,
-        createdAt: new Date(),
+    try {
+      const res = await fetch('/api/admin/providers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), sdkType, baseUrl: baseUrl.trim(), apiKey }),
       });
-      setName('');
-      setBaseUrl('');
-      setApiKey('');
-      setExpanded(false);
-    } else {
-      const data = (await res.json()) as { error?: string };
-      onError(data.error ?? 'Failed to create provider');
-    }
 
-    setCreating(false);
+      if (res.ok) {
+        const data = (await res.json()) as { id: string };
+        onCreated({
+          id: data.id,
+          name: name.trim(),
+          sdkType,
+          baseUrl: baseUrl.trim(),
+          isActive: true,
+          lastTestedAt: null,
+          lastTestStatus: null,
+          lastTestLatencyMs: null,
+          createdAt: new Date(),
+        });
+        setName('');
+        setBaseUrl('');
+        setApiKey('');
+        setExpanded(false);
+      } else {
+        const data = (await res.json()) as { error?: string };
+        onError(data.error ?? 'Failed to create provider');
+      }
+    } catch {
+      onError('Network error — could not create provider');
+    } finally {
+      setCreating(false);
+    }
   }
 
   if (!expanded) {

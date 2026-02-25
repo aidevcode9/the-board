@@ -76,7 +76,7 @@ export const accounts = sqliteTable(
 
 export const providers = sqliteTable('providers', {
   id: text('id').primaryKey().$defaultFn(createId),
-  name: text('name').notNull(), // "Anthropic", "DeepSeek", "Groq", etc.
+  name: text('name').notNull().unique(), // "Anthropic", "DeepSeek", "Groq", etc.
   sdkType: text('sdk_type').notNull(), // 'anthropic' | 'openai' | 'google'
   baseUrl: text('base_url').notNull(),
   // NOTE: API key stored as plaintext — encryption deferred to Phase 4 (LLM Guard)

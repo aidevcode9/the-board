@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth/config';
 import { db } from '@/lib/db/client';
 import { providers } from '@/lib/db/schema';
 import { createLLMClient } from '@/lib/providers/factory';
-import type { ProviderConfig } from '@/lib/providers/types';
+import { SdkType } from '@/lib/providers/types';
 import { eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
@@ -38,10 +38,15 @@ export async function POST(_req: Request, ctx: RouteContext): Promise<NextRespon
     );
   }
 
-  const config: ProviderConfig = {
+  const parsedSdkType = SdkType.safeParse(provider.sdkType);
+  if (!parsedSdkType.success) {
+    return NextResponse.json({ error: 'Invalid SDK type configured' }, { status: 400 });
+  }
+
+  const config = {
     id: provider.id,
     name: provider.name,
-    sdkType: provider.sdkType as ProviderConfig['sdkType'],
+    sdkType: parsedSdkType.data,
     baseUrl: provider.baseUrl,
     apiKey: provider.apiKey,
     isActive: provider.isActive ?? true,

@@ -27,56 +27,64 @@ export function ProviderCard({
   async function handleTest() {
     setTesting(true);
     setTestResult(null);
-
-    const res = await fetch(`/api/admin/providers/${provider.id}/test`, {
-      method: 'POST',
-    });
-
-    const data = (await res.json()) as {
-      success: boolean;
-      latencyMs: number;
-      error?: string;
-    };
-
-    setTestResult(data);
-    onUpdated({
-      ...provider,
-      lastTestedAt: new Date(),
-      lastTestStatus: data.success ? 'success' : 'failure',
-      lastTestLatencyMs: data.latencyMs,
-    });
-    setTesting(false);
+    try {
+      const res = await fetch(`/api/admin/providers/${provider.id}/test`, {
+        method: 'POST',
+      });
+      const data = (await res.json()) as {
+        success: boolean;
+        latencyMs: number;
+        error?: string;
+      };
+      setTestResult(data);
+      onUpdated({
+        ...provider,
+        lastTestedAt: new Date(),
+        lastTestStatus: data.success ? 'success' : 'failure',
+        lastTestLatencyMs: data.latencyMs,
+      });
+    } catch {
+      onError('Network error — could not test connection');
+    } finally {
+      setTesting(false);
+    }
   }
 
   async function handleDelete() {
     if (!confirm(`Delete provider "${provider.name}" and all its models?`)) return;
     setDeleting(true);
-
-    const res = await fetch(`/api/admin/providers/${provider.id}`, {
-      method: 'DELETE',
-    });
-
-    if (res.ok) {
-      onDeleted(provider.id);
-    } else {
-      const data = (await res.json()) as { error?: string };
-      onError(data.error ?? 'Failed to delete provider');
+    try {
+      const res = await fetch(`/api/admin/providers/${provider.id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        onDeleted(provider.id);
+      } else {
+        const data = (await res.json()) as { error?: string };
+        onError(data.error ?? 'Failed to delete provider');
+      }
+    } catch {
+      onError('Network error — could not delete provider');
+    } finally {
+      setDeleting(false);
     }
-    setDeleting(false);
   }
 
   async function handleToggleActive() {
-    const res = await fetch(`/api/admin/providers/${provider.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isActive: !provider.isActive }),
-    });
-
-    if (res.ok) {
-      onUpdated({ ...provider, isActive: !provider.isActive });
-    } else {
-      const data = (await res.json()) as { error?: string };
-      onError(data.error ?? 'Failed to update provider');
+    try {
+      const res = await fetch(`/api/admin/providers/${provider.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !provider.isActive }),
+      });
+      if (res.ok) {
+        onUpdated({ ...provider, isActive: !provider.isActive });
+      } else {
+        const data = (await res.json()) as { error?: string };
+        onError(data.error ?? 'Failed to update provider');
+      }
+    } catch {
+      onError('Network error — could not update provider');
     }
   }
 

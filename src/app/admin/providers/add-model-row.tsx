@@ -32,34 +32,39 @@ export function AddModelRow({
     if (!modelId.trim() || !displayName.trim()) return;
     setCreating(true);
 
-    const res = await fetch(`/api/admin/providers/${providerId}/models`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        modelId: modelId.trim(),
-        displayName: displayName.trim(),
-        inputCostPer1M: inputCost ? Number(inputCost) : null,
-        outputCostPer1M: outputCost ? Number(outputCost) : null,
-        maxContextTokens: contextTokens ? Number(contextTokens) : null,
-      }),
-    });
-
-    if (res.ok) {
-      const data = (await res.json()) as { id: string };
-      onCreated({
-        id: data.id,
-        modelId: modelId.trim(),
-        displayName: displayName.trim(),
-        inputCostPer1M: inputCost ? Number(inputCost) : null,
-        outputCostPer1M: outputCost ? Number(outputCost) : null,
-        maxContextTokens: contextTokens ? Number(contextTokens) : null,
-        isActive: true,
+    try {
+      const res = await fetch(`/api/admin/providers/${providerId}/models`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          modelId: modelId.trim(),
+          displayName: displayName.trim(),
+          inputCostPer1M: inputCost ? Number(inputCost) : null,
+          outputCostPer1M: outputCost ? Number(outputCost) : null,
+          maxContextTokens: contextTokens ? Number(contextTokens) : null,
+        }),
       });
-    } else {
-      const data = (await res.json()) as { error?: string };
-      onError(data.error ?? 'Failed to add model');
+
+      if (res.ok) {
+        const data = (await res.json()) as { id: string };
+        onCreated({
+          id: data.id,
+          modelId: modelId.trim(),
+          displayName: displayName.trim(),
+          inputCostPer1M: inputCost ? Number(inputCost) : null,
+          outputCostPer1M: outputCost ? Number(outputCost) : null,
+          maxContextTokens: contextTokens ? Number(contextTokens) : null,
+          isActive: true,
+        });
+      } else {
+        const data = (await res.json()) as { error?: string };
+        onError(data.error ?? 'Failed to add model');
+      }
+    } catch {
+      onError('Network error — could not add model');
+    } finally {
+      setCreating(false);
     }
-    setCreating(false);
   }
 
   return (
