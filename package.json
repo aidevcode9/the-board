@@ -27,6 +27,7 @@
     "@langfuse/otel": "^4.6.1",
     "@langfuse/tracing": "^4.6.1",
     "@libsql/client": "^0.17.0",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "@opentelemetry/sdk-node": "^0.212.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "drizzle-orm": "^0.45.1",

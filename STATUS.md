@@ -31,7 +31,7 @@ Last updated: 2026-02-25
 
 ## Now
 
-*(No active claims)*
+- [Claude] MCP TypeScript SDK integration — branch: feat/ph1-mcp-sdk-claude — started: 2026-02-25 22:00
 
 ## Next
 
