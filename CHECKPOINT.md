@@ -144,10 +144,32 @@ Last updated: 2026-02-24
 - Rate limiting on beta-code endpoint → Phase 4 (Upstash Redis)
 - Admin bootstrap via env var (no limit on admin count) → acceptable for MVP beta
 
+### 2026-02-24 17:05 — Build Fix + Initial Commit
+
+**Status:** ✅ Complete
+**Files changed:**
+- `src/app/login/page.tsx` (updated — server component wrapper with `force-dynamic`)
+- `src/app/login/login-form.tsx` (new — extracted client component)
+- `.gitignore` (updated — ignore entire `.claude/` directory)
+
+**Verification:**
+- [x] lint — passed (24 files, 0 errors)
+- [x] typecheck — passed (0 errors)
+- [x] tests — 42/42 passed
+- [x] build — passed (login route now `ƒ` dynamic, not `○` static)
+
+**Notes:**
+- Login page failed static prerendering because `next-auth/react` pulls in `@libsql/client`
+  during SSR build. Fixed by extracting client code to `login-form.tsx` and adding
+  `export const dynamic = 'force-dynamic'` to the server component page wrapper.
+- `.claude/settings.local.json` was being tracked — gitignored entire `.claude/` directory
+
+**Commits:** `7cf6324` feat(config): Phase 1 foundation — Next.js 15, auth, DB, design system
+
 ---
 
 ## Next Session
 
 **Resume from:** Phase 1 remaining tasks (see STATUS.md)
-**Context needed:** OAuth credentials for first sign-in test (AUTH_GOOGLE_ID, etc.)
+**Context needed:** Turso cloud DB is live, Google OAuth working, admin user bootstrapped
 **Blockers to check:** None
