@@ -70,6 +70,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
 
     async session({ session, user }) {
+      // Ensure user.id is always present — DrizzleAdapter populates it from the DB
+      // user, but the Session type declares it optional. Explicit assignment prevents
+      // downstream guards (e.g., self-demotion check) from silently failing.
+      session.user.id = user.id;
+
       // Runtime role validation: only known roles pass through.
       // Falls safe to 'user' if DrizzleAdapter returns unexpected value.
       // Cast through unknown required: AdapterUser lacks index signature.
