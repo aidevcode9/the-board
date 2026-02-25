@@ -2,7 +2,7 @@
 
 > Current work. Updated daily.
 
-Last updated: 2026-02-24
+Last updated: 2026-02-25
 
 ---
 
@@ -31,7 +31,7 @@ Last updated: 2026-02-24
 
 ## Now
 
-- [Codex] Workspace UI (domain selector / switcher) — branch: feat/ph1-workspace-ui-codex — started: 2026-02-25 20:15
+*(No active claims)*
 
 ## Next
 
@@ -68,6 +68,7 @@ Last updated: 2026-02-24
 - [x] Persona mapping UI (admin) — CRUD mappings, preset quick-apply (Frontier/Budget/Free), activate/deactivate (2026-02-24)
 - [x] Provider presets — Frontier (Claude/GPT/Gemini), Budget (DeepSeek x3), Free (Groq), Custom — with DB transaction safety (2026-02-24)
 - [x] Quick mode API + Langfuse tracing — owner: Claude — 2026-02-24 — commit: cdbfba3 — cycle: 0h35m
+- [x] Workspace UI (domain selector / switcher) — owner: Codex — 2026-02-25 — commit: pending — cycle: 1h00m
 
 ---
 
@@ -114,3 +115,4 @@ Last updated: 2026-02-24
 | API costs | Monitoring | Mode system + cost dashboard + budget alerts |
 | Edge Runtime + DB in middleware | Deferred | Session callback queries Turso; safe on Node.js host, breaks on Vercel Edge. Split auth config in Phase 4 security hardening. |
 | Beta code brute-force | Deferred | No rate limiting on /api/auth/beta-code. Add Upstash Redis rate limiter in Phase 4. |
+

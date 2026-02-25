@@ -1,15 +1,62 @@
-// Home page — will become the protected debate interface (Phase 1).
-// Currently a placeholder that confirms the app boots.
+import { BoardShell } from '@/app/board-shell';
+import { auth } from '@/lib/auth/config';
+import { db } from '@/lib/db/client';
+import {
+  type WorkspaceOption,
+  normalizeWorkspaceQueryParam,
+  selectActiveWorkspace,
+} from '@/lib/workspaces/selection';
+import { redirect } from 'next/navigation';
 
-export default function HomePage() {
+type HomePageProps = {
+  searchParams?: Promise<{ workspace?: string | string[] }>;
+};
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const session = await auth();
+  if (!session?.user) {
+    redirect('/login');
+  }
+  if (!session.user.id) {
+    redirect('/login');
+  }
+
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const requestedWorkspaceId = normalizeWorkspaceQueryParam(resolvedSearchParams.workspace);
+  const rows = await db.query.workspaces.findMany({
+    columns: {
+      id: true,
+      name: true,
+      domain: true,
+      contextPath: true,
+    },
+    where:
+      session.user.role === 'admin'
+        ? undefined
+        : (workspace, { eq }) => eq(workspace.createdBy, session.user.id ?? ''),
+  });
+
+  const workspaces: WorkspaceOption[] = rows
+    .map((row) => ({
+      id: row.id,
+      name: row.name,
+      domain: row.domain,
+      contextPath: row.contextPath,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const { activeWorkspace, selectionSource } = selectActiveWorkspace(
+    workspaces,
+    requestedWorkspaceId,
+  );
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-board-bg">
-      <div className="text-center">
-        <h1 className="font-display text-4xl font-black text-accent">the board</h1>
-        <p className="font-data mt-2 text-sm text-text-muted">
-          ADVERSARIAL PERSONA SYNTHESIS ENGINE
-        </p>
-      </div>
-    </main>
+    <BoardShell
+      activeWorkspace={activeWorkspace}
+      operatorName={session.user.name ?? session.user.email}
+      requestedWorkspaceId={requestedWorkspaceId}
+      selectionSource={selectionSource}
+      workspaces={workspaces}
+    />
   );
 }
