@@ -8,6 +8,29 @@ You are reviewing code for a multi-agent AI debate system that must produce genu
 
 ---
 
+## Scope Profile (pick one before reviewing)
+
+Choose the smallest profile that fully covers the slice:
+
+- **UI slice (default for pure UI PRs)**
+  - DESIGN_SYSTEM compliance (layout, typography, components, theme rules)
+  - accessibility / keyboard / reduced motion regressions
+  - state/query param correctness
+  - scope creep / accidental backend coupling
+  - obvious error/empty/loading states
+- **Infrastructure slice (non-LLM)**
+  - auth / RBAC enforcement
+  - Zod validation at boundaries
+  - error handling / secrets / SSRF guardrails
+  - DB portability / schema safety
+  - tracing/cost wiring if LLM calls are involved
+- **Debate-full (required for debate engine / prompts / LangGraph / SSE changes)**
+  - run the full checklist below
+
+If using UI or Infrastructure profile, explicitly state which sections of the full checklist are N/A and why.
+
+---
+
 ## 1. Sycophancy & Debate Integrity
 
 Check each and report:
