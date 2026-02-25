@@ -6,6 +6,38 @@ Last updated: 2026-02-25
 
 ---
 
+## [2026-02-25 21:05] Domain CONTEXT.md File Structure (MCP-Ready)
+
+**Status:** ✅ Complete
+**Files changed:**
+- contexts/system-design/CONTEXT.md (new)
+- contexts/ai-ethics/CONTEXT.md (new)
+- contexts/code-generation/CONTEXT.md (new)
+- contexts/security/CONTEXT.md (new)
+- contexts/distributed-systems/CONTEXT.md (new)
+- contexts/ml-engineering/CONTEXT.md (new)
+- src/lib/context/loader.ts (new)
+- src/lib/context/index.ts (new)
+- __tests__/context/loader.test.ts (new)
+
+**Verification:**
+- [x] lint — passed
+- [x] typecheck — passed
+- [x] tests — 207/207 passed (25 new context tests)
+- [x] build — passed
+
+**Skeptic findings:** 2 CRITICAL (path traversal), 4 HIGH (server-only, error leaks, token estimation, missing tests) — all fixed
+**Accepted risks:** Prompt injection via CONTEXT.md (Phase 3 concern, static files now), process.cwd() portability (dev-only), no caching (Phase 2)
+
+**Notes:**
+- 6 seed CONTEXT.md files with structured template for MCP appending
+- loadDomainContext() + parseDomainContext() + validateContextSize() + estimateTokenCount()
+- Path traversal protection via resolveContextPath() — validates resolved path stays within contexts/
+- server-only import prevents accidental client-side import
+- CHARS_PER_TOKEN = 3 (conservative for markdown) instead of 4 (prose average)
+
+---
+
 ## Current Session
 
 **Started:** 2026-02-24
