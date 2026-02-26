@@ -274,6 +274,14 @@ After completion, the full transcript is the learning artifact:
 - "Back to Board" link in admin layout already exists — this FR adds the inverse (Board → Admin)
 - Mobile-friendly: hamburger or compact layout at small breakpoints
 
+### FR-UI-008: Branding & Metadata
+- **Favicon**: Wire `favicon.ico` + PNG icons (16, 32, 48, 180, 192, 512) via Next.js metadata API
+- **App manifest**: `site.webmanifest` with app name, theme color (amber `#d4a257`), background color
+- **Logo integration**: Display `logo-dark.png` / `logo_light.png` in header (theme-aware), `logo-v-transparent.png` for login page
+- **Open Graph / SEO**: `<meta>` tags with app title, description, and logo for social sharing
+- **Apple touch icon**: 180x180 for iOS home screen
+- Assets already checked into `public/`: favicon.ico, icon-{16,32,48,180,192,512}x{same}.png, logo-dark.png, logo_light.png, logo-v-transparent.png
+
 ### FR-UI-006: Model Health Dashboard
 - Per-provider status: online/offline/degraded (based on last call success/failure)
 - Latency trend per provider (from Langfuse traces)
@@ -378,6 +386,7 @@ Each CONTEXT.md contains:
 - [ ] Single-model query flow (Quick mode) with Langfuse tracing
 - [ ] Basic cost tracking
 - [ ] App shell navigation — header with admin link (role-gated) + logout button (FR-UI-007)
+- [ ] Branding & metadata — favicons, logo, manifest, OG tags (FR-UI-008)
 
 **Exit criteria**: Can sign in with Google (gated by invite code), see admin vs user views, configure model providers via UI, send a query via Quick mode, see the response, and view the trace in Langfuse.
 

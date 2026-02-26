@@ -36,6 +36,7 @@ Last updated: 2026-02-25
 ## Next
 
 - [ ] App shell navigation — header with admin link (role-gated) + logout button (FR-UI-007, P1)
+- [ ] Branding & metadata — favicons, logo, manifest, OG tags (FR-UI-008, P1)
 - [ ] Phase 2 gate check — verify all Phase 1 P0s complete before starting Debate Engine
 
 ## Blocked
