@@ -863,6 +863,83 @@ Last updated: 2026-02-25
 
 ---
 
+### 2026-02-25 19:36 - Phase 2a API/SSE Contract + Docs Alignment
+
+**Task ID:** PH2-CONTRACT-DOCS
+**Agent:** Codex
+**Branch:** docs/ph2-contract-alignment-codex-clean
+**Scope:** Add authoritative Phase 2a streaming contract and align PHASE2-RESEARCH/REQUIREMENTS/ARCHITECTURE/CLAUDE to Trigger.defer + HITL-lite decisions
+**Status:** Started
+**Started:** 2026-02-25 19:36
+**FR / Requirement:** Phase 2 prep / docs governance
+**Files changed:**
+- PHASE2-CONTRACT.md
+- PHASE2-RESEARCH.md
+- REQUIREMENTS.md
+- ARCHITECTURE.md
+- CLAUDE.md
+**Out of scope:** Phase 2 implementation code, LangGraph nodes/routes, SSE runtime, Trigger.dev integration
+**Tests (TDD/eval):**
+- manual wsverify: docs lint + full repo gates
+**Verification (first pass?):**
+- [ ] lint
+- [ ] typecheck
+- [ ] test
+- [ ] build
+- [ ] evals (N/A)
+- First-pass all gates: TBD
+**Review (gatekeeper):** TBD
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- Defaults approved by human: POST /api/debate streaming response (fetch reader), HITL-lite in Phase 2a
+- Docs-only slice; no app/runtime code changes
+**Outcome:** in-progress
+
+---
+
+### 2026-02-25 19:47 - Phase 2a API/SSE Contract + Docs Alignment
+
+**Task ID:** PH2-CONTRACT-DOCS
+**Agent:** Codex
+**Branch:** docs/ph2-contract-alignment-codex-clean
+**Scope:** Add authoritative Phase 2a API/SSE contract and align Phase 2 docs to Vercel+SSE (Trigger.dev deferred, HITL-lite)
+**Status:** Completed
+**Started:** 2026-02-25 19:36
+**Ended:** 2026-02-25 19:48
+**Cycle Time:** 0h12m
+**FR / Requirement:** Phase 2 prep / docs governance
+**Files changed:**
+- PHASE2-CONTRACT.md
+- PHASE2-RESEARCH.md
+- REQUIREMENTS.md
+- ARCHITECTURE.md
+- CLAUDE.md
+- STATUS.md
+- CHECKPOINT.md
+**Out of scope:** Phase 2 implementation code, LangGraph nodes/routes, SSE runtime, Trigger.dev integration
+**Tests (TDD/eval):**
+- manual wsverify: npm run lint
+- manual wsverify: npm run typecheck
+- manual wsverify: npm run test
+- manual wsverify: npm run build
+**Verification (first pass?):**
+- [x] lint
+- [x] typecheck
+- [x] test
+- [x] build
+- [x] evals (N/A)
+- First-pass all gates: Yes
+**Review (gatekeeper):** manual wsskeptic (docs/process profile): no findings
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- Approved defaults applied: single POST /api/debate SSE stream + fetch() reader, Trigger.dev deferred, HITL-lite in Phase 2a
+- manual wsskeptic: fixed low docs consistency items (resolved heading wording, stale Trigger v3 update note)
+- manual wsverify: all four gates passed on docs branch
+**Outcome:** shipped-local
+**Commits:** `aa0373d`
+
+---
+
 ## Next Session
 
 **Resume from:** Phase 1 complete — ready for Phase 2 gate check

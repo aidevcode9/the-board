@@ -8,7 +8,7 @@
 2. **Portable Database** — Drizzle ORM abstracts Turso/SQLite; no SQLite-specific features. Future Postgres migration is a config change.
 3. **Parallel First** — Debate Phase 1 fires all three model calls simultaneously. Never sequential.
 4. **Trace Everything** — Every LLM call goes through Langfuse. No raw API calls.
-5. **Durable Execution** — Trigger.dev handles long-running debates (30-90s). No serverless timeouts.
+5. **Phase 2a Simplicity First** — Run debate streaming on Vercel functions + LangGraph + SSE. Add Trigger.dev v4 later only if reliability thresholds are hit.
 
 ---
 
@@ -291,7 +291,7 @@ export type DebateState = z.infer<typeof DebateStateSchema>;
 |-------|--------|------|---------|
 | `/api/auth/[...nextauth]` | * | Public | NextAuth.js handlers (Google OAuth, session) |
 | `/api/auth/beta-code` | POST | Public | Validate beta invite code |
-| `/api/debate` | POST | User | Start debate (returns SSE stream) |
+| `/api/debate` | POST | User | Start debate and return SSE stream (`PHASE2-CONTRACT.md`; client uses `fetch()` reader) |
 | `/api/quick` | POST | User | Quick mode (single model, fast) |
 | `/api/workspaces` | GET/POST | User | List/create workspaces |
 | `/api/workspaces/[id]/debates` | GET | User | List debates for workspace |
@@ -391,7 +391,7 @@ function getPersonaClients(presetName: string): {
 | Persona definitions | 📋 Phase 2 | `src/lib/personas/` |
 | Anti-sycophancy stack | 📋 Phase 2 | `src/lib/anti-sycophancy/` |
 | SSE streaming | 📋 Phase 2 | `src/app/api/debate/route.ts` |
-| Trigger.dev tasks | 📋 Phase 2 | `src/trigger/` |
+| Trigger.dev tasks (optional) | 📋 Phase 2b+ | `src/trigger/` |
 | Langfuse LLM-as-judge | 📋 Phase 3 | `src/lib/eval/` |
 | MCP context update | 📋 Phase 3 | `src/lib/mcp/` |
 | Golden set management | 📋 Phase 3 | `src/lib/eval/golden-sets.ts` |
@@ -429,7 +429,7 @@ function getPersonaClients(presetName: string): {
 | Database | Turso | Free → Scaler ($8/mo) | Free covers beta |
 | Observability | GCP Cloud Run | Langfuse self-hosted | ~$5-10/mo |
 | Langfuse DB | GCP Cloud SQL (Postgres) | Basic | ~$7/mo |
-| Long jobs | Trigger.dev | Cloud (Phase 2+) | Free tier → $25/mo |
+| Long jobs (optional) | Trigger.dev v4 | Cloud (Phase 2b+) | Free tier → $25/mo |
 
 ### Gemini Access
 Google AI SDK (not Vertex AI). Gemini API key via Google One AI Premium plan.
@@ -440,7 +440,7 @@ Uses `@google/generative-ai` SDK — same as other providers, just a different S
 npm run dev                    # Next.js on localhost:3000
 npx drizzle-kit studio         # DB browser on localhost:4983
 # Langfuse: docker compose up  # localhost:3001
-# Trigger.dev: npx trigger.dev dev
+# Trigger.dev v4 (optional, deferred): npx trigger.dev@latest dev
 ```
 
 ### Environment Variables
@@ -467,7 +467,7 @@ LANGFUSE_PUBLIC_KEY=xxx
 LANGFUSE_BASEURL=http://localhost:3001     # Local: localhost:3001
                                            # Prod: https://langfuse-xxxxx.run.app
 
-# Trigger.dev
+# Trigger.dev v4 (optional, deferred)
 TRIGGER_SECRET_KEY=xxx
 
 # App
@@ -477,8 +477,9 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000   # Prod: https://the-board.vercel.app
 ### Vercel Configuration
 - **Framework:** Next.js (auto-detected)
 - **Build command:** `npm run build`
-- **Function timeout:** 60s (Pro tier) — covers Quick Mode
-- **Deep Mode debates:** Offloaded to Trigger.dev (Phase 2+), not bound by Vercel timeout
+- **Function timeout:** 300s default on Pro (up to 800s max with Fluid Compute)
+- **Phase 2a debates:** Run directly on Vercel + LangGraph + SSE (`/api/debate`, see `PHASE2-CONTRACT.md`)
+- **Trigger.dev v4:** Optional Phase 2b+ for durability/retries/continue-on-disconnect
 - **Preview deploys:** Automatic on every PR branch
 - **Environment variables:** Set in Vercel dashboard, never committed
 
@@ -503,18 +504,19 @@ gcloud run deploy langfuse \
 
 ---
 
-## Open Design Questions (Resolve Before Phase 2)
+## Phase 2 Decisions and Open Questions
 
-### Trigger.dev ↔ SSE Streaming Integration
-The debate engine (Phase 2) uses Trigger.dev for durable execution of 30-90s debate rounds, and the Board of Directors view streams results live via SSE. The eventing mechanism between these two is not yet specified.
+### Phase 2a Debate Streaming Contract (Resolved for Phase 2a)
+Phase 2a uses a single `POST /api/debate` route on Vercel that returns an SSE stream. The client consumes it via `fetch()` + `ReadableStream` reader (not `EventSource`, because `POST`).
 
-**Options to evaluate:**
-1. **DB polling** — Trigger.dev writes to DB, SSE endpoint polls for changes. Simple but latency.
-2. **Trigger.dev realtime** — Use Trigger.dev's built-in realtime API to push updates. Cleanest if supported.
-3. **Redis pub/sub** — Trigger.dev publishes events, SSE endpoint subscribes. Fast but adds infrastructure.
-4. **Vercel KV** — Lightweight pub/sub via Vercel's Redis offering. No extra infra.
+Authoritative protocol details live in `PHASE2-CONTRACT.md`:
+- request shape
+- SSE event envelope + ordering guarantees
+- disconnect behavior (Phase 2a)
+- HITL-lite signaling
 
-**Decide before implementing:** FR-DEBATE-001 (Phase 2). Write a design doc with latency requirements, failure modes, and cost implications.
+### Trigger.dev v4 Adoption Thresholds (Phase 2b+)
+Trigger.dev is deferred for Phase 2a. Revisit only if Vercel + SSE proves insufficient for reliability (timeouts, disconnect-loss, retry needs, or continue-on-disconnect requirements).
 
 ### Provider API Key Storage Strategy
 - **Phase 1:** Keys stored in Vercel environment variables (server-side only). Admin UI reads from env, no DB storage.

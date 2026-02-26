@@ -1,6 +1,7 @@
 # Phase 2 Research — Debate Engine
 
 > Research completed 2026-02-25. Both agents (Claude + Codex) should reference this before implementing Phase 2.
+> Phase 2a interface/protocol authority lives in `PHASE2-CONTRACT.md`. This doc captures rationale, tradeoffs, and migration paths.
 
 ---
 
@@ -30,6 +31,14 @@ Everything Phase 2 builds on is in place from Phase 1:
 ---
 
 ## Key Technology Decisions
+
+### 0. Phase 2a Defaults (Approved)
+
+- `POST /api/debate` streams SSE in the response body (single route)
+- Browser client consumes stream via `fetch()` + `ReadableStream` reader (not `EventSource`, because `POST`)
+- LangGraph runs in a Vercel function (`maxDuration = 300`) for Phase 2a
+- Trigger.dev deferred to Phase 2b+ unless reliability thresholds are hit
+- HITL-lite in Phase 2a; full `interrupt()` + durable resume deferred
 
 ### 1. LangGraph.js — Debate Orchestration
 
@@ -109,7 +118,7 @@ function checkConvergence(state) {
 }
 ```
 
-#### Streaming: 6 Modes Available
+#### Streaming: Relevant Modes
 
 | Mode | What It Streams | Our Use Case |
 |------|----------------|-------------|
@@ -127,7 +136,9 @@ for await (const [mode, chunk] of await compiled.stream(
 }
 ```
 
-#### HITL: `interrupt()` + Checkpointer
+#### HITL: `interrupt()` + Checkpointer (deferred for full resume)
+
+LangGraph supports this well, but full `interrupt()` + resume is deferred until durable checkpointing is added. Phase 2a uses HITL-lite signaling instead.
 
 ```typescript
 import { interrupt, MemorySaver } from "@langchain/langgraph";
@@ -165,11 +176,11 @@ const debateGraph = new StateGraph(...)
 
 ---
 
-### 2. Streaming Architecture — Two Paths
+### 2. Streaming Architecture — Phase 2a Default + Deferred Alternative
 
-#### Quick Mode: Direct Vercel Function + SSE
+#### Single-Step Route Streaming Pattern (Reference)
 
-Quick mode (single model, 2-5 seconds) runs directly in a Vercel function:
+Reference pattern only. Current `/api/quick` returns JSON today; Phase 2a debate mode will use this style of direct Vercel streaming route.
 
 ```typescript
 // src/app/api/quick/route.ts
@@ -230,6 +241,8 @@ export async function POST(req: Request) {
 
 #### Structured Event Types (Zod)
 
+`PHASE2-CONTRACT.md` is authoritative for the Phase 2a event envelope and ordering guarantees. The schema below is an exploratory shape and should be aligned to that contract before implementation.
+
 ```typescript
 // src/lib/streaming/event-types.ts
 export const DebateEventSchema = z.discriminatedUnion('type', [
@@ -261,28 +274,23 @@ export const DebateEventSchema = z.discriminatedUnion('type', [
 ]);
 ```
 
-#### Client-Side Consumption
+#### Client-Side Consumption (Phase 2a default: `fetch()` stream reader)
 
 ```typescript
-// src/hooks/use-debate-stream.ts
-export function useDebateStream(debateId: string | null) {
-  const [events, setEvents] = useState<DebateEvent[]>([]);
+// src/hooks/use-debate-run.ts
+export async function runDebate(body: DebateRequest) {
+  const res = await fetch('/api/debate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok || !res.body) throw new Error('Debate stream failed to start');
 
-  useEffect(() => {
-    if (!debateId) return;
-    const source = new EventSource(`/api/debate/stream?id=${debateId}`);
-
-    for (const type of ['phase_start', 'model_response', 'model_token', 'cost_update', 'debate_complete', 'error']) {
-      source.addEventListener(type, (e) => {
-        setEvents(prev => [...prev, { type, data: JSON.parse(e.data) }]);
-      });
-    }
-
-    source.onerror = () => { /* EventSource auto-reconnects */ };
-    return () => source.close();
-  }, [debateId]);
-
-  return events;
+  // Parse SSE frames from res.body and apply by seq ordering.
+  // (See PHASE2-CONTRACT.md for envelope + ordering rules.)
+  for await (const event of parseSseStream(res.body)) {
+    // update UI state
+  }
 }
 ```
 
@@ -341,11 +349,11 @@ The LangGraph code stays the same — it's just where it runs that changes.
 
 #### CRITICAL: v3 is Deprecated
 
-**Trigger.dev v3 shuts down July 1, 2026.** If/when we adopt Trigger.dev, use v4 exclusively:
+**Trigger.dev v3 blocks new deployments after April 1, 2026 and shuts down July 1, 2026.** If/when we adopt Trigger.dev, use v4 exclusively:
 - Import: `@trigger.dev/sdk` (NOT `@trigger.dev/sdk/v3`)
 - CLI: `npx trigger.dev@latest`
 
-All references in CLAUDE.md and ARCHITECTURE.md to "Trigger.dev v3" need updating.
+This docs-alignment slice updates CLAUDE.md / ARCHITECTURE.md to Trigger.dev v4 (deferred) terminology. Keep future references v4-only.
 
 ---
 
@@ -403,7 +411,7 @@ npm install @trigger.dev/react-hooks
 | No built-in Turso checkpointer for LangGraph | MEDIUM | MemorySaver for dev. Build custom BaseCheckpointSaver for prod if needed |
 | Vercel function killed during long debate | LOW | 300s timeout covers 30-90s debates. Add retry logic in API route |
 | Provider API failure mid-debate | MEDIUM | Wrap each LLM call with try/catch + retry (max 2). Degrade gracefully to 2-model debate |
-| Client disconnects mid-stream | LOW | EventSource auto-reconnects. Debate result persisted to DB regardless |
+| Client disconnects mid-stream | LOW | Phase 2a default: no stream resume. Abort or fail the run cleanly, persist completed runs, surface retry path. Add Trigger.dev v4 only if disconnect-loss becomes a real issue |
 | LangGraph npm bundle size | LOW | Tree-shaking should handle it. Monitor build size |
 
 ---
@@ -435,7 +443,7 @@ npm install @trigger.dev/react-hooks
 ### Batch 4: API + Streaming
 - `src/app/api/debate/route.ts` — SSE streaming endpoint
 - `src/lib/streaming/event-types.ts` — Zod event schemas
-- `src/hooks/use-debate-stream.ts` — Client-side EventSource hook
+- `src/hooks/use-debate-run.ts` (or similar) — Client-side `fetch()` stream parser hook for `/api/debate`
 - Compare mode (Phase 1 only, parallel responses displayed)
 - Tests for SSE encoding, event types
 
@@ -455,11 +463,12 @@ npm install @trigger.dev/react-hooks
 
 ---
 
-## Docs to Update Before Starting Phase 2
+## Docs Alignment for Phase 2a (This PR)
 
-1. **ARCHITECTURE.md** — Vercel timeout (60s → 300-800s), resolve SSE open design question, update Trigger.dev to v4
-2. **CLAUDE.md** — Stack section: "Trigger.dev v3" → "Trigger.dev v4 (deferred to Phase 2b)"
-3. **REQUIREMENTS.md** — Note Trigger.dev v4 migration requirement
+1. **PHASE2-CONTRACT.md** — New authoritative Phase 2a API + SSE contract (`POST /api/debate` streaming response, fetch reader client)
+2. **ARCHITECTURE.md** — Trigger-first assumptions removed for Phase 2a; streaming contract now points to `PHASE2-CONTRACT.md`
+3. **CLAUDE.md** — Added `PHASE2-CONTRACT.md` to docs table; stack updated to Trigger.dev v4 deferred
+4. **REQUIREMENTS.md** — Phase 2 checklist/NFRs/HITL wording aligned to Trigger defer + HITL-lite
 
 ---
 

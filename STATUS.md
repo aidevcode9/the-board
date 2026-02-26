@@ -80,6 +80,8 @@ Last updated: 2026-02-25
 
 - [x] Branding & metadata — favicons, logo, manifest, OG tags (FR-UI-008, P1) — owner: Codex — 2026-02-25 — commit: d39fdde — cycle: 0h08m
 
+- [x] Phase 2a API/SSE contract + docs alignment (Trigger.dev deferred, HITL-lite) — owner: Codex — 2026-02-25 — commit: aa0373d — cycle: 0h12m
+
 ## Velocity Snapshot (This Week)
 
 > Update from completed `CHECKPOINT.md` entries (append weekly or daily). Keep this lightweight.
