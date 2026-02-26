@@ -6,7 +6,7 @@ Last updated: 2026-02-25
 
 ---
 
-## Current Phase: 1 — Foundation
+## Current Phase: 2 — Debate Engine
 
 ---
 
@@ -35,7 +35,10 @@ Last updated: 2026-02-25
 
 ## Next
 
-- [ ] Phase 2 gate check — verify all Phase 1 P0s complete before starting Debate Engine
+- [ ] Phase 2a graph skeleton — DebateState + LangGraph nodes/edges + round caps + anonymized review labels (no API route)
+- [ ] Phase 2a streaming runtime — SSE event union/encoder/parser + fetch-stream hook + ordering tests
+- [ ] Phase 2a /api/debate route — auth + request Zod + graph-to-SSE wiring (compare/debate entry)
+- [ ] Board runtime wiring — command bar submit + timeline reducer + terminal/error/HITL-lite states
 
 ## Blocked
 
@@ -82,6 +85,8 @@ Last updated: 2026-02-25
 
 - [x] Phase 2a API/SSE contract + docs alignment (Trigger.dev deferred, HITL-lite) — owner: Codex — 2026-02-25 — commit: aa0373d — cycle: 0h12m
 
+- [x] Phase 2 gate check + queue seeding — owner: Codex — 2026-02-25 — commit: 46dcd3b — cycle: 0h06m
+
 ## Velocity Snapshot (This Week)
 
 > Update from completed `CHECKPOINT.md` entries (append weekly or daily). Keep this lightweight.
@@ -121,7 +126,7 @@ Last updated: 2026-02-25
 | Risk | Status | Mitigation |
 |------|--------|------------|
 | Sycophancy collapse | Mitigated | 8-layer anti-sycophancy stack in REQUIREMENTS.md §4 |
-| Serverless timeouts | Mitigated | Trigger.dev durable execution |
+| Serverless timeouts | Mitigated | Vercel `maxDuration=300` + SSE in Phase 2a; Trigger.dev v4 optional fallback if reliability thresholds are hit |
 | API costs | Monitoring | Mode system + cost dashboard + budget alerts |
 | Edge Runtime + DB in middleware | Deferred | Session callback queries Turso; safe on Node.js host, breaks on Vercel Edge. Split auth config in Phase 4 security hardening. |
 | Beta code brute-force | Deferred | No rate limiting on /api/auth/beta-code. Add Upstash Redis rate limiter in Phase 4. |
