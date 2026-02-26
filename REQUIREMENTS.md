@@ -32,8 +32,8 @@ These pillars form a flywheel: debates produce learning artifacts → high-quali
 |-------|-----------|-----------|
 | **Frontend** | Next.js 15 (App Router) | SSR + SSE streaming for real-time debate UI |
 | **Language** | TypeScript (strict) + Zod validation | Type safety across entire stack |
-| **Orchestration** | LangGraph.js | Graph-based debate flow, durable state, conditional edges, HITL breakpoints |
-| **Durable Execution** | Trigger.dev v3 | No serverless timeouts (debates run 30-90s), native retry, MCP integration |
+| **Orchestration** | LangGraph.js | Graph-based debate flow, round-cap enforcement, conditional routing, HITL-lite signaling in Phase 2a |
+| **Durable Execution** | Trigger.dev v4 (deferred, Phase 2b+) | Optional durable retries/continue-on-disconnect if Vercel + SSE proves insufficient |
 | **Database** | Turso (Edge SQLite) + Drizzle ORM | Zero cost, edge-replicated, Drizzle abstracts for future Postgres migration |
 | **Observability** | Langfuse v4 SDK (OTel-based, self-hosted) | `@langfuse/tracing` + `@langfuse/otel` + `@opentelemetry/sdk-node`. OTel-native, framework-agnostic, LLM-as-judge evaluators, cost tracking |
 | **Evals (Phase 1-2)** | Langfuse LLM-as-Judge | TypeScript-native, zero additional services, already in stack |
@@ -129,7 +129,7 @@ All three models respond to the query simultaneously, each through their persona
 Each model receives the other two responses labeled "Response A" and "Response B" — NOT "Claude said" or "GPT said." This prevents sycophantic deference. Each model must identify at least one critical flaw, edge case, or improvement.
 
 ### Phase 3: Synthesis + Validation
-The domain-weighted Lead model synthesizes all responses and critiques into a unified answer with confidence scores per claim. The other two models validate: "Agree" or "Still disagree because..." If no consensus after 2 rounds, HITL breakpoint triggers.
+The domain-weighted Lead model synthesizes all responses and critiques into a unified answer with confidence scores per claim. The other two models validate: "Agree" or "Still disagree because..." If no consensus at the round cap, force synthesis and emit a HITL-lite review signal (full LangGraph interrupt/resume is deferred).
 
 ### Phase 4: Learning Artifact + Eval
 Final output includes: synthesized answer, full debate transcript, points of agreement (high confidence), points of disagreement (explore further), eval scores, cost/latency data. If eval score > 0.85, the MCP `update_domain_knowledge` tool appends distilled insight to the domain's CONTEXT.md.
@@ -144,7 +144,7 @@ Research shows stronger models defer to weaker ones more often than the reverse 
 4. **Diminishing returns detection**: Auto-terminate when positions converge without substantive reasoning improvement. If round N critique is >85% similar to round N-1, force synthesis.
 5. **Confidence tracking**: Track confidence scores per model per round. Flag when a strong model's confidence drops sharply after seeing a weaker model's response (sycophancy signal).
 6. **Authority-based persona framing**: Each model is framed as a domain authority, not a peer. Research shows authority framing reduces sycophancy vs peer framing.
-7. **HITL breakpoint**: If debate reaches round 3 without consensus, LangGraph breakpoint pauses execution. Human resolves the disagreement.
+7. **HITL-lite escalation**: If disagreement remains at the round cap, emit a review-required signal and persist transcript/synthesis for manual follow-up. Full LangGraph breakpoint/resume lands later.
 8. **Domain-weighted voting**: Prevent equal-weight averaging. The domain Lead's position carries 60% weight, preventing generic consensus.
 
 ---
@@ -391,9 +391,9 @@ Each CONTEXT.md contains:
 **Exit criteria**: Can sign in with Google (gated by invite code), see admin vs user views, configure model providers via UI, send a query via Quick mode, see the response, and view the trace in Langfuse.
 
 ### Phase 2: Debate Engine (Weeks 3-5)
-**Deliverable**: Full parallel debate with streaming UI
+**Deliverable**: Full parallel debate with streaming UI (Phase 2a on Vercel functions + SSE; Trigger.dev deferred)
 
-- [ ] Trigger.dev v3 integration for durable execution
+- [ ] Phase 2a API + SSE contract adopted (`PHASE2-CONTRACT.md`: `POST /api/debate` streaming response, client `fetch()` stream reader)
 - [ ] LangGraph.js debate graph: Independent → Cross-Review → Synthesis → Validate
 - [ ] Parallel model calls (Phase 1 of debate)
 - [ ] Response anonymization for cross-review (Phase 2)
@@ -405,8 +405,10 @@ Each CONTEXT.md contains:
 - [ ] Compare mode (Phase 1 only, side-by-side)
 - [ ] Debate mode (full flow, single round)
 - [ ] Confidence tracking per model per round
+- [ ] HITL-lite review signal for unresolved disagreements at round cap (full HITL arbitration deferred)
+- [ ] Trigger.dev v4 integration (optional Phase 2b if reliability thresholds are hit)
 
-**Exit criteria**: Can run a full Debate mode query, watch three models debate in real-time via SSE, and see the synthesized answer with transcript.
+**Exit criteria**: Can run a full Debate mode query on Vercel, watch three models debate in real-time via SSE, and see the synthesized answer with transcript.
 
 ### Phase 3: Observability & Evals (Weeks 6-7)
 **Deliverable**: Quality measurement, golden sets, self-improving context
@@ -439,7 +441,7 @@ Each CONTEXT.md contains:
 ### Phase 5: Polish & Advanced Features (Weeks 10-12)
 **Deliverable**: Production-ready with advanced capabilities
 
-- [ ] HITL arbitration (LangGraph breakpoints at round 3 without consensus)
+- [ ] Full HITL arbitration (LangGraph `interrupt()` + durable resume after unresolved disagreement)
 - [ ] deepeval-ts integration (Confident AI cloud for research-backed metrics)
 - [ ] Confidence collapse detection (flag when strong model caves to weaker)
 - [ ] Workspace templates (pre-built domain contexts for common interview topics)
@@ -456,10 +458,10 @@ Each CONTEXT.md contains:
 
 | NFR | Requirement | Implementation |
 |-----|-------------|----------------|
-| NFR-001 | Debate completes in < 90 seconds | Trigger.dev durable execution, parallel model calls |
-| NFR-002 | Real-time streaming with < 2s first-byte | SSE from Trigger.dev → Next.js → Client |
+| NFR-001 | Debate completes in < 90 seconds | Parallel model calls + LangGraph routing on Vercel (`maxDuration=300` on Pro) |
+| NFR-002 | Real-time streaming with < 2s first-byte | SSE from Next.js route -> Client (Phase 2a contract) |
 | NFR-003 | Type safety across entire stack | TypeScript strict mode + Zod schemas for all API boundaries |
-| NFR-004 | Zero monthly infrastructure cost (MVP) | Turso free tier, Langfuse self-hosted, Trigger.dev free tier |
+| NFR-004 | Zero monthly infrastructure cost (MVP) | Turso free tier, Langfuse self-hosted, no Trigger.dev required for Phase 2a |
 | NFR-005 | Database migration path to Postgres | Drizzle ORM portable schema, no SQLite-specific features |
 | NFR-006 | All model API calls traced | Langfuse SDK wraps every provider call |
 | NFR-007 | Eval scores for every debate | Langfuse LLM-as-judge runs automatically on debate completion |
@@ -496,7 +498,7 @@ Each CONTEXT.md contains:
 |------|-----------|--------|------------|
 | Sycophancy collapses debate quality | High | High | 8-layer anti-sycophancy stack (Section 4) |
 | Model API costs exceed budget | Medium | Medium | Mode system (Quick for cheap, Debate for learning), cost dashboard, budget alerts |
-| Debate takes too long (> 90s) | Medium | Medium | Trigger.dev durable execution, SSE turns wait into feature |
+| Debate takes too long (> 90s) | Medium | Medium | Vercel `maxDuration=300` + SSE turns wait into feature; adopt Trigger.dev v4 if reliability thresholds are hit |
 | One model provider goes down | Low | High | Graceful degradation: fall back to 2-model debate, disable affected persona |
 | Eval scores don't correlate with actual quality | Medium | Medium | Human review of golden sets, iterative eval criteria refinement |
 | CONTEXT.md grows too large | Low | Medium | Token budget per domain file, summarization of older entries |

@@ -232,6 +232,7 @@ COMMIT  → Only after eval threshold met
 | STATUS.md | Shared task board + velocity snapshot | Before picking work |
 | CHECKPOINT.md | Append-only execution ledger + entry template | Resuming work, logging progress |
 | EVALS.md | Golden queries + eval criteria | Adding debate/LLM logic |
+| PHASE2-CONTRACT.md | Authoritative Phase 2a API + SSE event contract | Implementing Phase 2a debate/compare streaming |
 | PHASE2-RESEARCH.md | LangGraph, Trigger.dev, SSE research + decisions | Starting Phase 2 work |
 
 ---
@@ -256,7 +257,7 @@ COMMIT  → Only after eval threshold met
 - **Auth:** NextAuth.js v5 (Google OAuth + beta invite codes)
 - **RBAC:** Custom middleware + Drizzle (Admin / User, extensible)
 - **Orchestration:** LangGraph.js
-- **Durable Execution:** Trigger.dev v3
+- **Durable Execution:** Trigger.dev v4 (deferred; Phase 2b+ only if Vercel + SSE reliability is insufficient)
 - **Database:** Turso (Edge SQLite) + Drizzle ORM
 - **Observability:** Langfuse v4 SDK (OTel-based) — `@langfuse/tracing` + `@langfuse/otel` + `@opentelemetry/sdk-node`
 - **Evals:** Langfuse LLM-as-Judge → deepeval-ts (Phase 3+)
