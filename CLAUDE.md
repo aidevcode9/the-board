@@ -232,6 +232,7 @@ COMMIT  → Only after eval threshold met
 | STATUS.md | Shared task board + velocity snapshot | Before picking work |
 | CHECKPOINT.md | Append-only execution ledger + entry template | Resuming work, logging progress |
 | EVALS.md | Golden queries + eval criteria | Adding debate/LLM logic |
+| PHASE2-RESEARCH.md | LangGraph, Trigger.dev, SSE research + decisions | Starting Phase 2 work |
 
 ---
 
