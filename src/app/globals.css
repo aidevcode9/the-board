@@ -117,6 +117,22 @@
 }
 
 /* ── Base styles ────────────────────────────────────────────────── */
+.brand-logo-dark {
+  display: block;
+}
+
+.brand-logo-light {
+  display: none;
+}
+
+[data-theme="light"] .brand-logo-dark {
+  display: none;
+}
+
+[data-theme="light"] .brand-logo-light {
+  display: block;
+}
+
 html {
   font-family: var(--font-body), Georgia, serif;
   background-color: var(--bg-primary);

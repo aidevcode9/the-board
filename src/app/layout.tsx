@@ -1,3 +1,4 @@
+import { createAppMetadata } from '@/lib/branding/metadata';
 import type { Metadata } from 'next';
 import { Playfair_Display, Source_Serif_4, Space_Mono } from 'next/font/google';
 import './globals.css';
@@ -23,11 +24,9 @@ const spaceMono = Space_Mono({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: 'The Board',
-  description:
-    'Adversarial Persona Synthesis Engine — Three frontier models debate, challenge, and synthesize answers for senior AI engineering interview prep.',
-};
+export const metadata: Metadata = createAppMetadata(
+  process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL,
+);
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
