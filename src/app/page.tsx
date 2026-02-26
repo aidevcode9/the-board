@@ -58,7 +58,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       activeWorkspace={activeWorkspace}
       activeMode={activeMode}
       modeSelectionSource={modeSelectionSource}
-      operatorName={session.user.name ?? session.user.email}
+      operatorEmail={session.user.email}
+      operatorName={session.user.name}
+      operatorRole={session.user.role}
       requestedWorkspaceId={requestedWorkspaceId}
       selectionSource={selectionSource}
       workspaces={workspaces}

@@ -1,11 +1,15 @@
+import { AppShellNav } from '@/app/app-shell-nav';
 import { ModeSelectorToggle } from '@/app/mode-selector-toggle';
 import { PersonaStatusCard } from '@/app/status-board-primitives';
 import { WorkspaceSwitcherPanel } from '@/app/workspace-switcher-panel';
+import type { AppShellRole } from '@/lib/app-shell/navigation';
 import type { BoardMode, ModeSelectionSource } from '@/lib/modes/selection';
 import type { WorkspaceOption, WorkspaceSelectionSource } from '@/lib/workspaces/selection';
 
 type BoardShellProps = {
-  operatorName: string;
+  operatorEmail: string;
+  operatorName: string | null | undefined;
+  operatorRole: AppShellRole;
   workspaces: WorkspaceOption[];
   activeWorkspace: WorkspaceOption | null;
   activeMode: BoardMode;
@@ -15,7 +19,9 @@ type BoardShellProps = {
 };
 
 export function BoardShell({
+  operatorEmail,
   operatorName,
+  operatorRole,
   workspaces,
   activeWorkspace,
   activeMode,
@@ -38,12 +44,11 @@ export function BoardShell({
             activeWorkspaceId={activeWorkspace?.id ?? null}
             selectionSource={modeSelectionSource}
           />
-          <div className="rounded-xl border border-board-border bg-board-panel px-3 py-2 text-right">
-            <p className="font-data text-[10px] tracking-widest text-text-muted uppercase">
-              Operator
-            </p>
-            <p className="font-body text-sm text-text-primary">{operatorName}</p>
-          </div>
+          <AppShellNav
+            operatorEmail={operatorEmail}
+            operatorName={operatorName}
+            operatorRole={operatorRole}
+          />
         </div>
       </header>
 
