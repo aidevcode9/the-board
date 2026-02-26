@@ -1,4 +1,5 @@
 import { AppShellNav } from '@/app/app-shell-nav';
+import { HeaderBrandLockup } from '@/app/brand-logo';
 import { ModeSelectorToggle } from '@/app/mode-selector-toggle';
 import { PersonaStatusCard } from '@/app/status-board-primitives';
 import { WorkspaceSwitcherPanel } from '@/app/workspace-switcher-panel';
@@ -33,12 +34,7 @@ export function BoardShell({
     <main className="min-h-screen bg-board-bg text-text-primary">
       <header className="sticky top-0 z-20 border-b border-board-border bg-board-bg/95 backdrop-blur">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-4 px-4 py-4 lg:grid-cols-[auto_minmax(0,1fr)_auto]">
-          <div>
-            <h1 className="font-display text-3xl font-black text-accent">the board</h1>
-            <p className="font-data mt-1 text-[11px] tracking-widest text-text-muted uppercase">
-              Adversarial Persona Synthesis Engine
-            </p>
-          </div>
+          <HeaderBrandLockup />
           <ModeSelectorToggle
             activeMode={activeMode}
             activeWorkspaceId={activeWorkspace?.id ?? null}

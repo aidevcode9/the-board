@@ -1,5 +1,6 @@
 'use client';
 
+import { LoginBrandLockup } from '@/app/brand-logo';
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 
@@ -40,13 +41,7 @@ export function LoginForm() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-board-bg px-4">
       <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="mb-10 text-center">
-          <h1 className="font-display text-5xl font-black text-accent">the board</h1>
-          <p className="font-data mt-2 text-[10px] uppercase tracking-widest text-text-muted">
-            Adversarial Persona Synthesis Engine
-          </p>
-        </div>
+        <LoginBrandLockup />
 
         {/* Card */}
         <div className="rounded-lg border border-board-border bg-board-card p-8 shadow-2xl">
