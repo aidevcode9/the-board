@@ -31,11 +31,11 @@ Last updated: 2026-02-25
 
 ## Now
 
-- [Claude] MCP TypeScript SDK integration — branch: feat/ph1-mcp-sdk-claude — started: 2026-02-25 22:00
+*(No active claims)*
 
 ## Next
 
-*(No queued items — refill `Next` before the next `wspr pick top Next` run)*
+*(Phase 1 complete — all items shipped. Ready for Phase 2 gate check.)*
 
 ## Blocked
 
@@ -70,6 +70,7 @@ Last updated: 2026-02-25
 - [x] Workspace UI (domain selector / switcher) — owner: Codex — 2026-02-25 — commit: 481aa63 — cycle: 0h44m
 - [x] Domain CONTEXT.md file structure — owner: Claude — 2026-02-25 — PR: #2 — cycle: 0h25m
 - [x] Mode selector UI (Quick/Compare/Debate/Deep) — wired but only Quick works — owner: Codex — 2026-02-25 — commit: cbc22a3 — cycle: 0h10m
+- [x] MCP TypeScript SDK integration — owner: Claude — 2026-02-25 — PR: #4 — cycle: 0h35m
 
 ---
 

@@ -1,7 +1,19 @@
 'use client';
 
+import {
+  ENV_FALLBACK_MAP,
+  KNOWN_PROVIDER_KEYS,
+  PROVIDER_DISPLAY_NAMES,
+} from '@/lib/providers/types';
 import { useState } from 'react';
 import type { ProviderRow } from './provider-manager';
+
+// Derive presets from the single source of truth in types.ts.
+const PROVIDER_PRESETS = KNOWN_PROVIDER_KEYS.map((key) => ({
+  name: PROVIDER_DISPLAY_NAMES[key],
+  sdkType: ENV_FALLBACK_MAP[key].sdkType,
+  baseUrl: ENV_FALLBACK_MAP[key].baseUrl,
+}));
 
 const SDK_OPTIONS = [
   { value: 'anthropic', label: 'Anthropic' },
@@ -22,6 +34,12 @@ export function AddProviderForm({
   const [apiKey, setApiKey] = useState('');
   const [creating, setCreating] = useState(false);
   const [expanded, setExpanded] = useState(false);
+
+  function applyPreset(preset: { name: string; sdkType: string; baseUrl: string }) {
+    setName(preset.name);
+    setSdkType(preset.sdkType);
+    setBaseUrl(preset.baseUrl);
+  }
 
   async function handleCreate() {
     if (!name.trim() || !baseUrl.trim() || !apiKey.trim()) return;
@@ -88,6 +106,20 @@ export function AddProviderForm({
         >
           Cancel
         </button>
+      </div>
+
+      {/* Quick-pick presets */}
+      <div className="mb-4 flex flex-wrap gap-2">
+        {PROVIDER_PRESETS.map((preset) => (
+          <button
+            key={preset.name}
+            type="button"
+            onClick={() => applyPreset(preset)}
+            className="rounded border border-board-border px-3 py-1 font-data text-[10px] uppercase tracking-widest text-text-muted transition-colors hover:border-accent hover:text-accent"
+          >
+            {preset.name}
+          </button>
+        ))}
       </div>
 
       <div className="grid grid-cols-2 gap-4">

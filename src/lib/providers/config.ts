@@ -2,8 +2,13 @@ import { db } from '@/lib/db/client';
 import { providers } from '@/lib/db/schema';
 import { createId } from '@paralleldrive/cuid2';
 import { and, eq } from 'drizzle-orm';
-import type { ProviderConfig } from './types';
-import { ENV_FALLBACK_MAP, ProviderConfigSchema } from './types';
+import type { KnownProviderKey, ProviderConfig } from './types';
+import { ENV_FALLBACK_MAP, KNOWN_PROVIDER_KEYS, ProviderConfigSchema } from './types';
+
+/** Type guard: is this string a known provider key? */
+function isKnownProviderKey(name: string): name is KnownProviderKey {
+  return (KNOWN_PROVIDER_KEYS as readonly string[]).includes(name);
+}
 
 // ── Provider Config Resolution ──────────────────────────────────────────────
 // DB-first with env var fallback.
@@ -15,8 +20,8 @@ import { ENV_FALLBACK_MAP, ProviderConfigSchema } from './types';
  * Returns null if the provider name is unknown or the env var is not set/empty.
  */
 export function resolveProviderFromEnv(providerName: string): ProviderConfig | null {
+  if (!isKnownProviderKey(providerName)) return null;
   const fallback = ENV_FALLBACK_MAP[providerName];
-  if (!fallback) return null;
 
   const apiKey = process.env[fallback.envKey];
   if (!apiKey) return null;

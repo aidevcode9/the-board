@@ -101,11 +101,49 @@ export interface LLMClient {
   }>;
 }
 
+// ── Known Provider Registry ─────────────────────────────────────────────────
+// Single source of truth for provider metadata. All consumers (env-detect,
+// import-env route, add-provider-form presets) import from here.
+
+/** Canonical list of known provider keys. */
+export const KNOWN_PROVIDER_KEYS = [
+  'anthropic',
+  'openai',
+  'google',
+  'deepseek',
+  'groq',
+  'lm-studio',
+] as const;
+export type KnownProviderKey = (typeof KNOWN_PROVIDER_KEYS)[number];
+
+/** Display names for admin UI. */
+export const PROVIDER_DISPLAY_NAMES: Record<KnownProviderKey, string> = {
+  anthropic: 'Anthropic',
+  openai: 'OpenAI',
+  google: 'Google',
+  deepseek: 'DeepSeek',
+  groq: 'Groq',
+  'lm-studio': 'LM Studio',
+};
+
+/** Default model per provider (used when importing from env). */
+export const PROVIDER_DEFAULT_MODELS: Record<
+  KnownProviderKey,
+  { modelId: string; displayName: string }
+> = {
+  anthropic: { modelId: 'claude-opus-4-6', displayName: 'Claude Opus 4.6' },
+  openai: { modelId: 'gpt-5.2', displayName: 'GPT-5.2' },
+  google: { modelId: 'gemini-3.1-pro', displayName: 'Gemini 3.1 Pro' },
+  deepseek: { modelId: 'deepseek-chat', displayName: 'DeepSeek Chat' },
+  groq: { modelId: 'llama-3.3-70b-versatile', displayName: 'Llama 3.3 70B' },
+  'lm-studio': { modelId: 'local-model', displayName: 'Local Model' },
+};
+
 // ── Env Var Fallback Map ────────────────────────────────────────────────────
 // When no DB config exists, fall back to these env vars per provider name.
 
 export const ENV_FALLBACK_MAP: Record<
-  string,
+  KnownProviderKey,
   { sdkType: SdkType; baseUrl: string; envKey: string }
 > = {
   anthropic: {

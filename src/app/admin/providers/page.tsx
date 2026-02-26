@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth/config';
 import { db } from '@/lib/db/client';
 import { providers } from '@/lib/db/schema';
+import { detectEnvProviders } from '@/lib/providers/env-detect';
 import { desc } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 import { ProviderManager } from './provider-manager';
@@ -26,6 +27,13 @@ export default async function AdminProvidersPage() {
     orderBy: [desc(providers.createdAt)],
   });
 
+  // Detect env-configured providers not yet saved to DB
+  const envProviders = detectEnvProviders();
+  const dbNames = new Set(allProviders.map((p) => p.name.toLowerCase()));
+  const unsavedEnvProviders = envProviders.filter(
+    (ep) => ep.hasKey && !dbNames.has(ep.displayName.toLowerCase()),
+  );
+
   return (
     <div>
       <div className="mb-8">
@@ -33,10 +41,13 @@ export default async function AdminProvidersPage() {
         <p className="font-data mt-1 text-[11px] uppercase tracking-widest text-text-muted">
           {allProviders.length} configured &middot; {allProviders.filter((p) => p.isActive).length}{' '}
           active
+          {unsavedEnvProviders.length > 0 && (
+            <> &middot; {unsavedEnvProviders.length} detected from env</>
+          )}
         </p>
       </div>
 
-      <ProviderManager initialProviders={allProviders} />
+      <ProviderManager initialProviders={allProviders} envProviders={unsavedEnvProviders} />
     </div>
   );
 }

@@ -1,7 +1,9 @@
 'use client';
 
+import type { EnvDetectedProvider } from '@/lib/providers/env-detect';
 import { useState } from 'react';
 import { AddProviderForm } from './add-provider-form';
+import { EnvProviderCard } from './env-provider-card';
 import { ProviderCard } from './provider-card';
 
 export type ProviderRow = {
@@ -16,8 +18,15 @@ export type ProviderRow = {
   createdAt: Date;
 };
 
-export function ProviderManager({ initialProviders }: { initialProviders: ProviderRow[] }) {
+export function ProviderManager({
+  initialProviders,
+  envProviders = [],
+}: {
+  initialProviders: ProviderRow[];
+  envProviders?: EnvDetectedProvider[];
+}) {
   const [providerList, setProviders] = useState(initialProviders);
+  const [envList, setEnvList] = useState(envProviders);
   const [error, setError] = useState('');
 
   function handleProviderCreated(provider: ProviderRow) {
@@ -32,6 +41,11 @@ export function ProviderManager({ initialProviders }: { initialProviders: Provid
     setProviders((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
   }
 
+  function handleEnvImported(providerKey: string, provider: ProviderRow) {
+    setProviders((prev) => [provider, ...prev]);
+    setEnvList((prev) => prev.filter((ep) => ep.providerKey !== providerKey));
+  }
+
   return (
     <div>
       {error && (
@@ -40,12 +54,31 @@ export function ProviderManager({ initialProviders }: { initialProviders: Provid
         </div>
       )}
 
+      {/* Env-detected providers — checkbox to save to DB */}
+      {envList.length > 0 && (
+        <div className="mb-6">
+          <p className="mb-3 font-data text-[10px] uppercase tracking-widest text-text-muted">
+            Detected from environment variables
+          </p>
+          <div className="space-y-3">
+            {envList.map((ep) => (
+              <EnvProviderCard
+                key={ep.providerKey}
+                envProvider={ep}
+                onImported={handleEnvImported}
+                onError={setError}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       <AddProviderForm onCreated={handleProviderCreated} onError={setError} />
 
       <div className="mt-6 space-y-4">
-        {providerList.length === 0 && (
+        {providerList.length === 0 && envList.length === 0 && (
           <div className="rounded-lg border border-board-border px-4 py-8 text-center font-data text-[11px] text-text-dim">
-            No providers configured. Add one above.
+            No providers configured. Add one above or set API keys in environment variables.
           </div>
         )}
         {providerList.map((provider) => (
