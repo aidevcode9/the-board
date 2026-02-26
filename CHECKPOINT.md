@@ -780,6 +780,89 @@ Last updated: 2026-02-25
 
 ---
 
+### 2026-02-25 18:51 - Branding & Metadata (FR-UI-008)
+
+**Task ID:** PH1-UI-008
+**Agent:** Codex
+**Branch:** feat/ph1-branding-metadata-codex-clean
+**Scope:** Metadata API wiring (icons/manifest/OG) + logo integration in board header and login page
+**Status:** Started
+**Started:** 2026-02-25 18:51
+**FR / Requirement:** FR-UI-008
+**Files changed:**
+- src/app/layout.tsx
+- src/app/board-shell.tsx
+- src/app/login/login-form.tsx
+- src/app/brand-logo.tsx
+- src/lib/branding/metadata.ts
+- src/app/globals.css
+- public/site.webmanifest
+- __tests__/branding/metadata.test.ts
+**Out of scope:** FR-UI-007 nav behavior; execution wiring/SSE/debate graph; theme toggle implementation; asset file content changes
+**Tests (TDD/eval):**
+- __tests__/branding/metadata.test.ts (metadata constants/wiring)
+**Verification (first pass?):**
+- [ ] lint
+- [ ] typecheck
+- [ ] test
+- [ ] build
+- [ ] evals (N/A)
+- First-pass all gates: TBD
+**Review (gatekeeper):** TBD
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- manual wsorchestrate completed: branding/metadata slice only
+- Reuse existing brand assets in public/; no asset image edits
+**Outcome:** in-progress
+
+---
+
+### 2026-02-25 18:51 - Branding & Metadata (FR-UI-008)
+
+**Task ID:** PH1-UI-008
+**Agent:** Codex
+**Branch:** feat/ph1-branding-metadata-codex-clean
+**Scope:** Metadata API wiring (icons/manifest/OG) + logo integration in board header and login page
+**Status:** Completed
+**Started:** 2026-02-25 18:51
+**Ended:** 2026-02-25 18:57
+**Cycle Time:** 0h08m
+**FR / Requirement:** FR-UI-008
+**Files changed:**
+- src/app/layout.tsx
+- src/app/board-shell.tsx
+- src/app/login/login-form.tsx
+- src/app/brand-logo.tsx
+- src/lib/branding/metadata.ts
+- src/app/globals.css
+- public/site.webmanifest
+- __tests__/branding/metadata.test.ts
+**Out of scope:** FR-UI-007 nav behavior; execution wiring/SSE/debate graph; theme toggle implementation; asset image content changes
+**Tests (TDD/eval):**
+- __tests__/branding/metadata.test.ts (3 tests; metadata wiring + manifest constants)
+- manual wsverify: npm run lint
+- manual wsverify: npm run typecheck (rerun after build regenerated .next/types)
+- manual wsverify: npm run test (268/268)
+- manual wsverify: npm run build
+**Verification (first pass?):**
+- [x] lint
+- [x] typecheck
+- [x] test
+- [x] build
+- [ ] evals (N/A)
+- First-pass all gates: No (typecheck rerun after build regenerated `.next/types`)
+**Review (gatekeeper):** Pending human/Claude gatekeeper; manual wsskeptic (UI profile) found no issues
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- Header uses theme-aware logo swap via existing html[data-theme] system (dark/light assets)
+- Login page now uses logo-v-transparent.png lockup; header/login remain within existing layout shells
+- site.webmanifest added at /site.webmanifest and wired through Next metadata manifest field
+- One in-scope type fix during wsverify: Metadata.icons union + readonly array mismatch in helper/test
+**Outcome:** complete
+**Commits:** `d39fdde feat(ui): wire branding metadata and logo assets`
+
+---
+
 ## Next Session
 
 **Resume from:** Phase 1 complete — ready for Phase 2 gate check
