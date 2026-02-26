@@ -35,7 +35,6 @@ Last updated: 2026-02-25
 
 ## Next
 
-- [ ] App shell navigation — header with admin link (role-gated) + logout button (FR-UI-007, P1)
 - [ ] Branding & metadata — favicons, logo, manifest, OG tags (FR-UI-008, P1)
 - [ ] Phase 2 gate check — verify all Phase 1 P0s complete before starting Debate Engine
 
@@ -77,6 +76,8 @@ Last updated: 2026-02-25
 ---
 
 - [x] Process hardening for ws* Codex execution mode — owner: Codex — 2026-02-25 — commit: fe0eafe — cycle: 0h08m
+
+- [x] App shell navigation — header with admin link (role-gated) + logout button (FR-UI-007, P1) — owner: Codex — 2026-02-25 — commit: 59826e3 — cycle: 0h10m
 
 ## Velocity Snapshot (This Week)
 
@@ -121,4 +122,3 @@ Last updated: 2026-02-25
 | API costs | Monitoring | Mode system + cost dashboard + budget alerts |
 | Edge Runtime + DB in middleware | Deferred | Session callback queries Turso; safe on Node.js host, breaks on Vercel Edge. Split auth config in Phase 4 security hardening. |
 | Beta code brute-force | Deferred | No rate limiting on /api/auth/beta-code. Add Upstash Redis rate limiter in Phase 4. |
-
