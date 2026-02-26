@@ -702,6 +702,84 @@ Last updated: 2026-02-25
 
 ---
 
+### 2026-02-25 18:14 - App Shell Navigation (FR-UI-007)
+
+**Task ID:** PH1-UI-007
+**Agent:** Codex
+**Branch:** feat/ph1-app-shell-nav-codex-clean
+**Scope:** Board header nav: role-gated admin link + logout button + operator identity display
+**Status:** Started
+**Started:** 2026-02-25 18:14
+**FR / Requirement:** FR-UI-007
+**Files changed:**
+- src/app/page.tsx
+- src/app/board-shell.tsx
+- src/app/app-shell-nav.tsx
+- src/app/logout-button.tsx
+- src/lib/app-shell/navigation.ts
+- __tests__/app-shell/navigation.test.ts
+**Out of scope:** Quick/Compare/Debate/Deep execution wiring; SSE/timeline streaming; debate graph/state; FR-UI-008 branding & metadata
+**Tests (TDD/eval):**
+- __tests__/app-shell/navigation.test.ts (role-gated nav model + logout visibility metadata)
+**Verification (first pass?):**
+- [ ] lint
+- [ ] typecheck
+- [ ] test
+- [ ] build
+- [ ] evals (N/A)
+- First-pass all gates: TBD
+**Review (gatekeeper):** TBD
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- manual wsorchestrate completed: scoped UI slice only
+- Out of scope: execution wiring, SSE, debate graph, branding/metadata
+**Outcome:** in-progress
+
+---
+
+### 2026-02-25 18:14 - App Shell Navigation (FR-UI-007)
+
+**Task ID:** PH1-UI-007
+**Agent:** Codex
+**Branch:** feat/ph1-app-shell-nav-codex-clean
+**Scope:** Board header nav: role-gated admin link + logout button + operator identity display
+**Status:** Completed
+**Started:** 2026-02-25 18:14
+**Ended:** 2026-02-25 18:20
+**Cycle Time:** 0h10m
+**FR / Requirement:** FR-UI-007
+**Files changed:**
+- src/app/page.tsx
+- src/app/board-shell.tsx
+- src/app/app-shell-nav.tsx
+- src/app/logout-button.tsx
+- src/lib/app-shell/navigation.ts
+- __tests__/app-shell/navigation.test.ts
+**Out of scope:** Quick/Compare/Debate/Deep execution wiring; SSE/timeline streaming; debate graph/state; FR-UI-008 branding & metadata
+**Tests (TDD/eval):**
+- __tests__/app-shell/navigation.test.ts (4 tests; role-gated nav model + operator display fallback)
+- manual wsverify: npm run lint
+- manual wsverify: npm run typecheck (rerun after build generated .next/types)
+- manual wsverify: npm run test (265/265)
+- manual wsverify: npm run build
+**Verification (first pass?):**
+- [x] lint
+- [x] typecheck
+- [x] test
+- [x] build
+- [ ] evals (N/A)
+- First-pass all gates: No (typecheck rerun after build generated `.next/types`)
+**Review (gatekeeper):** Pending human/Claude gatekeeper; manual wsskeptic (UI profile) found no issues
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- Header nav remains within frozen shell layout; compact-wrap mobile behavior used (no hamburger)
+- Logout uses next-auth/react signOut() client helper with callbackUrl /login
+- Initial typecheck run failed transiently due missing .next/types before build; rerun passed
+**Outcome:** complete
+**Commits:** `59826e3 feat(ui): add app shell navigation controls`
+
+---
+
 ## Next Session
 
 **Resume from:** Phase 1 complete — ready for Phase 2 gate check
