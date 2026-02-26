@@ -31,7 +31,7 @@ Last updated: 2026-02-25
 
 ## Now
 
-- [Codex] Phase 2 gate check + queue seeding — branch: docs/ph2-gate-check-queue-seeding-codex-clean — started: 2026-02-25 20:13
+*(No active claims)*
 
 ## Next
 
@@ -84,6 +84,8 @@ Last updated: 2026-02-25
 - [x] Branding & metadata — favicons, logo, manifest, OG tags (FR-UI-008, P1) — owner: Codex — 2026-02-25 — commit: d39fdde — cycle: 0h08m
 
 - [x] Phase 2a API/SSE contract + docs alignment (Trigger.dev deferred, HITL-lite) — owner: Codex — 2026-02-25 — commit: aa0373d — cycle: 0h12m
+
+- [x] Phase 2 gate check + queue seeding — owner: Codex — 2026-02-25 — commit: 46dcd3b — cycle: 0h06m
 
 ## Velocity Snapshot (This Week)
 
