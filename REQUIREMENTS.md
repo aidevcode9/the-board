@@ -266,6 +266,14 @@ After completion, the full transcript is the learning artifact:
 - Role-based navigation: Admin sees settings/provider config/user management. Users see debate interface + history.
 - Protected routes: middleware checks session + role before rendering
 
+### FR-UI-007: App Shell Navigation
+- Persistent header/nav bar across all pages
+- **Admin link**: Visible only when `role === 'admin'`, navigates to `/admin/providers`
+- **Logout button**: Visible to all authenticated users, calls NextAuth `signOut()`
+- Operator name/email displayed (from session)
+- "Back to Board" link in admin layout already exists — this FR adds the inverse (Board → Admin)
+- Mobile-friendly: hamburger or compact layout at small breakpoints
+
 ### FR-UI-006: Model Health Dashboard
 - Per-provider status: online/offline/degraded (based on last call success/failure)
 - Latency trend per provider (from Langfuse traces)
@@ -369,6 +377,7 @@ Each CONTEXT.md contains:
 - [ ] Mode selector UI (Quick/Compare/Debate/Deep) — wired but only Quick works
 - [ ] Single-model query flow (Quick mode) with Langfuse tracing
 - [ ] Basic cost tracking
+- [ ] App shell navigation — header with admin link (role-gated) + logout button (FR-UI-007)
 
 **Exit criteria**: Can sign in with Google (gated by invite code), see admin vs user views, configure model providers via UI, send a query via Quick mode, see the response, and view the trace in Langfuse.
 

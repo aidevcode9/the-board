@@ -661,8 +661,49 @@ Last updated: 2026-02-25
 
 ---
 
+### 2026-02-25 17:00 — Env-Detected Provider Cards + One-Click DB Import
+
+**Task ID:** PH1-ENV-PROVIDER-UI
+**Agent:** Claude
+**Branch:** feat/ph1-env-provider-ui-claude
+**Scope:** Admin providers page auto-detects env-configured API keys and shows cards with checkbox to save to DB
+**Status:** ✅ Complete
+**Started:** 2026-02-25 15:00
+**Ended:** 2026-02-25 17:55
+**Cycle Time:** 2h 55m
+**FR / Requirement:** Provider config UI enhancement (Phase 1)
+**Allowed files:** `src/lib/providers/types.ts`, `src/lib/providers/env-detect.ts`, `src/lib/providers/config.ts`, `src/app/admin/providers/*`, `src/app/api/admin/providers/import-env/route.ts`, `__tests__/providers/env-detect.test.ts`, `STATUS.md`
+**Out of scope:** Debate graph, SSE, per-user API keys, Langfuse tracing
+**Tests (TDD):**
+- `__tests__/providers/env-detect.test.ts` — 11 tests (detection, key presence, no key leakage, shared constant alignment)
+**Verification (first pass?):**
+- [x] lint
+- [x] typecheck
+- [x] test — 261/261 passed (+11 new)
+- [x] build
+- [ ] evals (N/A)
+- First-pass all gates: Yes
+**Review (gatekeeper):** /review self-review identified 3 HIGH issues — all fixed before commit
+**Findings fixed:** Critical: 0, High: 3, Low: 3
+- HIGH: DRY violation — DISPLAY_NAMES duplicated in 3 files → extracted to types.ts
+- HIGH: No test coverage for env-detect.ts → added 11 tests
+- HIGH: Inconsistent duplicate-check (case-sensitive vs insensitive) → catch unique constraint gracefully (409)
+- LOW: Checkbox UX always unchecked (documented, intentional one-shot)
+- LOW: Env var name leak in error message → changed to generic message
+- LOW: Inline response type → acceptable for now
+**Notes:**
+- API keys NEVER sent from client; import endpoint reads from process.env server-side
+- KNOWN_PROVIDER_KEYS, PROVIDER_DISPLAY_NAMES, PROVIDER_DEFAULT_MODELS now single source of truth in types.ts
+- ENV_FALLBACK_MAP typed with KnownProviderKey (was Record<string, ...>), required isKnownProviderKey type guard in config.ts
+- add-provider-form.tsx presets now derived from shared constants
+**Outcome:** complete
+**Commits:** `35c1301` feat(ui): add env-detected provider cards with one-click DB import
+**PR:** #7
+
+---
+
 ## Next Session
 
-**Resume from:** Basic cost tracking + merge Quick mode branch to main
-**Context needed:** Quick mode complete on feat/ph1-quick-api-claude. Codex working on workspace UI on feat/ph1-workspace-ui-codex.
-**Blockers to check:** None
+**Resume from:** Phase 1 complete — ready for Phase 2 gate check
+**Context needed:** All Phase 1 P0s shipped. PR #7 pending review.
+**Blockers to check:** Langfuse env var name mismatch (LANGFUSE_BASE_URL vs LANGFUSE_BASEURL)
