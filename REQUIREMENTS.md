@@ -147,6 +147,23 @@ Research shows stronger models defer to weaker ones more often than the reverse 
 7. **HITL-lite escalation**: If disagreement remains at the round cap, emit a review-required signal and persist transcript/synthesis for manual follow-up. Full LangGraph breakpoint/resume lands later.
 8. **Domain-weighted voting**: Prevent equal-weight averaging. The domain Lead's position carries 60% weight, preventing generic consensus.
 
+### Prompt Management (Versioned, Separate Files)
+
+All LLM prompts MUST live in dedicated prompt files, NOT inline in node logic or persona definitions. This enables:
+- **Version tracking**: Git history per prompt file shows exactly when and why a prompt changed
+- **Eval regression testing**: Golden set evals run after any prompt file change to catch regressions
+- **Prompt/logic separation**: Node files contain orchestration logic only; prompt files contain text and variable slots
+- **Review isolation**: Prompt changes are reviewable in isolation without reading orchestration code
+
+**Rules:**
+1. Persona system prompts → `src/lib/prompts/personas/{analyst,builder,synthesizer}.ts`
+2. Phase-specific user prompts → `src/lib/prompts/phases/{independent,review,synthesize,validate}.ts`
+3. Anti-sycophancy fragments → `src/lib/prompts/anti-sycophancy.ts`
+4. Every prompt file exports a `PROMPT_VERSION` string (semver, e.g. `'1.0.0'`)
+5. Prompt files export builder functions that accept typed parameters and return the final string
+6. Node files import from prompt files — NEVER construct prompt text inline
+7. Domain modifiers are co-located with persona prompts (same file)
+
 ---
 
 ## 5. Modes

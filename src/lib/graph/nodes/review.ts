@@ -10,6 +10,7 @@ import { buildSystemPrompt } from '@/lib/anti-sycophancy/prompts';
 import { db } from '@/lib/db/client';
 import { debateResponses } from '@/lib/db/schema';
 import { getPersonaDefinition } from '@/lib/personas/roles';
+import { buildReviewUserPrompt } from '@/lib/prompts/phases/review';
 import { calculateCost } from '@/lib/providers/cost';
 import { createLLMClient } from '@/lib/providers/factory';
 import { withTracing } from '@/lib/providers/traced';
@@ -90,41 +91,6 @@ export async function reviewNode(
     totalCostUsd: costUsd,
     currentPhase: 'review',
   };
-}
-
-/** Build the user prompt containing anonymized responses for review */
-function buildReviewUserPrompt(
-  query: string,
-  anonymized: Array<{ label: string; content: string; confidence: number }>,
-): string {
-  let prompt = `Original query: "${query}"\n\nPlease review the following responses:\n\n`;
-
-  for (const resp of anonymized) {
-    prompt += `--- ${resp.label} (confidence: ${resp.confidence.toFixed(2)}) ---\n`;
-    prompt += `${resp.content}\n\n`;
-  }
-
-  prompt += `For EACH response, provide your review as JSON with this structure:
-{
-  "reviews": [
-    {
-      "label": "Response A",
-      "flaws": ["flaw 1", "flaw 2"],
-      "strengths": ["strength 1"],
-      "suggestions": ["suggestion 1"],
-      "overallAssessment": "Your overall assessment"
-    },
-    {
-      "label": "Response B",
-      "flaws": ["flaw 1"],
-      "strengths": ["strength 1", "strength 2"],
-      "suggestions": ["suggestion 1"],
-      "overallAssessment": "Your overall assessment"
-    }
-  ]
-}`;
-
-  return prompt;
 }
 
 /** Parse review response into structured Review objects. Falls back to basic extraction. */

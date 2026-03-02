@@ -9,6 +9,7 @@ import { buildSystemPrompt } from '@/lib/anti-sycophancy/prompts';
 import { db } from '@/lib/db/client';
 import { debateResponses } from '@/lib/db/schema';
 import { getPersonaDefinition } from '@/lib/personas/roles';
+import { buildValidationPrompt } from '@/lib/prompts/phases/validate';
 import { calculateCost } from '@/lib/providers/cost';
 import { createLLMClient } from '@/lib/providers/factory';
 import { withTracing } from '@/lib/providers/traced';
@@ -71,23 +72,6 @@ export async function validateNode(
     totalCostUsd: costUsd,
     currentPhase: 'validation',
   };
-}
-
-function buildValidationPrompt(state: DebateState): string {
-  return `You are validating a synthesized answer for: "${state.query}"
-
-## Synthesized Answer
-${state.synthesis?.content ?? '[No synthesis available]'}
-
-## Instructions
-Review this synthesis and respond with a JSON object:
-{
-  "agrees": true/false,
-  "disagreementReason": "only if disagrees — what's wrong or missing",
-  "confidence": 0.0-1.0
-}
-
-You MUST evaluate critically. If the synthesis misses important points, contains errors, or is incomplete, set "agrees" to false and explain why.`;
 }
 
 /** Parse validation response into a Validation object */
