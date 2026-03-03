@@ -36,7 +36,6 @@ Last updated: 2026-02-25
 ## Next
 
 - [ ] Phase 2a graph skeleton — DebateState + LangGraph nodes/edges + round caps + anonymized review labels (no API route)
-- [ ] Phase 2a streaming runtime — SSE event union/encoder/parser + fetch-stream hook + ordering tests
 - [ ] Phase 2a /api/debate route — auth + request Zod + graph-to-SSE wiring (compare/debate entry)
 - [ ] Board runtime wiring — command bar submit + timeline reducer + terminal/error/HITL-lite states
 
@@ -86,6 +85,8 @@ Last updated: 2026-02-25
 - [x] Phase 2a API/SSE contract + docs alignment (Trigger.dev deferred, HITL-lite) — owner: Codex — 2026-02-25 — commit: aa0373d — cycle: 0h12m
 
 - [x] Phase 2 gate check + queue seeding — owner: Codex — 2026-02-25 — commit: 46dcd3b — cycle: 0h06m
+
+- [x] Phase 2a streaming runtime — SSE event union/encoder/parser + fetch-stream hook + ordering tests — owner: Codex — 2026-02-25 — commit: f97f287 — cycle: 0h25m
 
 ## Velocity Snapshot (This Week)
 
