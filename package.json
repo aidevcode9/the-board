@@ -28,6 +28,8 @@
     "@anthropic-ai/sdk": "^0.78.0",
     "@auth/drizzle-adapter": "^1.11.1",
     "@google/generative-ai": "^0.24.1",
+    "@langchain/core": "^1.1.28",
+    "@langchain/langgraph": "^1.1.5",
     "@langfuse/otel": "^4.6.1",
     "@langfuse/tracing": "^4.6.1",
     "@libsql/client": "^0.17.0",

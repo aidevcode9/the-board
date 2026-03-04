@@ -6,6 +6,54 @@ Last updated: 2026-02-25
 
 ---
 
+## [2026-02-25 20:40] Phase 2a LangGraph Debate Skeleton
+
+**Status:** ✅ Complete
+**Agent:** Claude
+**Branch:** feat/graph-skeleton-claude
+**Files changed:**
+- src/lib/graph/state.ts (new) — DebateState Annotation.Root + Zod schemas
+- src/lib/graph/nodes/route.ts (new) — Domain router + role assignment
+- src/lib/graph/nodes/independent.ts (new) — Parallel model calls (Phase 1)
+- src/lib/graph/nodes/review.ts (new) — Anonymized cross-review (Phase 2)
+- src/lib/graph/nodes/synthesize.ts (new) — Weighted synthesis (Phase 3)
+- src/lib/graph/nodes/validate.ts (new) — Consensus check (Phase 3b)
+- src/lib/graph/edges.ts (new) — Conditional edges + round caps
+- src/lib/graph/graph.ts (new) — Full graph assembly
+- src/lib/personas/types.ts (new) — PersonaDefinition interface
+- src/lib/personas/analyst.ts (new) — Claude "The Analyst" persona
+- src/lib/personas/builder.ts (new) — GPT "The Builder" persona
+- src/lib/personas/synthesizer.ts (new) — Gemini "The Synthesizer" persona
+- src/lib/personas/roles.ts (new) — Domain-weighted role assignment (Lead=60%)
+- src/lib/personas/index.ts (new) — Barrel export
+- src/lib/anti-sycophancy/prompts.ts (new) — Anti-sycophancy prompt fragments
+- src/lib/anti-sycophancy/anonymize.ts (new) — Response anonymization
+- src/lib/anti-sycophancy/detect.ts (new) — Confidence collapse + diminishing returns
+- src/lib/anti-sycophancy/index.ts (new) — Barrel export
+- __tests__/graph/state.test.ts (new) — 12 tests
+- __tests__/graph/edges.test.ts (new) — 10 tests
+- __tests__/personas/roles.test.ts (new) — 13 tests
+- __tests__/anti-sycophancy/anonymize.test.ts (new) — 5 tests
+- __tests__/anti-sycophancy/detect.test.ts (new) — 11 tests
+- package.json (modified) — Added @langchain/langgraph + @langchain/core
+
+**Verification:**
+- [x] lint — passed (134 files)
+- [x] typecheck — passed
+- [x] tests — 319/319 passed (51 new tests)
+- [x] build — passed
+
+**Skeptic findings:** 0 CRITICAL, 4 HIGH (documented), 5 LOW
+- HIGH: Sycophancy detection not yet wired into nodes (TODO documented)
+- HIGH: No try/catch on LLM calls (deferred to API route task)
+- HIGH: No runtime Zod validation at node boundaries (deferred)
+- HIGH: Quick mode clarification added to edges.ts
+
+**Commits:** `9ebd46a` feat(graph): implement Phase 2a LangGraph debate skeleton
+**PR:** #11
+
+---
+
 ## [2026-02-25 21:05] Domain CONTEXT.md File Structure (MCP-Ready)
 
 **Status:** ✅ Complete
