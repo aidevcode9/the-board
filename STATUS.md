@@ -31,7 +31,7 @@ Last updated: 2026-03-04
 
 ## Now
 
-[Claude] Phase 2a streaming runtime — branch: feat/streaming-runtime-claude — started: 2026-03-04
+*(No active claims)*
 
 ## Next
 
@@ -85,6 +85,8 @@ Last updated: 2026-03-04
 
 - [x] Phase 2 gate check + queue seeding — owner: Codex — 2026-02-25 — commit: 46dcd3b — cycle: 0h06m
 - [x] Phase 2a graph skeleton — DebateState, LangGraph nodes/edges, round caps, anti-sycophancy, personas, versioned prompt files, 319 tests — owner: Claude — 2026-03-01 — PR: #11 — cycle: ~2h
+
+- [x] Phase 2a streaming runtime — SSE event union/encoder/parser + fetch-stream hook + ordering tests — owner: Codex — 2026-02-25 — commit: f97f287 — cycle: 0h25m
 
 ## Velocity Snapshot (This Week)
 

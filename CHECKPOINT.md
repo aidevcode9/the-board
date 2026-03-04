@@ -1061,6 +1061,91 @@ Last updated: 2026-02-25
 
 ---
 
+### 2026-02-25 20:25 - Phase 2a Streaming Runtime (SSE parser/encoder + fetch hook)
+
+**Task ID:** PH2A-STREAM-RUNTIME
+**Agent:** Codex
+**Branch:** feat/ph2a-streaming-runtime-codex-clean
+**Scope:** Implement Phase 2a streaming runtime primitives and client fetch-stream hook per PHASE2-CONTRACT (no route or LangGraph wiring)
+**Status:** Started
+**Started:** 2026-02-25 20:25
+**FR / Requirement:** Phase 2a streaming runtime
+**Files changed:**
+- src/lib/streaming/*
+- src/hooks/use-debate-run.ts
+- __tests__/streaming/*
+- __tests__/hooks/*
+- STATUS.md
+- CHECKPOINT.md
+**Out of scope:** LangGraph state/nodes, /api/debate route, UI timeline components, prompts, provider calls
+**Tests (TDD/eval):**
+- manual wsverify: npm run lint
+- manual wsverify: npm run typecheck
+- manual wsverify: npm run test
+- manual wsverify: npm run build
+**Verification (first pass?):**
+- [ ] lint
+- [ ] typecheck
+- [ ] test
+- [ ] build
+- [ ] evals (N/A)
+- First-pass all gates: TBD
+**Review (gatekeeper):** TBD
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- Scope split: Codex owns streaming runtime; Claude owns graph skeleton
+**Outcome:** in-progress
+
+---
+
+### 2026-02-25 20:25 - Phase 2a Streaming Runtime (SSE parser/encoder + fetch hook)
+
+**Task ID:** PH2A-STREAM-RUNTIME
+**Agent:** Codex
+**Branch:** feat/ph2a-streaming-runtime-codex-clean
+**Scope:** Implement Phase 2a streaming runtime primitives and client fetch-stream hook per PHASE2-CONTRACT (no route or LangGraph wiring)
+**Status:** Completed
+**Started:** 2026-02-25 20:25
+**Ended:** 2026-02-25 20:45
+**Cycle Time:** 0h25m
+**FR / Requirement:** Phase 2a streaming runtime
+**Files changed:**
+- src/lib/streaming/schemas.ts
+- src/lib/streaming/sse.ts
+- src/lib/streaming/runtime.ts
+- src/hooks/use-debate-run.ts
+- __tests__/streaming/schemas.test.ts
+- __tests__/streaming/sse.test.ts
+- __tests__/streaming/runtime.test.ts
+- __tests__/streaming/use-debate-run.test.tsx
+- STATUS.md
+- CHECKPOINT.md
+**Out of scope:** LangGraph state/nodes, /api/debate route, UI timeline components, prompts, provider calls
+**Tests (TDD/eval):**
+- manual wsverify: npm run lint
+- manual wsverify: npm run typecheck
+- manual wsverify: npm run test
+- manual wsverify: npm run build
+**Verification (first pass?):**
+- [x] lint
+- [x] typecheck
+- [x] test
+- [x] build
+- [x] evals (N/A)
+- First-pass all gates: Yes
+**Review (gatekeeper):** manual wsskeptic (debate-full profile): no remaining findings; gatekeeper review required for SSE protocol/runtime
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- Implements contract-aligned SSE event schema, frame encoder/parser, stream consumer ordering/dedup logic, and fetch-based client hook
+- 15 new streaming tests added (schemas/framing/parser/runtime/hook); full suite now 283 passing
+- In-scope fix from skeptic pass: useDebateRun.abort() now resets state instead of leaving status=running
+- Process deviation handled: initial apply_patch edits landed in shared worktree; copied to isolated worktree and cleaned shared leftovers before verification
+- manual wsresearch skipped: contract already frozen in PHASE2-CONTRACT.md
+**Outcome:** shipped-local
+**Commits:** `f97f287`
+
+---
+
 ## Next Session
 
 **Resume from:** Phase 1 complete — ready for Phase 2 gate check
