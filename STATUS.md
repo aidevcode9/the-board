@@ -2,7 +2,7 @@
 
 > Current work. Updated daily.
 
-Last updated: 2026-02-25
+Last updated: 2026-03-04
 
 ---
 
@@ -31,12 +31,10 @@ Last updated: 2026-02-25
 
 ## Now
 
-*(No active claims)*
+[Claude] Phase 2a streaming runtime — branch: feat/streaming-runtime-claude — started: 2026-03-04
 
 ## Next
 
-- [ ] Phase 2a graph skeleton — DebateState + LangGraph nodes/edges + round caps + anonymized review labels (no API route)
-- [ ] Phase 2a streaming runtime — SSE event union/encoder/parser + fetch-stream hook + ordering tests
 - [ ] Phase 2a /api/debate route — auth + request Zod + graph-to-SSE wiring (compare/debate entry)
 - [ ] Board runtime wiring — command bar submit + timeline reducer + terminal/error/HITL-lite states
 
@@ -86,6 +84,7 @@ Last updated: 2026-02-25
 - [x] Phase 2a API/SSE contract + docs alignment (Trigger.dev deferred, HITL-lite) — owner: Codex — 2026-02-25 — commit: aa0373d — cycle: 0h12m
 
 - [x] Phase 2 gate check + queue seeding — owner: Codex — 2026-02-25 — commit: 46dcd3b — cycle: 0h06m
+- [x] Phase 2a graph skeleton — DebateState, LangGraph nodes/edges, round caps, anti-sycophancy, personas, versioned prompt files, 319 tests — owner: Claude — 2026-03-01 — PR: #11 — cycle: ~2h
 
 ## Velocity Snapshot (This Week)
 
