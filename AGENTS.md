@@ -15,7 +15,7 @@
 3) **ARCHITECTURE.md**: interfaces, schemas, state machines, data contracts
 4) **DESIGN_SYSTEM.md**: UI design philosophy, layout, tokens, signature components
 5) **STATUS.md**: what is done / what is next (prevents rework)
-6) **CHECKPOINT.md**: session logs / partial progress
+6) **CHECKPOINT.md** + `docs/checkpoints/*`: rolling session log + archived history
 7) **EVALS.md** + `/evals/*`: golden queries + scoring thresholds
 
 **Rule:** If anything is ambiguous or missing from these docs -> STOP and ask before implementing.
@@ -84,6 +84,11 @@ Every task MUST specify:
 - Repo text files are normalized to LF via `.gitattributes`; do not introduce line-ending-only churn.
 - If local Windows line endings create unrelated repo-wide lint noise, record the deviation in `wsverify`, run targeted checks on changed files, and keep the full merge gate pending for a canonical environment or gatekeeper confirmation.
 - This does **not** waive the Quality Gates in Section 5.
+
+### 2.8 Checkpoint Retention
+- `CHECKPOINT.md` is a rolling log and must stay at or below 300 lines.
+- Historical checkpoint entries are archived under `docs/checkpoints/YYYY-MM.md`.
+- Use `npm run checkpoint:rollover` to move older entries and `npm run checkpoint:validate` before merge.
 
 ---
 
@@ -187,8 +192,9 @@ Stop and ask if ANY occurs:
 4) Implement following TDD or eval-driven rules
 5) Run gates (lint/typecheck/test/build + evals if applicable)
 6) Update STATUS.md: move item to Shipped/Done with date if your convention requires it
-7) Append CHECKPOINT.md entry: task, FR, status, tests, notes
-8) After merge/handoff in any shared worktree: run a hygiene sweep and clean your leftovers
+7) Append checkpoint entry (rolling `CHECKPOINT.md`) with task, FR, status, tests, notes
+8) If needed, run checkpoint rollover/validation to keep `CHECKPOINT.md` within policy
+9) After merge/handoff in any shared worktree: run a hygiene sweep and clean your leftovers
 
 ---
 

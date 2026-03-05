@@ -37,6 +37,8 @@ export const ValidationSchema = z.object({
   agrees: z.boolean(),
   disagreementReason: z.string().optional(),
   confidence: z.number().min(0).max(1),
+  /** Raw LLM response content — stored for cross-round diminishing returns detection */
+  content: z.string().optional(),
 });
 export type Validation = z.infer<typeof ValidationSchema>;
 
