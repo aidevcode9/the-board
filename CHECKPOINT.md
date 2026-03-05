@@ -1229,6 +1229,7 @@ Last updated: 2026-03-04
 - Terminal states rendered: completed, error, and human_review_required (HITL-lite)
 - Full lint is blocked by unrelated unowned files in this shared worktree; targeted lint on slice files passes
 **Outcome:** complete
+**Commits:** `96ed755`
 
 ---
 

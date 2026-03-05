@@ -87,7 +87,7 @@ Last updated: 2026-03-04
 
 - [x] Phase 2a streaming runtime — SSE event union/encoder/parser + fetch-stream hook + ordering tests — owner: Codex — 2026-02-25 — commit: f97f287 — cycle: 0h25m
 
-- [x] Board runtime wiring — command bar submit + timeline reducer + terminal/error/HITL-lite states — owner: Codex — 2026-03-04 — cycle: 0h21m
+- [x] Board runtime wiring — command bar submit + timeline reducer + terminal/error/HITL-lite states — owner: Codex — 2026-03-04 — commit: 96ed755 — cycle: 0h21m
 
 ## Velocity Snapshot (This Week)
 
