@@ -123,6 +123,61 @@ describe('BoardRuntimePanel', () => {
     expect(reasonTexts.length).toBeGreaterThan(0);
   });
 
+  it('renders typing indicators, confidence, and running cost from SSE events', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      makeSseResponse([
+        makeEvent({ seq: 1, type: 'run_started' }),
+        makeEvent({
+          payload: { participantId: 'builder' },
+          seq: 2,
+          type: 'participant_started',
+        }),
+        makeEvent({
+          payload: { totalCostUsd: 0.025 },
+          seq: 3,
+          type: 'cost_updated',
+        }),
+        makeEvent({
+          payload: {
+            confidence: 0.87,
+            content: 'Use a token bucket with Redis scripts.',
+            model: 'gpt-5.2',
+            participantId: 'builder',
+            provider: 'OpenAI',
+          },
+          seq: 4,
+          type: 'participant_completed',
+        }),
+        makeEvent({
+          payload: { finalAnswer: 'Final synthesis text' },
+          seq: 5,
+          type: 'run_completed',
+        }),
+      ]),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <BoardRuntimePanel
+        activeMode="debate"
+        activeWorkspaceDomain="system-design"
+        activeWorkspaceId="ws_1"
+        activeWorkspaceName="System Design"
+      />,
+    );
+
+    fireEvent.change(screen.getByRole('textbox', { name: /command input/i }), {
+      target: { value: 'Debate this architecture tradeoff.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /run debate/i }));
+
+    expect(await screen.findByText(/builder is thinking/i)).toBeInTheDocument();
+    expect(await screen.findByText('Use a token bucket with Redis scripts.')).toBeInTheDocument();
+    expect(await screen.findByText('Cost ticker: $0.0250')).toBeInTheDocument();
+    const confidenceReadouts = await screen.findAllByText(/87% confidence/i);
+    expect(confidenceReadouts.length).toBeGreaterThan(0);
+  });
+
   it('shows stream error from debate execution failures', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ error: 'Unauthorized' }), {

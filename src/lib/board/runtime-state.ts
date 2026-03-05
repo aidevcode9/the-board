@@ -18,11 +18,16 @@ export type PersonaRuntimeState = {
 
 export type BoardTimelineEntry = {
   content: string;
+  confidence?: number | undefined;
   id: string;
   kind: 'query' | 'phase' | 'participant' | 'system' | 'error';
+  model?: string | undefined;
+  persona?: 'claude' | 'gemini' | 'gpt' | undefined;
   participantId?: string | undefined;
   phase?: string | undefined;
+  provider?: string | undefined;
   round?: number | undefined;
+  status?: PersonaStatus | undefined;
   title: string;
 };
 

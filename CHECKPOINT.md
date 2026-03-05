@@ -1302,6 +1302,54 @@ Last updated: 2026-03-05
 
 ---
 
+### 2026-03-04 17:10 - Phase 2 board timeline rendering
+
+**Task ID:** PH2-BOARD-TIMELINE
+**Agent:** Codex
+**Branch:** feat/ph2-board-timeline-rendering-codex
+**Scope:** Board timeline rendering — consume SSE events, render timeline cards with typing indicators, confidence meters, cost ticker
+**Status:** Completed
+**Started:** 2026-03-04 17:10
+**Ended:** 2026-03-04 17:17
+**Cycle Time:** 0h07m
+**FR / Requirement:** FR-UI-001
+**Files changed:**
+- src/app/board-runtime-view.tsx
+- src/app/status-board-primitives.tsx
+- src/lib/board/runtime-state.ts
+- src/lib/board/runtime-stream.ts
+- src/lib/board/runtime-reducer.ts
+- __tests__/board/runtime.test.ts
+- __tests__/board/runtime-panel.test.tsx
+**Out of scope:** /api/debate changes, SSE protocol/schema changes, LangGraph/DB changes, compare-only behavior
+**Tests (TDD/eval):**
+- TDD: reducer transitions for typing/phase/cost timeline mapping
+- TDD: runtime panel renders typing indicator + cost ticker updates from SSE
+- manual wsverify: npm run lint (pending: unrelated unowned sycophancy-wiring file fails noNonNullAssertion/format)
+- manual wsverify: npx biome check <slice files> (pass)
+- manual wsverify: npm run typecheck (pending: unrelated unowned sycophancy-wiring file has strict-null errors)
+- manual wsverify: npm run test (396/396 pass)
+- manual wsverify: npm run build (pass)
+**Verification (first pass?):**
+- [ ] lint
+- [ ] typecheck
+- [x] test
+- [x] build
+- [ ] evals (N/A)
+- First-pass all gates: No
+**Review (gatekeeper):** pending (cross-review required: coder cannot gatekeep same task per AGENTS.md)
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- manual wsorchestrate and manual wsresearch completed before coding
+- No frozen interfaces changed
+- Full lint/typecheck pending in this shared worktree due unowned sycophancy-wiring files; targeted slice checks pass
+- Typing events are intentionally preserved as timeline history entries
+- manual wsskeptic (self-check, UI profile) found no critical/high; formal gatekeeper review still pending
+**Outcome:** complete
+**Commits:** `bf62ee8`
+
+---
+
 ## Next Session
 
 **Resume from:** Phase 1 complete — ready for Phase 2 gate check

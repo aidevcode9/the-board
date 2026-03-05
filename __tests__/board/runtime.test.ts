@@ -53,12 +53,20 @@ describe('boardRuntimeReducer', () => {
       }),
       type: 'stream_event',
     });
+    expect(state.timeline.at(-1)).toMatchObject({
+      kind: 'participant',
+      participantId: 'builder',
+      status: 'thinking',
+    });
+
     state = boardRuntimeReducer(state, {
       event: makeEvent({
         payload: {
           confidence: 0.87,
           content: 'Use a token bucket with Redis scripts.',
+          model: 'gpt-5.2',
           participantId: 'builder',
+          provider: 'OpenAI',
         },
         seq: 2,
         type: 'participant_completed',
@@ -70,9 +78,57 @@ describe('boardRuntimeReducer', () => {
     expect(state.personas.gpt.confidence).toBe(87);
     expect(state.timeline.at(-1)).toMatchObject({
       content: 'Use a token bucket with Redis scripts.',
+      confidence: 87,
       kind: 'participant',
+      model: 'gpt-5.2',
       participantId: 'builder',
+      provider: 'OpenAI',
+      status: 'complete',
     });
+  });
+
+  it('adds phase timeline entries from phase_started stream events', () => {
+    const state = boardRuntimeReducer(makeState(), {
+      event: makeEvent({
+        payload: { phase: 'review', round: 2 },
+        phase: 'review',
+        round: 2,
+        seq: 7,
+        type: 'phase_started',
+      }),
+      type: 'stream_event',
+    });
+
+    expect(state.phase).toBe('review');
+    expect(state.round).toBe(2);
+    expect(state.timeline.at(-1)).toMatchObject({
+      kind: 'phase',
+      phase: 'review',
+      round: 2,
+      title: 'Phase: review',
+    });
+  });
+
+  it('keeps total cost monotonic from cost_updated stream events', () => {
+    let state = boardRuntimeReducer(makeState(), {
+      event: makeEvent({
+        payload: { totalCostUsd: 0.02 },
+        seq: 3,
+        type: 'cost_updated',
+      }),
+      type: 'stream_event',
+    });
+
+    state = boardRuntimeReducer(state, {
+      event: makeEvent({
+        payload: { totalCostUsd: 0.01 },
+        seq: 4,
+        type: 'cost_updated',
+      }),
+      type: 'stream_event',
+    });
+
+    expect(state.totalCostUsd).toBe(0.02);
   });
 
   it('enters HITL-lite state on human_review_required', () => {

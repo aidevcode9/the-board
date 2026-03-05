@@ -31,7 +31,7 @@ Last updated: 2026-03-05
 
 ## Now
 
-*(No active claims)*
+- [Claude] Sycophancy detection wiring — branch: feat/sycophancy-wiring-claude — started: 2026-03-05 12:00
 
 ## Next
 
@@ -40,7 +40,6 @@ Last updated: 2026-03-05
 - [ ] Eval scoring integration — Langfuse LLM-as-judge on debate completion, save to debates.evalScore + evalDetails
 
 **Codex territory (frontend/UI/rendering):**
-- [ ] Board timeline rendering — consume SSE events, render timeline cards with typing indicators, confidence meters, cost ticker
 - [ ] Debate transcript view — collapsible phases, model color-coding, agreement/disagreement highlighting (consumes GET /api/debates/[id])
 - [ ] Compare mode UI — independent-only display (no review/synthesis phases)
 
@@ -99,6 +98,8 @@ Last updated: 2026-03-05
 - [x] Phase 2a /api/debate route — auth + Zod + graph-to-SSE wiring + Pino logging + workspace validation, 21 new tests (365 total) — owner: Claude — 2026-03-05 — PR: #13
 
 - [x] Backend read APIs — GET /api/workspaces, /api/workspaces/[id]/debates, /api/debates/[id] + CUID2 validation + column selection + pagination, 19 new tests (384 total) — owner: Claude — 2026-03-05 — PR: #14
+
+- [x] Board timeline rendering — consume SSE events, render timeline cards with typing indicators, confidence meters, cost ticker — owner: Codex — 2026-03-05 — commit: bf62ee8 — cycle: 0h08m
 
 ## Velocity Snapshot (This Week)
 
