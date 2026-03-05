@@ -31,7 +31,7 @@ Last updated: 2026-03-05
 
 ## Now
 
-*(No active claims)*
+- [Claude] Deep Debate mode SSE + MCP context auto-update — branch: feat/deep-debate-claude — started: 2026-03-05 20:35
 
 ## Next
 

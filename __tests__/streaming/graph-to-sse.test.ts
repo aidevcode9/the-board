@@ -545,4 +545,211 @@ describe('graphToSseStream', () => {
       expect(events.some((event) => event.type === 'run_completed')).toBe(false);
     });
   });
+
+  describe('deep debate (multi-round)', () => {
+    /** Simulate 2-round deep debate: round 1 disagrees, round 2 converges. */
+    function deepDebateStreamChunks(): StreamChunk[] {
+      const round1 = debateStreamChunks();
+      // Modify round 1 post_validation: disagreement, convergence=false, round goes to 2
+      const r1PostVal = round1.at(-1);
+      if (!r1PostVal) throw new Error('Expected post_validation chunk');
+      r1PostVal[1].post_validation = {
+        convergence: false,
+        hitlRequired: false,
+        round: 2,
+        currentPhase: 'validation',
+      };
+
+      // Round 2: review → synthesize → validate → post_validation (convergence=true)
+      const round2Chunks: StreamChunk[] = [
+        [
+          'updates',
+          {
+            review_response: {
+              reviews: {
+                analyst: {
+                  ofResponseA: {
+                    flaws: ['r2f1'],
+                    strengths: ['r2s1'],
+                    suggestions: ['r2sg1'],
+                    overallAssessment: 'better',
+                  },
+                  ofResponseB: {
+                    flaws: ['r2f2'],
+                    strengths: ['r2s2'],
+                    suggestions: ['r2sg2'],
+                    overallAssessment: 'better',
+                  },
+                },
+              },
+              totalCostUsd: 0.01,
+              currentPhase: 'review',
+            },
+          },
+        ],
+        [
+          'updates',
+          {
+            review_response: {
+              reviews: {
+                builder: {
+                  ofResponseA: {
+                    flaws: ['r2f1'],
+                    strengths: ['r2s1'],
+                    suggestions: ['r2sg1'],
+                    overallAssessment: 'better',
+                  },
+                  ofResponseB: {
+                    flaws: ['r2f2'],
+                    strengths: ['r2s2'],
+                    suggestions: ['r2sg2'],
+                    overallAssessment: 'better',
+                  },
+                },
+              },
+              totalCostUsd: 0.01,
+              currentPhase: 'review',
+            },
+          },
+        ],
+        [
+          'updates',
+          {
+            review_response: {
+              reviews: {
+                synthesizer: {
+                  ofResponseA: {
+                    flaws: ['r2f1'],
+                    strengths: ['r2s1'],
+                    suggestions: ['r2sg1'],
+                    overallAssessment: 'better',
+                  },
+                  ofResponseB: {
+                    flaws: ['r2f2'],
+                    strengths: ['r2s2'],
+                    suggestions: ['r2sg2'],
+                    overallAssessment: 'better',
+                  },
+                },
+              },
+              totalCostUsd: 0.01,
+              currentPhase: 'review',
+            },
+          },
+        ],
+        [
+          'updates',
+          {
+            synthesize: {
+              synthesis: {
+                content: 'Round 2 synthesized answer',
+                confidencePerClaim: { c1: 0.95 },
+                synthesizedBy: 'builder',
+              },
+              totalCostUsd: 0.02,
+              currentPhase: 'synthesis',
+            },
+          },
+        ],
+        [
+          'updates',
+          {
+            validate_response: {
+              validations: { analyst: { agrees: true, confidence: 0.95 } },
+              totalCostUsd: 0.005,
+              currentPhase: 'validation',
+            },
+          },
+        ],
+        [
+          'updates',
+          {
+            validate_response: {
+              validations: { synthesizer: { agrees: true, confidence: 0.9 } },
+              totalCostUsd: 0.005,
+              currentPhase: 'validation',
+            },
+          },
+        ],
+        [
+          'updates',
+          {
+            post_validation: {
+              convergence: true,
+              hitlRequired: false,
+              round: 3,
+              currentPhase: 'validation',
+            },
+          },
+        ],
+      ];
+
+      return [...round1, ...round2Chunks];
+    }
+
+    it('emits phase_started for review in both rounds', async () => {
+      const stream = graphToSseStream(mockGraphStream(deepDebateStreamChunks()), DEBATE_ID, 'deep');
+      const events = await collectSseEvents(stream);
+
+      const reviewPhaseStarted = events.filter(
+        (e) => e.type === 'phase_started' && e.phase === 'review',
+      );
+      expect(reviewPhaseStarted).toHaveLength(2);
+    });
+
+    it('includes round field on events', async () => {
+      const stream = graphToSseStream(mockGraphStream(deepDebateStreamChunks()), DEBATE_ID, 'deep');
+      const events = await collectSseEvents(stream);
+
+      // Round 1 events should have round=1
+      const r1ReviewStarted = events.find(
+        (e) => e.type === 'phase_started' && e.phase === 'review' && e.round === 1,
+      );
+      expect(r1ReviewStarted).toBeDefined();
+
+      // Round 2 events should have round=2
+      const r2ReviewStarted = events.find(
+        (e) => e.type === 'phase_started' && e.phase === 'review' && e.round === 2,
+      );
+      expect(r2ReviewStarted).toBeDefined();
+    });
+
+    it('emits phase_completed for review and validation in both rounds', async () => {
+      const stream = graphToSseStream(mockGraphStream(deepDebateStreamChunks()), DEBATE_ID, 'deep');
+      const events = await collectSseEvents(stream);
+
+      const reviewCompleted = events.filter(
+        (e) => e.type === 'phase_completed' && e.phase === 'review',
+      );
+      expect(reviewCompleted).toHaveLength(2);
+
+      const validationCompleted = events.filter(
+        (e) => e.type === 'phase_completed' && e.phase === 'validation',
+      );
+      expect(validationCompleted).toHaveLength(2);
+    });
+
+    it('emits run_completed with final round synthesis', async () => {
+      const stream = graphToSseStream(mockGraphStream(deepDebateStreamChunks()), DEBATE_ID, 'deep');
+      const events = await collectSseEvents(stream);
+
+      const runCompleted = events.find((e) => e.type === 'run_completed');
+      expect(runCompleted).toBeDefined();
+      expect(runCompleted?.payload.finalAnswer).toBe('Round 2 synthesized answer');
+      expect(runCompleted?.payload.convergence).toBe(true);
+      expect(runCompleted?.payload.rounds).toBe(2); // 2 completed rounds (post_validation counter is off-by-1)
+    });
+
+    it('accumulates cost across rounds', async () => {
+      const stream = graphToSseStream(mockGraphStream(deepDebateStreamChunks()), DEBATE_ID, 'deep');
+      const events = await collectSseEvents(stream);
+
+      const runCompleted = events.find((e) => e.type === 'run_completed');
+      expect(runCompleted).toBeDefined();
+      // Round 1: 3×0.01 (ind) + 3×0.01 (rev) + 0.02 (syn) + 2×0.005 (val) = 0.09
+      // Round 2: 3×0.01 (rev) + 0.02 (syn) + 2×0.005 (val) = 0.06
+      // Total: 0.15
+      expect(runCompleted?.payload.totalCostUsd).toBeCloseTo(0.15, 5);
+    });
+  });
 });
