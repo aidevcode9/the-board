@@ -1429,6 +1429,7 @@ Last updated: 2026-03-05
 - Refactored request helpers into src/lib/board/runtime-requests.ts to keep board-runtime files within AGENTS line caps
 - All quality gates passed in this worktree
 **Outcome:** complete
+**Commits:** `31d4896`
 
 ---
 

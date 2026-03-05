@@ -100,7 +100,7 @@ Last updated: 2026-03-05
 
 - [x] Board timeline rendering — consume SSE events, render timeline cards with typing indicators, confidence meters, cost ticker — owner: Codex — 2026-03-05 — commit: bf62ee8 — cycle: 0h08m
 
-- [x] Debate transcript view — collapsible phases, model color-coding, agreement/disagreement highlighting (consumes GET /api/debates/[id]) — owner: Codex — 2026-03-05 — branch: feat/ph2-transcript-view-codex — cycle: 0h41m
+- [x] Debate transcript view — collapsible phases, model color-coding, agreement/disagreement highlighting (consumes GET /api/debates/[id]) — owner: Codex — 2026-03-05 — commit: 31d4896 — cycle: 0h41m
 
 ## Velocity Snapshot (This Week)
 
