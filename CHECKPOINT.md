@@ -235,7 +235,7 @@ Last updated: 2026-03-04
 - Moved implementation to clean worktree after detecting unresolved merge markers in shared branch
 - Eval metrics and sycophancy flags are rendered from existing GET /api/debates/[id] payload only
 **Outcome:** complete
-**Commits:** `pending`
+**Commits:** `9667f7d`
 
 ---
 
