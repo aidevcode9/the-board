@@ -14,5 +14,5 @@ export async function validateWorkspaceOwnership(
     columns: { id: true },
   });
 
-  return workspace !== undefined;
+  return workspace != null;
 }
