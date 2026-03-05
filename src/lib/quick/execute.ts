@@ -1,8 +1,9 @@
 import { db } from '@/lib/db/client';
-import { debateResponses, debates, workspaces } from '@/lib/db/schema';
+import { debateResponses, debates } from '@/lib/db/schema';
 import { calculateCost } from '@/lib/providers/cost';
 import { createLLMClient } from '@/lib/providers/factory';
 import { withTracing } from '@/lib/providers/traced';
+import { ensureWorkspace } from '@/lib/workspace/ensure';
 import { createId } from '@paralleldrive/cuid2';
 import { eq } from 'drizzle-orm';
 import { resolveActivePersona } from './resolve-persona';
@@ -111,26 +112,4 @@ export async function executeQuickQuery(
     costUsd,
     latencyMs,
   };
-}
-
-// ── Workspace Helper ────────────────────────────────────────────────────────
-// Auto-creates a default workspace per domain+user if one doesn't exist.
-// This bridges the gap before workspace UI is built (Codex task).
-
-async function ensureWorkspace(domain: string, userId: string): Promise<{ id: string }> {
-  // Try insert first — unique index (domain, createdBy) prevents duplicates
-  // On conflict (concurrent requests), ignore and re-query
-  await db
-    .insert(workspaces)
-    .values({ name: domain, domain, createdBy: userId })
-    .onConflictDoNothing();
-
-  const existing = await db.query.workspaces.findFirst({
-    where: (w, { eq: eqFn, and: andFn }) =>
-      andFn(eqFn(w.domain, domain), eqFn(w.createdBy, userId)),
-    columns: { id: true },
-  });
-
-  if (!existing) throw new Error('Failed to create or find workspace');
-  return existing;
 }

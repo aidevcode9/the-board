@@ -265,6 +265,7 @@ COMMIT  → Only after eval threshold met
 - **Security:** LLM Guard + Promptfoo (Phase 4)
 - **Models:** Config-driven provider abstraction (Anthropic, OpenAI, Google, DeepSeek, Groq, LM Studio)
 - **Streaming:** Server-Sent Events (SSE)
+- **Logging:** Pino (structured JSON logs for troubleshooting — separate from Langfuse LLM observability)
 
 ---
 

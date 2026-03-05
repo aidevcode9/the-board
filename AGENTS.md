@@ -97,9 +97,10 @@ Every task MUST specify:
   - **Deep Debate mode:** max **4 rounds** of cross-review. After round 4, **force synthesis** regardless of agreement.
 - Anti-sycophancy constraints must remain present for every persona in every mode.
 
-### 3.2 Tracing / Telemetry (Langfuse)
+### 3.2 Tracing / Telemetry (Langfuse) + Logging (Pino)
 - **Every** LLM call MUST go through the Langfuse-wrapped client (no raw SDK calls).
 - Traces MUST include: provider, model, tokens, latency, cost, mode, phase, persona, and domain context.
+- **Application logging** uses Pino (structured JSON). Use Pino child loggers with correlation IDs (debateId, userId) for troubleshooting. Do not use raw `console.log`/`console.error` — use the Pino logger instance from `src/lib/logger.ts`.
 
 ### 3.3 Security boundaries
 - Admin routes must be RBAC-protected.
