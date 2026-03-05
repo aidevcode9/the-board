@@ -21,97 +21,6 @@ Last updated: 2026-03-05
 
 ## Rolling Entries
 
-### 2026-03-04 16:26 - Phase 2a /api/debate route hotfix
-
-**Task ID:** PH2A-DEBATE-HOTFIX
-**Agent:** Codex
-**Branch:** feat/ph2a-debate-route-hotfix-codex
-**Scope:** Fix stream payload compatibility and abort terminal semantics for /api/debate
-**Status:** Completed
-**Started:** 2026-03-04 16:26
-**Ended:** 2026-03-04 16:41
-**Cycle Time:** 0h15m
-**FR / Requirement:** Phase 2a /api/debate route
-**Files changed:**
-- src/lib/streaming/graph-to-sse.ts
-- __tests__/streaming/graph-to-sse.test.ts
-- STATUS.md
-- CHECKPOINT.md
-**Out of scope:** Auth schema changes, LangGraph state schema, provider interfaces, UI redesign
-**Tests (TDD/eval):**
-- TDD: run_completed payload uses finalAnswer
-- TDD: synthesis participant_completed includes content
-- TDD: aborted stream emits terminal error (no run_completed)
-- manual wsverify: npm run lint
-- manual wsverify: npm run typecheck
-- manual wsverify: npm run test (367/367)
-- manual wsverify: npm run build
-**Verification (first pass?):**
-- [ ] lint
-- [ ] typecheck
-- [ ] test
-- [ ] build
-- [ ] evals (N/A)
-- First-pass all gates: TBD
-**Review (gatekeeper):** manual wsskeptic (infrastructure profile): no remaining critical/high findings
-**Findings fixed:** Critical: 0, High: 0, Low: 0
-**Notes:**
-- run_completed now emits finalAnswer (plus synthesizedAnswer for compatibility)
-- abort/disconnect path now emits terminal error event instead of run_completed
-- all quality gates passed in clean worktree
-**Outcome:** complete
-**Commits:** `c8d58dd`
-
----
-
-### 2026-03-04 17:10 - Phase 2 board timeline rendering
-
-**Task ID:** PH2-BOARD-TIMELINE
-**Agent:** Codex
-**Branch:** feat/ph2-board-timeline-rendering-codex
-**Scope:** Board timeline rendering - consume SSE events, render timeline cards with typing indicators, confidence meters, cost ticker
-**Status:** Completed
-**Started:** 2026-03-04 17:10
-**Ended:** 2026-03-04 17:17
-**Cycle Time:** 0h07m
-**FR / Requirement:** FR-UI-001
-**Files changed:**
-- src/app/board-runtime-view.tsx
-- src/app/status-board-primitives.tsx
-- src/lib/board/runtime-state.ts
-- src/lib/board/runtime-stream.ts
-- src/lib/board/runtime-reducer.ts
-- __tests__/board/runtime.test.ts
-- __tests__/board/runtime-panel.test.tsx
-**Out of scope:** /api/debate changes, SSE protocol/schema changes, LangGraph/DB changes, compare-only behavior
-**Tests (TDD/eval):**
-- TDD: reducer transitions for typing/phase/cost timeline mapping
-- TDD: runtime panel renders typing indicator + cost ticker updates from SSE
-- manual wsverify: npm run lint (pending: unrelated unowned sycophancy-wiring file fails noNonNullAssertion/format)
-- manual wsverify: npx biome check <slice files> (pass)
-- manual wsverify: npm run typecheck (pending: unrelated unowned sycophancy-wiring file has strict-null errors)
-- manual wsverify: npm run test (396/396 pass)
-- manual wsverify: npm run build (pass)
-**Verification (first pass?):**
-- [ ] lint
-- [ ] typecheck
-- [x] test
-- [x] build
-- [ ] evals (N/A)
-- First-pass all gates: No
-**Review (gatekeeper):** pending (cross-review required: coder cannot gatekeep same task per AGENTS.md)
-**Findings fixed:** Critical: 0, High: 0, Low: 0
-**Notes:**
-- manual wsorchestrate and manual wsresearch completed before coding
-- No frozen interfaces changed
-- Full lint/typecheck pending in this shared worktree due unowned sycophancy-wiring files; targeted slice checks pass
-- Typing events are intentionally preserved as timeline history entries
-- manual wsskeptic (self-check, UI profile) found no critical/high; formal gatekeeper review still pending
-**Outcome:** complete
-**Commits:** `bf62ee8`
-
----
-
 ### 2026-03-04 17:42 - Phase 2 debate transcript view
 
 **Task ID:** PH2-TRANSCRIPT-VIEW
@@ -248,6 +157,101 @@ Last updated: 2026-03-05
 - CHECKPOINT.md now uses rolling policy with archive index and explicit entry template
 - Added npm scripts: checkpoint:rollover and checkpoint:validate
 **Outcome:** complete
+
+---
+
+### 2026-03-05 12:00 - Sycophancy detection wiring
+
+**Task ID:** PH2-SYCOPHANCY-WIRE
+**Agent:** Claude
+**Branch:** feat/sycophancy-wiring-claude
+**Scope:** Wire detect.ts into validate_response node, populate sycophancyFlags in graph state + DB + SSE pipeline
+**Status:** Completed
+**Started:** 2026-03-05 12:00
+**Ended:** 2026-03-05 13:30
+**Cycle Time:** 1h30m
+**FR / Requirement:** Phase 2 anti-sycophancy (REQUIREMENTS.md §4)
+**Files changed:**
+- src/lib/graph/nodes/validate.ts
+- src/lib/anti-sycophancy/detect.ts
+- src/lib/streaming/graph-to-sse.ts
+- __tests__/graph/validate.test.ts
+- __tests__/anti-sycophancy/detect.test.ts
+**Out of scope:** Anti-sycophancy prompt changes, LangGraph state schema changes, UI rendering of flags
+**Tests (TDD/eval):**
+- TDD: validate node calls detect.ts and populates sycophancyFlags
+- TDD: detect.ts identifies confidence collapse and agreement-without-evidence
+- TDD: graph-to-sse emits sycophancyFlags in run_completed payload
+- manual wsverify: npm run lint
+- manual wsverify: npm run typecheck
+- manual wsverify: npm run test (all pass)
+- manual wsverify: npm run build
+**Verification (first pass?):**
+- [x] lint
+- [x] typecheck
+- [x] test
+- [x] build
+- [x] evals (N/A)
+- First-pass all gates: Yes
+**Review (gatekeeper):** manual wsskeptic (infrastructure profile): no critical/high findings
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- Sycophancy flags now flow end-to-end: detect → state → DB → SSE run_completed payload
+- No frozen interfaces changed
+**Outcome:** complete
+**Commits:** `384b307`, `2bb022d`
+
+---
+
+### 2026-03-05 14:00 - Eval scoring integration
+
+**Task ID:** PH2-EVAL-SCORING
+**Agent:** Claude
+**Branch:** feat/eval-scoring-claude
+**Scope:** Langfuse LLM-as-judge scoring on debate completion — 4 metrics (relevancy, faithfulness, completeness, debate_quality), fire-and-forget after stream close, persist to evalScore + evalDetails
+**Status:** Completed
+**Started:** 2026-03-05 14:00
+**Ended:** 2026-03-05 16:00
+**Cycle Time:** 2h00m
+**FR / Requirement:** Phase 2 eval scoring (EVALS.md)
+**Files changed:**
+- src/lib/eval/langfuse-judges.ts (new)
+- src/lib/eval/score-debate.ts (new)
+- src/lib/eval/index.ts (new)
+- src/lib/streaming/graph-to-sse.ts
+- src/lib/streaming/schemas.ts
+- src/app/api/debate/route.ts
+- __tests__/eval/judges.test.ts (new)
+- __tests__/eval/score-debate.test.ts (new)
+- __tests__/streaming/schemas.test.ts
+**Out of scope:** Langfuse dashboard config, eval thresholds tuning, CI eval gate, Deep Debate mode
+**Tests (TDD/eval):**
+- TDD: 13 tests for judge prompt builders + parseJudgeResponse
+- TDD: 7 tests for scoreDebate (mocked providers, withTracing assertion)
+- TDD: schema test updated for eval_completed event type
+- manual wsverify: npm run lint
+- manual wsverify: npm run typecheck
+- manual wsverify: npm run test (415/415 pass)
+- manual wsverify: npm run build
+**Verification (first pass?):**
+- [x] lint
+- [x] typecheck
+- [x] test
+- [x] build
+- [x] evals (N/A)
+- First-pass all gates: Yes
+**Review (gatekeeper):** manual wsskeptic: 16 findings (2 HIGH fixed, 2 MEDIUM fixed, accepted risks documented)
+**Findings fixed:** Critical: 0, High: 2, Low: 0
+**Notes:**
+- Fire-and-forget architecture: eval runs after SSE stream closes, persists to DB only (no post-terminal SSE event)
+- HIGH fix EVAL-02: Moved eval to fire-and-forget to avoid post-close controller writes
+- HIGH fix EVAL-04: parseJudgeResponse now uses full-parse-first + non-greedy regex fallback
+- MEDIUM fix EVAL-08: eval cost persisted to totalCostUsd in DB
+- MEDIUM fix EVAL-09: maxTokens: 512 bounds judge cost
+- withTracing assertion added to enforce Langfuse tracing invariant at test level
+- Accepted risks: EVAL-01 (prompt injection → Phase 4), EVAL-03 (timer leak → pre-existing), EVAL-10 (self-eval → Phase 3)
+**Outcome:** complete
+**Commits:** `66fc045`, `bfcbf57`, `eb3af63`
 
 ---
 
