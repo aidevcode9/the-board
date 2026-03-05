@@ -32,6 +32,52 @@ function makeSseResponse(events: DebateStreamEvent[]) {
   });
 }
 
+function makeDebateDetailResponse() {
+  return new Response(
+    JSON.stringify({
+      debate: {
+        convergence: false,
+        createdAt: '2026-03-05T00:00:00.000Z',
+        domain: 'system-design',
+        evalScore: 0.82,
+        id: 'dbt_123',
+        mode: 'debate',
+        query: 'Debate this architecture tradeoff.',
+        rounds: 2,
+        synthesizedAnswer: 'Final synthesis text',
+      },
+      responses: [
+        {
+          confidence: 0.9,
+          content: 'Initial independent analysis.',
+          costUsd: 0.01,
+          createdAt: '2026-03-05T00:00:01.000Z',
+          id: 'resp_1',
+          model: 'claude',
+          phase: 'independent',
+          role: 'analyst',
+          round: 1,
+        },
+        {
+          confidence: 0.7,
+          content: 'I disagree because this omits failure handling.',
+          costUsd: 0.01,
+          createdAt: '2026-03-05T00:00:02.000Z',
+          id: 'resp_2',
+          model: 'gpt',
+          phase: 'validation',
+          role: 'builder',
+          round: 1,
+        },
+      ],
+    }),
+    {
+      headers: { 'content-type': 'application/json' },
+      status: 200,
+    },
+  );
+}
+
 describe('BoardRuntimePanel', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -176,6 +222,48 @@ describe('BoardRuntimePanel', () => {
     expect(await screen.findByText('Cost ticker: $0.0250')).toBeInTheDocument();
     const confidenceReadouts = await screen.findAllByText(/87% confidence/i);
     expect(confidenceReadouts.length).toBeGreaterThan(0);
+  });
+
+  it('loads and renders transcript phases from debate detail API after completion', async () => {
+    const fetchMock = vi.fn().mockImplementation((input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      if (url === '/api/debate') {
+        return Promise.resolve(
+          makeSseResponse([
+            makeEvent({ seq: 1, type: 'run_started' }),
+            makeEvent({
+              payload: { finalAnswer: 'Final synthesis text' },
+              seq: 2,
+              type: 'run_completed',
+            }),
+          ]),
+        );
+      }
+      if (url === '/api/debates/dbt_123') {
+        return Promise.resolve(makeDebateDetailResponse());
+      }
+      return Promise.reject(new Error(`Unexpected URL: ${url}`));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <BoardRuntimePanel
+        activeMode="debate"
+        activeWorkspaceDomain="system-design"
+        activeWorkspaceId="ws_1"
+        activeWorkspaceName="System Design"
+      />,
+    );
+
+    fireEvent.change(screen.getByRole('textbox', { name: /command input/i }), {
+      target: { value: 'Debate this architecture tradeoff.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /run debate/i }));
+
+    expect(await screen.findByText(/debate transcript/i)).toBeInTheDocument();
+    expect(await screen.findByText(/phase independent/i)).toBeInTheDocument();
+    expect(await screen.findByText(/phase validation/i)).toBeInTheDocument();
+    expect(await screen.findByText(/^disagreement$/i)).toBeInTheDocument();
   });
 
   it('shows stream error from debate execution failures', async () => {

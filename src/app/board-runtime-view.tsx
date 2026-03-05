@@ -4,6 +4,7 @@ import type { BoardMode } from '@/lib/modes/selection';
 type BoardRuntimeViewProps = {
   activeMode: BoardMode;
   activeWorkspaceName: string | null;
+  children?: React.ReactNode;
   isBusy: boolean;
   onCancel: () => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
@@ -146,7 +147,7 @@ function TimelineView({
               ) : null}
               {entry.model || entry.provider ? (
                 <p className="mt-2 font-data text-[10px] tracking-widest text-text-dim uppercase">
-                  {[entry.provider, entry.model].filter(Boolean).join(' Â· ')}
+                  {[entry.provider, entry.model].filter(Boolean).join(' - ')}
                 </p>
               ) : null}
               {typeof entry.confidence === 'number' ? confidenceMeter(entry.confidence) : null}
@@ -218,6 +219,7 @@ function CommandBar({
 export function BoardRuntimeView({
   activeMode,
   activeWorkspaceName,
+  children,
   isBusy,
   onCancel,
   onSubmit,
@@ -229,6 +231,7 @@ export function BoardRuntimeView({
     <>
       <StatusBoard runtime={runtime} />
       <TimelineView activeWorkspaceName={activeWorkspaceName} runtime={runtime} />
+      {children}
       <CommandBar
         activeMode={activeMode}
         isBusy={isBusy}
