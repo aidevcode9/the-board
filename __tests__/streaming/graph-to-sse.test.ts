@@ -1,3 +1,6 @@
+// Mock server-only (imported transitively via context/loader)
+vi.mock('server-only', () => ({}));
+
 import type { DebateStateUpdate, ModelId } from '@/lib/graph/state';
 import { graphToSseStream } from '@/lib/streaming/graph-to-sse';
 import type { DebateStreamEvent } from '@/lib/streaming/schemas';

@@ -13,3 +13,6 @@ export type {
   DomainContext,
   KnownDomain,
 } from './loader';
+
+export { appendInsightToSection, SECTION_HEADINGS } from './writer';
+export type { AppendInsightOptions, AppendInsightResult } from './writer';

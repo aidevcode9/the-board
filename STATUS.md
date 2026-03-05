@@ -31,6 +31,7 @@ Last updated: 2026-03-05
 
 ## Now
 
+- [Claude] MCP context auto-update — activate update_domain_knowledge + CONTEXT.md writes — branch: feat/mcp-context-autoupdate-claude — started: 2026-03-05 22:30
 
 ## Next
 

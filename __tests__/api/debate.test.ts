@@ -1,3 +1,6 @@
+// Mock server-only (imported transitively via context/loader)
+vi.mock('server-only', () => ({}));
+
 import { POST } from '@/app/api/debate/route';
 import { parseSseFrames } from '@/lib/streaming/sse';
 

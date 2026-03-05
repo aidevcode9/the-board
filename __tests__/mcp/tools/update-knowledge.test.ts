@@ -3,6 +3,20 @@ import { describe, expect, it, vi } from 'vitest';
 // Mock server-only (no-op in test — imported transitively by context loader)
 vi.mock('server-only', () => ({}));
 
+// Mock the writer module so handler tests don't hit the filesystem
+vi.mock('../../../src/lib/context/writer', () => ({
+  SECTION_HEADINGS: {
+    coreConcepts: 'Core Concepts',
+    disagreements: 'Key Disagreements & Resolutions',
+    interviewFramings: 'Interview Framings',
+    misconceptions: 'Common Misconceptions',
+  },
+  appendInsightToSection: vi.fn().mockResolvedValue({
+    status: 'updated',
+    message: 'Insight appended.',
+  }),
+}));
+
 import { KNOWN_DOMAINS } from '../../../src/lib/context';
 import {
   EVAL_SCORE_THRESHOLD,
@@ -233,7 +247,7 @@ describe('constants', () => {
 // ── Handler Execution ─────────────────────────────────────────────────────────
 
 describe('executeUpdateKnowledge', () => {
-  it('returns gated status in Phase 1 regardless of valid input', async () => {
+  it('returns updated status when score >= threshold (Phase 3 active)', async () => {
     const input: UpdateKnowledgeInput = {
       domain: 'system-design',
       section: 'coreConcepts',
@@ -242,10 +256,9 @@ describe('executeUpdateKnowledge', () => {
       evalScore: 0.92,
     };
     const result = await executeUpdateKnowledge(input);
-    expect(result.status).toBe('gated');
+    expect(result.status).toBe('updated');
     expect(result.domain).toBe('system-design');
     expect(result.section).toBe('coreConcepts');
-    expect(result.message).toContain('Phase 3');
   });
 
   it('returns below_threshold when evalScore is below 0.85', async () => {
@@ -262,7 +275,7 @@ describe('executeUpdateKnowledge', () => {
     expect(result.message).toContain('0.85');
   });
 
-  it('returns below_threshold for score exactly at threshold boundary', async () => {
+  it('returns updated for score exactly at threshold boundary', async () => {
     const input: UpdateKnowledgeInput = {
       domain: 'ai-ethics',
       section: 'disagreements',
@@ -270,10 +283,9 @@ describe('executeUpdateKnowledge', () => {
       debateId: 'clx_ghi789',
       evalScore: 0.85,
     };
-    // At exactly 0.85, should pass threshold check but still be gated in Phase 1
+    // At exactly 0.85, score >= threshold passes — Phase 3 writes to CONTEXT.md
     const result = await executeUpdateKnowledge(input);
-    // Score >= 0.85 passes threshold, but Phase 1 gates execution
-    expect(result.status).toBe('gated');
+    expect(result.status).toBe('updated');
   });
 
   it('returns below_threshold for score just below threshold', async () => {
