@@ -9,6 +9,7 @@ import { detectConfidenceCollapse, detectDiminishingReturns } from '@/lib/anti-s
 import { buildSystemPrompt } from '@/lib/anti-sycophancy/prompts';
 import { db } from '@/lib/db/client';
 import { debateResponses } from '@/lib/db/schema';
+import { logger } from '@/lib/logger';
 import { getPersonaDefinition } from '@/lib/personas/roles';
 import { buildValidationPrompt } from '@/lib/prompts/phases/validate';
 import { calculateCost } from '@/lib/providers/cost';
@@ -77,7 +78,13 @@ export async function validateNode(
   // Sycophancy detection: compare against previous round's validation.
   // LangGraph Send passes pre-merge state, so state.validations[personaSlot]
   // contains the PREVIOUS round's data (current round not yet applied).
-  const flags = detectSycophancy(personaSlot, state, validation, result.content);
+  // Wrapped in try/catch: detection is observability, not control flow — never crash validation.
+  let flags: SycophancyFlag[] = [];
+  try {
+    flags = detectSycophancy(personaSlot, state, validation, result.content);
+  } catch (err) {
+    logger.warn({ err, personaSlot, round: state.round }, 'sycophancy detection failed');
+  }
 
   return {
     validations: { [personaSlot]: validation },
@@ -112,7 +119,14 @@ function detectSycophancy(
   if (collapseFlag) flags.push(collapseFlag);
 
   // Layer 4: Diminishing returns — flag if content > 85% similar
-  if (prevValidation.content && detectDiminishingReturns(prevValidation.content, currentContent)) {
+  // Truncate currentContent to same length as stored content to avoid asymmetric comparison
+  if (
+    prevValidation.content &&
+    detectDiminishingReturns(
+      prevValidation.content,
+      currentContent.slice(0, MAX_VALIDATION_CONTENT),
+    )
+  ) {
     flags.push({
       type: 'diminishing_returns',
       model: personaSlot,

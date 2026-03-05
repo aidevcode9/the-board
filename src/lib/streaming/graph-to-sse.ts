@@ -7,7 +7,7 @@
 
 import { db } from '@/lib/db/client';
 import { debates } from '@/lib/db/schema';
-import type { DebateMode, DebateStateUpdate } from '@/lib/graph/state';
+import type { DebateMode, DebateStateUpdate, SycophancyFlag } from '@/lib/graph/state';
 import { logger } from '@/lib/logger';
 import type { DebateStreamEvent, DebateStreamEventType } from '@/lib/streaming/schemas';
 import { encodeDebateStreamEventFrame } from '@/lib/streaming/sse';
@@ -120,15 +120,12 @@ export function graphToSseStream(
       }
 
       /** Accumulated sycophancy flags (appendArray semantics — concat, don't overwrite). */
-      let accumulatedSycophancyFlags: Array<Record<string, unknown>> = [];
+      let accumulatedSycophancyFlags: SycophancyFlag[] = [];
 
       function accumulateSycophancyFlags(update: Partial<DebateStateUpdate>) {
         const flags = update.sycophancyFlags;
         if (flags?.length) {
-          accumulatedSycophancyFlags = [
-            ...accumulatedSycophancyFlags,
-            ...(flags as Array<Record<string, unknown>>),
-          ];
+          accumulatedSycophancyFlags = [...accumulatedSycophancyFlags, ...flags];
         }
       }
 

@@ -2,10 +2,10 @@
 // Detects confidence collapse and diminishing returns.
 // See REQUIREMENTS.md §4 layers 4 and 5.
 //
-// TODO: Wire these detection functions into graph nodes:
-// - detectConfidenceCollapse → call in review/validate nodes, comparing pre/post confidence
-// - detectDiminishingReturns → call in post_validation node, comparing consecutive review content
-// These are currently tested infrastructure awaiting integration in the SSE/API route task.
+// Wired into validate node (src/lib/graph/nodes/validate.ts):
+// - detectConfidenceCollapse → called in validateNode, comparing pre/post confidence per round
+// - detectDiminishingReturns → called in validateNode, comparing consecutive validation content
+// Flags accumulate via appendArray reducer and persist to debates.sycophancyFlags (JSON).
 
 import type { ModelId, SycophancyFlag } from '@/lib/graph/state';
 
