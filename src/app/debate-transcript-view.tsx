@@ -2,6 +2,8 @@ import {
   type DebateDetailPayload,
   type TranscriptResponseRow,
   detectAgreementSignal,
+  getEvalMetrics,
+  getSycophancyFlagMessages,
   groupResponsesByPhase,
 } from '@/lib/board/transcript';
 
@@ -39,6 +41,19 @@ function signalBadgeClass(signal: 'agreement' | 'disagreement') {
   return signal === 'agreement'
     ? 'border-success/40 bg-success/10 text-success'
     : 'border-warning/40 bg-warning/10 text-warning';
+}
+
+function formatMetricLabel(metricKey: string) {
+  return metricKey.replace(/[_-]+/g, ' ').trim();
+}
+
+function getFlagEntries(flags: string[]) {
+  const counts = new Map<string, number>();
+  return flags.map((flag) => {
+    const count = (counts.get(flag) ?? 0) + 1;
+    counts.set(flag, count);
+    return { id: `${flag}-${count}`, text: flag };
+  });
 }
 
 function responseRow(response: TranscriptResponseRow) {
@@ -86,6 +101,10 @@ export function DebateTranscriptView({
   errorMessage,
   isLoading,
 }: DebateTranscriptViewProps) {
+  const evalMetrics = detail ? getEvalMetrics(detail.debate.evalDetails) : [];
+  const sycophancyFlags = detail ? getSycophancyFlagMessages(detail.debate.sycophancyFlags) : [];
+  const sycophancyFlagEntries = getFlagEntries(sycophancyFlags);
+
   return (
     <section className="rounded-2xl border border-board-border bg-board-panel p-4">
       <p className="font-data text-[10px] tracking-widest text-text-muted uppercase">
@@ -129,6 +148,56 @@ export function DebateTranscriptView({
             >
               {detail.debate.convergence ? 'Converged' : 'Unresolved disagreement'}
             </span>
+          </div>
+
+          <div className="mt-3 rounded-xl border border-board-border bg-board-card p-3">
+            <p className="font-data text-[10px] tracking-widest text-text-muted uppercase">
+              Eval Metrics
+            </p>
+            {evalMetrics.length > 0 ? (
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {evalMetrics.map((metric) => (
+                  <article key={metric.key} className="rounded-lg border border-board-border p-2">
+                    <p className="font-data text-[10px] tracking-widest text-text-dim uppercase">
+                      {formatMetricLabel(metric.key)}
+                    </p>
+                    <p className="mt-1 font-body text-sm text-text-primary">
+                      {typeof metric.score === 'number' ? metric.score.toFixed(2) : 'N/A'}
+                    </p>
+                    {metric.note ? (
+                      <p className="mt-1 font-body text-xs text-text-muted">{metric.note}</p>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-2 font-body text-sm text-text-muted">Eval metrics unavailable.</p>
+            )}
+          </div>
+
+          <div className="mt-3 rounded-xl border border-board-border bg-board-card p-3">
+            <p className="font-data text-[10px] tracking-widest text-text-muted uppercase">
+              Sycophancy Checks
+            </p>
+            {sycophancyFlags.length > 0 ? (
+              <>
+                <p className="mt-2 font-body text-sm text-warning">
+                  {sycophancyFlags.length} flag{sycophancyFlags.length === 1 ? '' : 's'} detected.
+                </p>
+                <ul className="mt-2 grid gap-2">
+                  {sycophancyFlagEntries.map((flag) => (
+                    <li
+                      key={flag.id}
+                      className="rounded-lg border border-warning/40 bg-warning/10 p-2 font-body text-sm text-text-primary"
+                    >
+                      {flag.text}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <p className="mt-2 font-body text-sm text-success">No sycophancy flags detected.</p>
+            )}
           </div>
 
           <div className="mt-3 grid gap-3">

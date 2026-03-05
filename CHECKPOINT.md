@@ -2,7 +2,7 @@
 
 > Rolling execution ledger. Keep this file small; archive older entries under `docs/checkpoints/`.
 
-Last updated: 2026-03-05
+Last updated: 2026-03-04
 
 ---
 
@@ -18,98 +18,10 @@ Last updated: 2026-03-05
 
 - `docs/checkpoints/2026-legacy-pre-rollover.md` (all history before rollover on 2026-03-05)
 - `docs/checkpoints/2026-03.md` (rolling archive for March 2026 entries)
+- `docs/checkpoints/2026-03.md`
+
 
 ## Rolling Entries
-
-### 2026-03-04 17:42 - Phase 2 debate transcript view
-
-**Task ID:** PH2-TRANSCRIPT-VIEW
-**Agent:** Codex
-**Branch:** feat/ph2-transcript-view-codex
-**Scope:** Debate transcript view: collapsible phases, model color-coding, agreement/disagreement highlighting from GET /api/debates/[id]
-**Status:** Completed
-**Started:** 2026-03-04 17:42
-**Ended:** 2026-03-04 17:55
-**Cycle Time:** 0h41m
-**FR / Requirement:** FR-UI-002
-**Files changed:**
-- src/app/board-runtime-panel.tsx
-- src/app/board-runtime-view.tsx
-- src/app/debate-transcript-view.tsx
-- src/lib/board/transcript.ts
-- src/lib/board/runtime-requests.ts
-- __tests__/board/runtime-panel.test.tsx
-- __tests__/board/transcript.test.ts
-- STATUS.md
-- CHECKPOINT.md
-**Out of scope:** /api/debates schema changes, SSE protocol changes, LangGraph/DB changes, compare mode behavior
-**Tests (TDD/eval):**
-- TDD: transcript phase grouping + agreement/disagreement detection
-- TDD: runtime panel fetches debate detail after completed run
-- manual wsverify: npm run lint
-- manual wsverify: npm run typecheck
-- manual wsverify: npm run test
-- manual wsverify: npm run build
-**Verification (first pass?):**
-- [ ] lint
-- [ ] typecheck
-- [ ] test
-- [ ] build
-- [ ] evals (N/A)
-- First-pass all gates: TBD
-**Review (gatekeeper):** manual wsskeptic (UI profile): no critical/high findings; gatekeeper cross-review required
-**Findings fixed:** Critical: 0, High: 0, Low: 0
-**Notes:**
-- manual wsresearch skipped: no provider/schema/protocol changes
-- Refactored request helpers into src/lib/board/runtime-requests.ts to keep board-runtime files within AGENTS line caps
-- All quality gates passed in this worktree
-**Outcome:** complete
-**Commits:** `31d4896`
-
----
-
-### 2026-03-05 19:38 - Phase 2 compare mode UI
-
-**Task ID:** PH2-COMPARE-UI
-**Agent:** Codex
-**Branch:** feat/ph2-compare-mode-ui-codex
-**Scope:** Compare mode UI with independent-only side-by-side rendering and no review/synthesis transcript surfacing
-**Status:** Completed
-**Started:** 2026-03-05 19:38
-**Ended:** 2026-03-05 19:52
-**Cycle Time:** 0h14m
-**FR / Requirement:** FR-UI-002
-**Files changed:**
-- src/app/board-runtime-panel.tsx
-- src/app/compare-mode-view.tsx
-- __tests__/board/runtime-panel.test.tsx
-- STATUS.md
-- CHECKPOINT.md
-**Out of scope:** /api/debate route changes, SSE protocol changes, LangGraph state/schema changes, provider/tracing changes
-**Tests (TDD/eval):**
-- TDD: compare mode renders independent responses side-by-side
-- TDD: compare mode does not render transcript section
-- manual wsverify: npm run lint
-- manual wsverify: npm run typecheck
-- manual wsverify: npm run test
-- manual wsverify: npm run build
-**Verification (first pass?):**
-- [x] lint
-- [x] typecheck
-- [x] test
-- [x] build
-- [x] evals (N/A)
-- First-pass all gates: Yes
-**Review (gatekeeper):** manual wsskeptic (UI profile): no critical/high findings; gatekeeper cross-review required
-**Findings fixed:** Critical: 0, High: 0, Low: 0
-**Notes:**
-- manual wsresearch skipped: no provider/schema/protocol changes
-- Compare mode now renders a dedicated side-by-side independent-response panel
-- Compare mode suppresses transcript fetch/render to avoid review/synthesis UI coupling
-**Outcome:** complete
-**Commits:** `92dfdb3`
-
----
 
 ### 2026-03-05 20:00 - Checkpoint rollover policy and automation
 
@@ -252,6 +164,78 @@ Last updated: 2026-03-05
 - Accepted risks: EVAL-01 (prompt injection → Phase 4), EVAL-03 (timer leak → pre-existing), EVAL-10 (self-eval → Phase 3)
 **Outcome:** complete
 **Commits:** `66fc045`, `bfcbf57`, `eb3af63`
+
+---
+
+### 2026-03-04 20:34 - Phase 2 transcript UX: eval metrics + sycophancy flags
+
+**Task ID:** PH2-EVAL-SYCO-UI
+**Agent:** Codex
+**Branch:** feat/ph2-eval-sycophancy-ui-codex-clean
+**Scope:** Render evalDetails metrics and sycophancyFlags in debate transcript UI without backend/protocol changes
+**Status:** Started
+**Started:** 2026-03-04 20:34
+**FR / Requirement:** FR-UI-002 / REQUIREMENTS Phase 2 eval display
+**Files changed:** TBD
+**Out of scope:** SSE event schema changes, /api/debates route changes, LangGraph node changes, DB schema changes
+**Tests (TDD/eval):**
+- TDD: transcript panel renders eval metrics and sycophancy flags when detail payload includes them
+- TDD: transcript panel shows explicit empty state when no sycophancy flags
+**Verification (first pass?):**
+- [ ] lint
+- [ ] typecheck
+- [ ] test
+- [ ] build
+- [ ] evals (N/A)
+- First-pass all gates: TBD
+**Review (gatekeeper):** TBD
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- manual wsresearch: backend already exposes evalDetails/sycophancyFlags via GET /api/debates/[id]
+**Outcome:** in-progress
+
+---
+
+### 2026-03-04 20:34 - Phase 2 transcript UX: eval metrics + sycophancy flags
+
+**Task ID:** PH2-EVAL-SYCO-UI
+**Agent:** Codex
+**Branch:** feat/ph2-eval-sycophancy-ui-codex-clean
+**Scope:** Render evalDetails metrics and sycophancyFlags in debate transcript UI without backend/protocol changes
+**Status:** Completed
+**Started:** 2026-03-04 20:34
+**Ended:** 2026-03-04 20:45
+**Cycle Time:** 0h11m
+**FR / Requirement:** FR-UI-002 / REQUIREMENTS Phase 2 eval display
+**Files changed:**
+- src/app/debate-transcript-view.tsx
+- src/lib/board/transcript.ts
+- __tests__/board/runtime-panel.test.tsx
+- __tests__/board/transcript.test.ts
+- STATUS.md
+- CHECKPOINT.md
+**Out of scope:** SSE event schema changes, /api/debates route changes, LangGraph node changes, DB schema changes
+**Tests (TDD/eval):**
+- TDD: transcript panel renders eval metrics and sycophancy flags when detail payload includes them
+- TDD: transcript panel shows explicit empty state when no sycophancy flags
+- manual wsverify: npm run lint
+- manual wsverify: npm run typecheck
+- manual wsverify: npm run test
+- manual wsverify: npm run build
+**Verification (first pass?):**
+- [x] lint
+- [x] typecheck
+- [x] test
+- [x] build
+- [x] evals (N/A)
+- First-pass all gates: Yes
+**Review (gatekeeper):** manual wsskeptic pending gatekeeper cross-review
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- Moved implementation to clean worktree after detecting unresolved merge markers in shared branch
+- Eval metrics and sycophancy flags are rendered from existing GET /api/debates/[id] payload only
+**Outcome:** complete
+**Commits:** `9667f7d`
 
 ---
 

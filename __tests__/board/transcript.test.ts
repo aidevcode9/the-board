@@ -1,6 +1,8 @@
 import {
   type TranscriptResponseRow,
   detectAgreementSignal,
+  getEvalMetrics,
+  getSycophancyFlagMessages,
   groupResponsesByPhase,
 } from '@/lib/board/transcript';
 
@@ -79,5 +81,45 @@ describe('detectAgreementSignal', () => {
 
   it('returns null when no clear signal is present', () => {
     expect(detectAgreementSignal('Additional evidence is needed before deciding.')).toBeNull();
+  });
+});
+
+describe('getEvalMetrics', () => {
+  it('extracts numeric and score-shaped eval metrics', () => {
+    const metrics = getEvalMetrics({
+      clarity: 0.91,
+      completeness: { reason: 'Addresses edge cases.', score: 0.88 },
+      unsupported: { foo: 'bar' },
+    });
+
+    expect(metrics).toEqual([
+      { key: 'clarity', note: null, score: 0.91 },
+      { key: 'completeness', note: 'Addresses edge cases.', score: 0.88 },
+    ]);
+  });
+
+  it('returns empty array for null eval details', () => {
+    expect(getEvalMetrics(null)).toEqual([]);
+  });
+});
+
+describe('getSycophancyFlagMessages', () => {
+  it('normalizes string and object flags', () => {
+    const flags = getSycophancyFlagMessages([
+      '  Confidence collapse detected  ',
+      { message: 'Agreement without critique in round 2' },
+      { type: 'diminishing_returns' },
+      42,
+    ]);
+
+    expect(flags).toEqual([
+      'Confidence collapse detected',
+      'Agreement without critique in round 2',
+      'diminishing_returns',
+    ]);
+  });
+
+  it('returns empty list for null flags', () => {
+    expect(getSycophancyFlagMessages(null)).toEqual([]);
   });
 });
