@@ -70,14 +70,16 @@ function PersonaBadge({ persona }: { persona: Persona }) {
 }
 
 function StatusLight({ status }: { status: string }) {
-  const isIdle = status === 'idle';
+  const tone =
+    status === 'complete'
+      ? 'bg-success'
+      : status === 'error'
+        ? 'bg-danger'
+        : status === 'thinking'
+          ? 'bg-warning animate-pulse'
+          : 'bg-text-dim';
 
-  return (
-    <span
-      aria-hidden="true"
-      className={`inline-block h-2 w-2 rounded-full ${isIdle ? 'bg-text-dim' : 'bg-warning'}`}
-    />
-  );
+  return <span aria-hidden="true" className={`inline-block h-2 w-2 rounded-full ${tone}`} />;
 }
 
 function GaugeMeter({ value }: { value: number }) {

@@ -140,9 +140,11 @@ export function reduceStreamEvent(
         {
           content: '',
           id: `seq-${event.seq}`,
-          kind: 'system',
+          kind: 'participant',
+          persona: personaKey,
           participantId: participantId ?? undefined,
-          title: `${participantLabel(participantId)} started`,
+          status: 'thinking',
+          title: `${participantLabel(participantId)} is thinking...`,
         },
       );
     }
@@ -172,9 +174,14 @@ export function reduceStreamEvent(
 
       return appendTimeline(withParticipantState, {
         content,
+        confidence,
         id: `seq-${event.seq}`,
         kind: 'participant',
+        model: model ?? undefined,
+        persona: personaKey ?? undefined,
         participantId: participantId ?? undefined,
+        provider: provider ?? undefined,
+        status: 'complete',
         title: `${participantLabel(participantId)} response`,
       });
     }

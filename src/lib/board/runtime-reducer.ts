@@ -73,9 +73,14 @@ export function boardRuntimeReducer(
         },
         {
           content: action.result.content,
+          confidence: 100,
           id: `quick-${action.result.debateId}`,
           kind: 'participant',
+          model: action.result.model,
+          persona: 'claude',
           participantId: 'analyst',
+          provider: action.result.provider,
+          status: 'complete',
           title: 'Analyst response',
         },
       );

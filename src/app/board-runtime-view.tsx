@@ -11,7 +11,6 @@ type BoardRuntimeViewProps = {
   runtime: BoardRuntimeState;
   setQueryInput: (value: string) => void;
 };
-
 function modeLabel(mode: BoardMode) {
   switch (mode) {
     case 'quick':
@@ -24,7 +23,28 @@ function modeLabel(mode: BoardMode) {
       return 'Deep Debate';
   }
 }
-
+const personaBorderClass = {
+  claude: 'border-persona-claude/60',
+  gpt: 'border-persona-gpt/60',
+  gemini: 'border-persona-gemini/60',
+} as const;
+const personaToneClass = {
+  claude: 'text-persona-claude',
+  gpt: 'text-persona-gpt',
+  gemini: 'text-persona-gemini',
+} as const;
+function confidenceMeter(confidence: number) {
+  return (
+    <div className="mt-2 grid gap-1">
+      <div className="h-1.5 rounded-full bg-gauge-track">
+        <div className="h-full rounded-full bg-gauge-fill" style={{ width: `${confidence}%` }} />
+      </div>
+      <p className="font-data text-[10px] tracking-widest text-text-dim uppercase">
+        {confidence}% confidence
+      </p>
+    </div>
+  );
+}
 function StatusBoard({ runtime }: { runtime: BoardRuntimeState }) {
   return (
     <div className="rounded-2xl border border-board-border bg-board-panel p-4">
@@ -57,7 +77,6 @@ function StatusBoard({ runtime }: { runtime: BoardRuntimeState }) {
     </div>
   );
 }
-
 function TimelineView({
   activeWorkspaceName,
   runtime,
@@ -73,7 +92,6 @@ function TimelineView({
       <h2 className="mt-2 font-display text-xl font-bold text-text-primary">
         {activeWorkspaceName ? `Workspace: ${activeWorkspaceName}` : 'No Workspace Selected'}
       </h2>
-
       {runtime.status === 'human_review_required' ? (
         <div className="mt-3 rounded-xl border border-warning/40 bg-warning/10 p-3">
           <p className="font-data text-[10px] tracking-widest text-warning uppercase">
@@ -82,14 +100,12 @@ function TimelineView({
           <p className="mt-1 font-body text-sm text-text-primary">{runtime.humanReviewReason}</p>
         </div>
       ) : null}
-
       {runtime.status === 'error' && runtime.errorMessage ? (
         <div className="mt-3 rounded-xl border border-danger/40 bg-danger/10 p-3">
           <p className="font-data text-[10px] tracking-widest text-danger uppercase">Run error</p>
           <p className="mt-1 font-body text-sm text-text-primary">{runtime.errorMessage}</p>
         </div>
       ) : null}
-
       <div className="mt-3 grid gap-3">
         {runtime.timeline.length === 0 ? (
           <div className="rounded-xl border border-dashed border-board-border-accent bg-board-card p-4">
@@ -101,11 +117,39 @@ function TimelineView({
           runtime.timeline.map((entry) => (
             <article
               key={entry.id}
-              className="rounded-xl border border-board-border bg-board-card p-4 shadow-[0_0_0_1px_rgba(212,162,87,0.04)]"
+              className={`rounded-xl border bg-board-card p-4 shadow-[0_0_0_1px_rgba(212,162,87,0.04)] ${
+                entry.kind === 'phase'
+                  ? 'border-accent/30'
+                  : entry.persona
+                    ? personaBorderClass[entry.persona]
+                    : 'border-board-border'
+              }`}
             >
-              <p className="font-data text-[10px] tracking-widest text-text-muted uppercase">
-                {entry.title}
-              </p>
+              <div className="flex items-center justify-between gap-3">
+                <p
+                  className={`font-data text-[10px] tracking-widest uppercase ${
+                    entry.persona ? personaToneClass[entry.persona] : 'text-text-muted'
+                  }`}
+                >
+                  {entry.title}
+                </p>
+                {entry.round ? (
+                  <span className="rounded-full border border-board-border-accent bg-accent/10 px-2 py-0.5 font-data text-[10px] tracking-widest text-accent-bright uppercase">
+                    Round {entry.round}
+                  </span>
+                ) : null}
+              </div>
+              {entry.status === 'thinking' ? (
+                <p className="mt-2 font-data text-[10px] tracking-widest text-warning uppercase">
+                  Typing...
+                </p>
+              ) : null}
+              {entry.model || entry.provider ? (
+                <p className="mt-2 font-data text-[10px] tracking-widest text-text-dim uppercase">
+                  {[entry.provider, entry.model].filter(Boolean).join(' Â· ')}
+                </p>
+              ) : null}
+              {typeof entry.confidence === 'number' ? confidenceMeter(entry.confidence) : null}
               {entry.content ? (
                 <p className="mt-2 whitespace-pre-wrap font-body text-sm text-text-primary">
                   {entry.content}
@@ -118,7 +162,6 @@ function TimelineView({
     </div>
   );
 }
-
 function CommandBar({
   activeMode,
   isBusy,
@@ -172,7 +215,6 @@ function CommandBar({
     </footer>
   );
 }
-
 export function BoardRuntimeView({
   activeMode,
   activeWorkspaceName,
