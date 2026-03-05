@@ -40,7 +40,7 @@ Last updated: 2026-03-05
 - [ ] Eval scoring integration — Langfuse LLM-as-judge on debate completion, save to debates.evalScore + evalDetails
 
 **Codex territory (frontend/UI/rendering):**
-- [ ] Compare mode UI — independent-only display (no review/synthesis phases)
+- *(No queued items — refill `Next` before the next `wspr pick top Next` run)*
 
 ## Blocked
 
@@ -101,6 +101,8 @@ Last updated: 2026-03-05
 - [x] Board timeline rendering — consume SSE events, render timeline cards with typing indicators, confidence meters, cost ticker — owner: Codex — 2026-03-05 — commit: bf62ee8 — cycle: 0h08m
 
 - [x] Debate transcript view — collapsible phases, model color-coding, agreement/disagreement highlighting (consumes GET /api/debates/[id]) — owner: Codex — 2026-03-05 — commit: 31d4896 — cycle: 0h41m
+
+- [x] Compare mode UI — independent-only display (no review/synthesis phases) — owner: Codex — 2026-03-05 — commit: 92dfdb3 — cycle: 0h14m
 
 ## Velocity Snapshot (This Week)
 

@@ -266,6 +266,77 @@ describe('BoardRuntimePanel', () => {
     expect(await screen.findByText(/^disagreement$/i)).toBeInTheDocument();
   });
 
+  it('renders compare mode as independent side-by-side responses only', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      makeSseResponse([
+        makeEvent({ seq: 1, type: 'run_started' }),
+        makeEvent({
+          payload: {
+            confidence: 0.82,
+            content: 'Analyst independent response.',
+            model: 'claude-opus-4-6',
+            participantId: 'analyst',
+            provider: 'Anthropic',
+          },
+          seq: 2,
+          type: 'participant_completed',
+        }),
+        makeEvent({
+          payload: {
+            confidence: 0.76,
+            content: 'Builder independent response.',
+            model: 'gpt-5.2',
+            participantId: 'builder',
+            provider: 'OpenAI',
+          },
+          seq: 3,
+          type: 'participant_completed',
+        }),
+        makeEvent({
+          payload: {
+            confidence: 0.71,
+            content: 'Synthesizer independent response.',
+            model: 'gemini-2.5-pro',
+            participantId: 'synthesizer',
+            provider: 'Google',
+          },
+          seq: 4,
+          type: 'participant_completed',
+        }),
+        makeEvent({
+          payload: { finalAnswer: 'Compare run completed.' },
+          seq: 5,
+          type: 'run_completed',
+        }),
+      ]),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <BoardRuntimePanel
+        activeMode="compare"
+        activeWorkspaceDomain="system-design"
+        activeWorkspaceId="ws_1"
+        activeWorkspaceName="System Design"
+      />,
+    );
+
+    fireEvent.change(screen.getByRole('textbox', { name: /command input/i }), {
+      target: { value: 'Compare three strategies.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /run compare/i }));
+
+    expect(await screen.findByText(/compare results/i)).toBeInTheDocument();
+    expect((await screen.findAllByText('Analyst independent response.')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Builder independent response.')).length).toBeGreaterThan(0);
+    expect(
+      (await screen.findAllByText('Synthesizer independent response.')).length,
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText(/debate transcript/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/phase: review/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/phase: synthesis/i)).not.toBeInTheDocument();
+  });
+
   it('shows stream error from debate execution failures', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ error: 'Unauthorized' }), {

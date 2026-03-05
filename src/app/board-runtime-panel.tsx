@@ -1,6 +1,7 @@
 'use client';
 
 import { BoardRuntimeView } from '@/app/board-runtime-view';
+import { CompareModeView } from '@/app/compare-mode-view';
 import { DebateTranscriptView } from '@/app/debate-transcript-view';
 import { useDebateRun } from '@/hooks/use-debate-run';
 import { boardRuntimeReducer, createInitialBoardRuntimeState } from '@/lib/board/runtime';
@@ -63,6 +64,9 @@ export function BoardRuntimePanel({
   }, [activeMode]);
 
   useEffect(() => {
+    if (activeMode === 'compare') {
+      return;
+    }
     if (!runtime.debateId) {
       return;
     }
@@ -101,7 +105,7 @@ export function BoardRuntimePanel({
       cancelled = true;
       controller.abort();
     };
-  }, [runtime.debateId, runtime.status]);
+  }, [activeMode, runtime.debateId, runtime.status]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -159,11 +163,15 @@ export function BoardRuntimePanel({
       runtime={runtime}
       setQueryInput={setQueryInput}
     >
-      <DebateTranscriptView
-        detail={transcriptDetail}
-        errorMessage={transcriptErrorMessage}
-        isLoading={transcriptLoading}
-      />
+      {activeMode === 'compare' ? (
+        <CompareModeView runtime={runtime} />
+      ) : (
+        <DebateTranscriptView
+          detail={transcriptDetail}
+          errorMessage={transcriptErrorMessage}
+          isLoading={transcriptLoading}
+        />
+      )}
     </BoardRuntimeView>
   );
 }
