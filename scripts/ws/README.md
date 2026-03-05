@@ -13,6 +13,8 @@ These scripts automate the repetitive repo-local parts of the `ws*` workflow for
 - `node scripts/ws/status-claim.mjs` - move one task from `Next` to `Now` (or add override claim)
 - `node scripts/ws/status-complete.mjs` - remove your `Now` claim and append a `Done` line
 - `node scripts/ws/checkpoint-append.mjs` - append a structured checkpoint entry skeleton
+- `node scripts/ws/checkpoint-rollover.mjs` - archive older rolling entries into `docs/checkpoints/YYYY-MM.md`
+- `node scripts/ws/checkpoint-validate.mjs` - enforce checkpoint size + required entry fields
 - `node scripts/ws/hygiene-sweep.mjs` - classify worktree changes against allowed prefixes
 
 ## Examples
@@ -57,6 +59,24 @@ node scripts/ws/checkpoint-append.mjs \
   --scope "Codex workflow/docs/config/script hardening" \
   --status "Started" \
   --outcome "in-progress"
+```
+
+Rollover old entries to archive files:
+
+```bash
+node scripts/ws/checkpoint-rollover.mjs \
+  --file CHECKPOINT.md \
+  --archive-dir docs/checkpoints \
+  --keep-days 14 \
+  --max-lines 300
+```
+
+Validate checkpoint policy:
+
+```bash
+node scripts/ws/checkpoint-validate.mjs \
+  --file CHECKPOINT.md \
+  --max-lines 300
 ```
 
 Audit a shared worktree after merge:

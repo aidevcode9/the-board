@@ -15,6 +15,8 @@
     "ws:status:claim": "node scripts/ws/status-claim.mjs",
     "ws:status:complete": "node scripts/ws/status-complete.mjs",
     "ws:checkpoint:append": "node scripts/ws/checkpoint-append.mjs",
+    "checkpoint:rollover": "node scripts/ws/checkpoint-rollover.mjs",
+    "checkpoint:validate": "node scripts/ws/checkpoint-validate.mjs",
     "ws:hygiene:sweep": "node scripts/ws/hygiene-sweep.mjs",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",

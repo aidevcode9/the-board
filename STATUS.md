@@ -13,7 +13,7 @@ Last updated: 2026-03-05
 ## Multi-Agent Coordination (Codex + Claude)
 
 - `STATUS.md` is the shared task board. Keep edits minimal and scoped to task claims/completions.
-- `CHECKPOINT.md` is append-only execution history and the source of truth for velocity metrics.
+- `CHECKPOINT.md` is the rolling execution ledger; archived history lives in `docs/checkpoints/*`.
 - WIP limit: max 1 active task slice per agent at a time.
 - No overlapping allowed-files lists across active tasks (except `STATUS.md` and `CHECKPOINT.md`).
 - For any task, the coder and the gatekeeper/reviewer must be different.
@@ -80,6 +80,7 @@ Last updated: 2026-03-05
 ---
 
 - [x] Process hardening for ws* Codex execution mode — owner: Codex — 2026-02-25 — commit: fe0eafe — cycle: 0h08m
+- [x] Checkpoint rollover policy + archive automation — owner: Codex — 2026-03-05 — ref: chore/checkpoint-rollover-codex-clean — cycle: 0h15m
 
 - [x] App shell navigation — header with admin link (role-gated) + logout button (FR-UI-007, P1) — owner: Codex — 2026-02-25 — commit: 59826e3 — cycle: 0h10m
 
@@ -106,7 +107,7 @@ Last updated: 2026-03-05
 
 ## Velocity Snapshot (This Week)
 
-> Update from completed `CHECKPOINT.md` entries (append weekly or daily). Keep this lightweight.
+> Update from completed entries in `CHECKPOINT.md` + `docs/checkpoints/*` (append weekly or daily). Keep this lightweight.
 
 | Agent | Completed slices | Avg cycle time | First-pass gates | Tests added/updated | High/Critical findings fixed |
 |------|-------------------|----------------|------------------|---------------------|------------------------------|
