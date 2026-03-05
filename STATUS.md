@@ -35,7 +35,14 @@ Last updated: 2026-03-05
 
 ## Next
 
-*(Human/orchestrator to seed next tasks)*
+**Claude territory (backend/graph/observability):**
+- [ ] Sycophancy detection wiring — call detect.ts from post_validation node, populate sycophancyFlags in state + DB
+- [ ] Eval scoring integration — Langfuse LLM-as-judge on debate completion, save to debates.evalScore + evalDetails
+
+**Codex territory (frontend/UI/rendering):**
+- [ ] Board timeline rendering — consume SSE events, render timeline cards with typing indicators, confidence meters, cost ticker
+- [ ] Debate transcript view — collapsible phases, model color-coding, agreement/disagreement highlighting (consumes GET /api/debates/[id])
+- [ ] Compare mode UI — independent-only display (no review/synthesis phases)
 
 ## Blocked
 
