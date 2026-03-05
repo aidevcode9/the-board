@@ -31,16 +31,15 @@ Last updated: 2026-03-05
 
 ## Now
 
-- [Claude] Sycophancy detection wiring — branch: feat/sycophancy-wiring-claude — started: 2026-03-05 12:00
+*(Nothing active)*
 
 ## Next
 
-**Claude territory (backend/graph/observability):**
-- [ ] Sycophancy detection wiring — call detect.ts from post_validation node, populate sycophancyFlags in state + DB
-- [ ] Eval scoring integration — Langfuse LLM-as-judge on debate completion, save to debates.evalScore + evalDetails
-
 **Codex territory (frontend/UI/rendering):**
 - [ ] Compare mode UI — independent-only display (no review/synthesis phases)
+
+**Claude territory (backend/graph/observability):**
+*(Awaiting Phase 2 task seeding)*
 
 ## Blocked
 
@@ -101,6 +100,10 @@ Last updated: 2026-03-05
 - [x] Board timeline rendering — consume SSE events, render timeline cards with typing indicators, confidence meters, cost ticker — owner: Codex — 2026-03-05 — commit: bf62ee8 — cycle: 0h08m
 
 - [x] Debate transcript view — collapsible phases, model color-coding, agreement/disagreement highlighting (consumes GET /api/debates/[id]) — owner: Codex — 2026-03-05 — commit: 31d4896 — cycle: 0h41m
+
+- [x] Sycophancy detection wiring — detect.ts called from validate node, sycophancyFlags accumulated via appendArray reducer, persisted to DB — owner: Claude — 2026-03-05 — PR: #17
+
+- [x] Eval scoring integration — Langfuse LLM-as-judge (4 metrics: relevancy/faithfulness/completeness/debate_quality), fire-and-forget post-debate, persists to debates.evalScore + evalDetails + evalRuns table — owner: Claude — 2026-03-05 — PR: #20
 
 ## Velocity Snapshot (This Week)
 

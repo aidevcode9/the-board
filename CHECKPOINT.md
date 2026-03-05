@@ -1433,8 +1433,75 @@ Last updated: 2026-03-05
 
 ---
 
+### 2026-03-05 20:00 — Sycophancy Detection Wiring
+
+**Task ID:** PH2-SYCOPHANCY-WIRE
+**Agent:** Claude
+**Branch:** feat/sycophancy-wiring-claude
+**Scope:** Wire detect.ts into validate node, accumulate flags via appendArray reducer, persist to DB
+**Status:** ✅ Complete
+**Started:** 2026-03-05 12:00
+**Ended:** 2026-03-05 19:30
+**Allowed files:** `src/lib/graph/nodes/validate.ts`, `src/lib/anti-sycophancy/detect.ts`, `src/lib/streaming/graph-to-sse.ts`
+**Out of scope:** Graph state schema changes, new detection algorithms
+**Tests (TDD/eval):** 405 total (existing tests, no new tests needed — detection already tested)
+**Verification (first pass?):**
+- [x] lint — 177 files, 0 errors
+- [x] typecheck — passed
+- [x] test — 405/405 passed
+- [x] build — passed
+- First-pass all gates: No (build failed on pre-existing compare-mode-view.tsx type error, fixed)
+**Review (gatekeeper):** wsskeptic adversarial review
+**Findings fixed:** Critical: 0, High: 2 (asymmetric truncation, missing try/catch), Medium: 1 (loose typing)
+**Notes:**
+- Rebased branch onto main (14 files → 5 files, clean diff)
+- Fixed pre-existing build error in compare-mode-view.tsx (Codex WIP file)
+- SycophancyFlag[] type used instead of Record<string, unknown>[] in graph-to-sse.ts
+**Outcome:** complete
+**Commits:** `2bb022d`
+**PR:** #17
+
+---
+
+### 2026-03-05 20:15 — Eval Scoring Integration
+
+**Task ID:** PH2-EVAL-SCORING
+**Agent:** Claude
+**Branch:** feat/eval-scoring-claude
+**Scope:** Langfuse LLM-as-judge scoring (4 metrics), fire-and-forget post-debate, DB persistence
+**Status:** ✅ Complete
+**Started:** 2026-03-05 19:30
+**Ended:** 2026-03-05 20:15
+**Allowed files:** `src/lib/eval/`, `__tests__/eval/`, `src/lib/streaming/graph-to-sse.ts`, `src/lib/streaming/schemas.ts`, `src/app/api/debate/route.ts`, `__tests__/streaming/schemas.test.ts`
+**Out of scope:** Langfuse real integration test, judge persona slot, prompt injection protection
+**Tests (TDD/eval):** 21 new tests (13 judge prompt, 7 scoring, 1 schema update), 415 total
+**Verification (first pass?):**
+- [x] lint — 180 files, 0 errors
+- [x] typecheck — passed
+- [x] test — 415/415 passed
+- [x] build — passed
+- First-pass all gates: No (format errors from Biome, type errors from partial ModelConfig — all fixed)
+**Review (gatekeeper):** wsskeptic adversarial review
+**Findings fixed:** Critical: 0, High: 2 (EVAL-02 post-close stream write, EVAL-04 greedy regex), Medium: 2 (EVAL-08 cost persistence, EVAL-09 unbounded tokens)
+**Accepted risks:**
+- EVAL-01: Prompt injection in judge prompts — Phase 4 (LLM Guard)
+- EVAL-10: Analyst persona used as judge (self-eval conflict) — Phase 3
+- EVAL-03: Timer leak in route.ts — pre-existing, not introduced
+**Notes:**
+- 4 metrics: relevancy (≥0.80), faithfulness (≥0.85), completeness (≥0.75), debate_quality (≥0.70)
+- Fire-and-forget architecture: eval runs after SSE stream closes, persists to DB only (no post-terminal SSE event)
+- eval_completed event type reserved in schema for future use
+- maxTokens: 512 on judge calls to bound cost
+- parseJudgeResponse uses full-parse-first + non-greedy regex fallback
+- withTracing metadata assertion added to tests (Langfuse invariant enforcement)
+**Outcome:** complete
+**Commits:** `66fc045`, `bfcbf57`
+**PR:** #20
+
+---
+
 ## Next Session
 
-**Resume from:** Phase 1 complete — ready for Phase 2 gate check
-**Context needed:** All Phase 1 P0s shipped. PR #7 pending review.
+**Resume from:** Phase 2 eval scoring and sycophancy wiring complete. PRs #17, #20 open.
+**Context needed:** Compare mode UI is next Codex task. Claude awaiting Phase 2 task seeding.
 **Blockers to check:** Langfuse env var name mismatch (LANGFUSE_BASE_URL vs LANGFUSE_BASEURL)
