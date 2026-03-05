@@ -1472,6 +1472,7 @@ Last updated: 2026-03-05
 - Compare mode now renders a dedicated side-by-side independent-response panel
 - Compare mode suppresses transcript fetch/render to avoid review/synthesis UI coupling
 **Outcome:** complete
+**Commits:** `92dfdb3`
 
 ---
 

@@ -102,7 +102,7 @@ Last updated: 2026-03-05
 
 - [x] Debate transcript view — collapsible phases, model color-coding, agreement/disagreement highlighting (consumes GET /api/debates/[id]) — owner: Codex — 2026-03-05 — commit: 31d4896 — cycle: 0h41m
 
-- [x] Compare mode UI — independent-only display (no review/synthesis phases) — owner: Codex — 2026-03-05 — branch: feat/ph2-compare-mode-ui-codex — cycle: 0h14m
+- [x] Compare mode UI — independent-only display (no review/synthesis phases) — owner: Codex — 2026-03-05 — commit: 92dfdb3 — cycle: 0h14m
 
 ## Velocity Snapshot (This Week)
 
