@@ -108,7 +108,7 @@ export async function POST(req: Request): Promise<Response> {
     });
 
     // 6. Transform graph updates → SSE events
-    const sseStream = graphToSseStream(graphStream, debateId, mode, signal);
+    const sseStream = graphToSseStream(graphStream, debateId, mode, signal, { query, domain });
 
     return new Response(sseStream, { status: 200, headers: SSE_HEADERS });
   } catch (err) {

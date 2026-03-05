@@ -7,6 +7,7 @@
 
 import { db } from '@/lib/db/client';
 import { debates } from '@/lib/db/schema';
+import { scoreDebate } from '@/lib/eval/score-debate';
 import type { DebateMode, DebateStateUpdate } from '@/lib/graph/state';
 import { logger } from '@/lib/logger';
 import type { DebateStreamEvent, DebateStreamEventType } from '@/lib/streaming/schemas';
@@ -43,6 +44,7 @@ export function graphToSseStream(
   debateId: string,
   mode: DebateMode,
   signal?: AbortSignal,
+  evalContext?: { query: string; domain: string },
 ): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
   const log = logger.child({ debateId, component: 'graph-to-sse' });
@@ -55,6 +57,9 @@ export function graphToSseStream(
       const completedParticipants: Record<string, Set<string>> = {};
       let finalState: Partial<DebateStateUpdate> = {};
       let abortedMessage: string | null = null;
+      // Separate accumulators for eval scoring (loosely typed, not part of graph state)
+      const evalResponses: Record<string, Record<string, unknown>> = {};
+      const evalReviews: Record<string, unknown> = {};
 
       function nextSeq() {
         return ++seq;
@@ -169,6 +174,10 @@ export function graphToSseStream(
               accumulateChunkCost(update);
               const responses = update.responses as Record<string, unknown> | undefined;
               if (responses) {
+                // Accumulate responses for eval scoring
+                for (const [pid, resp] of Object.entries(responses)) {
+                  evalResponses[pid] = resp as Record<string, unknown>;
+                }
                 for (const [participantId, response] of Object.entries(responses)) {
                   emit(makeEvent('participant_started', { participantId }, 'independent'));
                   emit(
@@ -195,6 +204,8 @@ export function graphToSseStream(
               accumulateChunkCost(update);
               const reviews = update.reviews as Record<string, unknown> | undefined;
               if (reviews) {
+                // Accumulate reviews for eval scoring
+                Object.assign(evalReviews, reviews);
                 for (const [participantId, review] of Object.entries(reviews)) {
                   emit(makeEvent('participant_started', { participantId }, 'review'));
                   emit(makeEvent('participant_completed', { participantId, review }, 'review'));
@@ -294,6 +305,13 @@ export function graphToSseStream(
 
         // Persist results to DB after stream completes
         await persistDebateResults();
+
+        // Run eval scoring fire-and-forget after stream closes.
+        // Eval results persist to DB; clients can poll for them.
+        // NOT emitted via SSE to avoid post-close controller writes (EVAL-02).
+        if (evalContext && mode !== 'quick' && finalAnswer) {
+          runEvalScoring(debateId, evalContext, mode, finalAnswer, evalResponses, evalReviews);
+        }
       } catch (err) {
         log.error({ err }, 'graph stream error');
         emit(makeEvent('error', { message: sanitizeErrorMessage(err) }));
@@ -304,4 +322,41 @@ export function graphToSseStream(
       }
     },
   });
+}
+
+/** Fire-and-forget eval scoring — persists to DB, never throws. */
+function runEvalScoring(
+  debateId: string,
+  evalContext: { query: string; domain: string },
+  mode: DebateMode,
+  synthesis: string,
+  responses: Record<string, Record<string, unknown>>,
+  reviews: Record<string, unknown>,
+): void {
+  const evalLog = logger.child({ debateId, component: 'eval-scoring' });
+  scoreDebate({
+    debateId,
+    query: evalContext.query,
+    domain: evalContext.domain,
+    mode,
+    synthesis,
+    responses: responses as Record<string, { content: string; confidence?: number }>,
+    reviews,
+  })
+    .then(async (evalResult) => {
+      if (evalResult.overallScore > 0) {
+        await db
+          .update(debates)
+          .set({
+            evalScore: evalResult.overallScore,
+            evalDetails: JSON.stringify(evalResult.metrics),
+            totalCostUsd: evalResult.totalCostUsd,
+          })
+          .where(eq(debates.id, debateId));
+      }
+      evalLog.info({ evalScore: evalResult.overallScore }, 'eval scoring complete');
+    })
+    .catch((err) => {
+      evalLog.warn({ err }, 'eval scoring failed (non-fatal)');
+    });
 }

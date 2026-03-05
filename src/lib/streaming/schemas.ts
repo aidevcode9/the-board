@@ -22,6 +22,7 @@ export const debateStreamEventTypeSchema = z.enum([
   'phase_completed',
   'cost_updated',
   'human_review_required',
+  'eval_completed',
   'run_completed',
   'error',
 ]);
