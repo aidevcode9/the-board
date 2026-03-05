@@ -2,7 +2,7 @@
 
 > Session progress. Updated after each FR. Read this when resuming.
 
-Last updated: 2026-03-04
+Last updated: 2026-03-05
 
 ---
 
@@ -770,12 +770,12 @@ Last updated: 2026-03-04
 **Tests (TDD/eval):**
 - __tests__/app-shell/navigation.test.ts (role-gated nav model + logout visibility metadata)
 **Verification (first pass?):**
-- [ ] lint
-- [ ] typecheck
-- [ ] test
-- [ ] build
+- [x] lint
+- [x] typecheck
+- [x] test
+- [x] build
 - [ ] evals (N/A)
-- First-pass all gates: TBD
+- First-pass all gates: Yes
 **Review (gatekeeper):** TBD
 **Findings fixed:** Critical: 0, High: 0, Low: 0
 **Notes:**
@@ -1230,6 +1230,75 @@ Last updated: 2026-03-04
 - Full lint is blocked by unrelated unowned files in this shared worktree; targeted lint on slice files passes
 **Outcome:** complete
 **Commits:** `96ed755`
+
+---
+
+### 2026-03-04 16:26 - Phase 2a /api/debate route hotfix
+
+**Task ID:** PH2A-DEBATE-HOTFIX
+**Agent:** Codex
+**Branch:** feat/ph2a-debate-route-hotfix-codex
+**Scope:** Fix stream payload compatibility and abort terminal semantics for /api/debate
+**Status:** Started
+**Started:** 2026-03-04 16:26
+**FR / Requirement:** Phase 2a /api/debate route
+**Files changed:** TBD
+**Out of scope:** Auth schema changes, LangGraph state schema, provider interfaces, UI redesign
+**Tests (TDD/eval):** TBD
+**Verification (first pass?):**
+- [ ] lint
+- [ ] typecheck
+- [ ] test
+- [ ] build
+- [ ] evals (N/A)
+- First-pass all gates: TBD
+**Review (gatekeeper):** TBD
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:** TBD
+**Outcome:** in-progress
+
+---
+
+### 2026-03-04 16:26 - Phase 2a /api/debate route hotfix
+
+**Task ID:** PH2A-DEBATE-HOTFIX
+**Agent:** Codex
+**Branch:** feat/ph2a-debate-route-hotfix-codex
+**Scope:** Fix stream payload compatibility and abort terminal semantics for /api/debate
+**Status:** Completed
+**Started:** 2026-03-04 16:26
+**Ended:** 2026-03-04 16:41
+**Cycle Time:** 0h15m
+**FR / Requirement:** Phase 2a /api/debate route
+**Files changed:**
+- src/lib/streaming/graph-to-sse.ts
+- __tests__/streaming/graph-to-sse.test.ts
+- STATUS.md
+- CHECKPOINT.md
+**Out of scope:** Auth schema changes, LangGraph state schema, provider interfaces, UI redesign
+**Tests (TDD/eval):**
+- TDD: run_completed payload uses finalAnswer
+- TDD: synthesis participant_completed includes content
+- TDD: aborted stream emits terminal error (no run_completed)
+- manual wsverify: npm run lint
+- manual wsverify: npm run typecheck
+- manual wsverify: npm run test (367/367)
+- manual wsverify: npm run build
+**Verification (first pass?):**
+- [ ] lint
+- [ ] typecheck
+- [ ] test
+- [ ] build
+- [ ] evals (N/A)
+- First-pass all gates: TBD
+**Review (gatekeeper):** manual wsskeptic (infrastructure profile): no remaining critical/high findings
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- run_completed now emits finalAnswer (plus synthesizedAnswer for compatibility)
+- abort/disconnect path now emits terminal error event instead of run_completed
+- all quality gates passed in clean worktree
+**Outcome:** complete
+**Commits:** `c8d58dd`
 
 ---
 
