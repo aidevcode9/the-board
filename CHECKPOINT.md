@@ -642,12 +642,12 @@ Last updated: 2026-03-05
 **Tests (TDD/eval):**
 - Script smoke runs (status-claim, hygiene-sweep, checkpoint-append)
 **Verification (first pass?):**
-- [ ] lint
-- [ ] typecheck
-- [ ] test
-- [ ] build
-- [ ] evals (N/A)
-- First-pass all gates: TBD
+- [x] lint
+- [x] typecheck
+- [x] test
+- [x] build
+- [x] evals (N/A)
+- First-pass all gates: Yes
 **Review (gatekeeper):** TBD (gatekeeper pending)
 **Findings fixed:** Critical: 0, High: 0, Low: 0
 **Notes:**
@@ -1347,6 +1347,89 @@ Last updated: 2026-03-05
 - manual wsskeptic (self-check, UI profile) found no critical/high; formal gatekeeper review still pending
 **Outcome:** complete
 **Commits:** `bf62ee8`
+
+---
+
+### 2026-03-04 17:42 - Phase 2 debate transcript view
+
+**Task ID:** PH2-TRANSCRIPT-VIEW
+**Agent:** Codex
+**Branch:** feat/ph2-transcript-view-codex
+**Scope:** Debate transcript view — collapsible phases, model color-coding, agreement/disagreement highlighting (consumes GET /api/debates/[id])
+**Status:** Started
+**Started:** 2026-03-04 17:42
+**FR / Requirement:** FR-UI-002
+**Files changed:**
+- src/app/board-runtime-panel.tsx
+- src/app/board-runtime-view.tsx
+- src/app/debate-transcript-view.tsx
+- src/lib/board/transcript.ts
+- __tests__/board/runtime-panel.test.tsx
+- __tests__/board/transcript.test.ts
+**Out of scope:** /api/debates schema changes, SSE protocol changes, LangGraph/DB changes, compare mode behavior
+**Tests (TDD/eval):**
+- TDD: transcript phase grouping + agreement/disagreement signal detection
+- TDD: runtime panel fetches debate detail and renders transcript phases
+**Verification (first pass?):**
+- [ ] lint
+- [ ] typecheck
+- [ ] test
+- [ ] build
+- [ ] evals (N/A)
+- First-pass all gates: TBD
+**Review (gatekeeper):** TBD
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- manual wsorchestrate complete
+- manual wsresearch skipped (no protocol/schema/provider changes)
+**Outcome:** in-progress
+
+---
+
+### 2026-03-04 17:42 - Phase 2 debate transcript view
+
+**Task ID:** PH2-TRANSCRIPT-VIEW
+**Agent:** Codex
+**Branch:** feat/ph2-transcript-view-codex
+**Scope:** Debate transcript view: collapsible phases, model color-coding, agreement/disagreement highlighting from GET /api/debates/[id]
+**Status:** Completed
+**Started:** 2026-03-04 17:42
+**Ended:** 2026-03-04 17:55
+**Cycle Time:** 0h41m
+**FR / Requirement:** FR-UI-002
+**Files changed:**
+- src/app/board-runtime-panel.tsx
+- src/app/board-runtime-view.tsx
+- src/app/debate-transcript-view.tsx
+- src/lib/board/transcript.ts
+- src/lib/board/runtime-requests.ts
+- __tests__/board/runtime-panel.test.tsx
+- __tests__/board/transcript.test.ts
+- STATUS.md
+- CHECKPOINT.md
+**Out of scope:** /api/debates schema changes, SSE protocol changes, LangGraph/DB changes, compare mode behavior
+**Tests (TDD/eval):**
+- TDD: transcript phase grouping + agreement/disagreement detection
+- TDD: runtime panel fetches debate detail after completed run
+- manual wsverify: npm run lint
+- manual wsverify: npm run typecheck
+- manual wsverify: npm run test
+- manual wsverify: npm run build
+**Verification (first pass?):**
+- [ ] lint
+- [ ] typecheck
+- [ ] test
+- [ ] build
+- [ ] evals (N/A)
+- First-pass all gates: TBD
+**Review (gatekeeper):** manual wsskeptic (UI profile): no critical/high findings; gatekeeper cross-review required
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- manual wsresearch skipped: no provider/schema/protocol changes
+- Refactored request helpers into src/lib/board/runtime-requests.ts to keep board-runtime files within AGENTS line caps
+- All quality gates passed in this worktree
+**Outcome:** complete
+**Commits:** `31d4896`
 
 ---
 

@@ -40,7 +40,6 @@ Last updated: 2026-03-05
 - [ ] Eval scoring integration — Langfuse LLM-as-judge on debate completion, save to debates.evalScore + evalDetails
 
 **Codex territory (frontend/UI/rendering):**
-- [ ] Debate transcript view — collapsible phases, model color-coding, agreement/disagreement highlighting (consumes GET /api/debates/[id])
 - [ ] Compare mode UI — independent-only display (no review/synthesis phases)
 
 ## Blocked
@@ -100,6 +99,8 @@ Last updated: 2026-03-05
 - [x] Backend read APIs — GET /api/workspaces, /api/workspaces/[id]/debates, /api/debates/[id] + CUID2 validation + column selection + pagination, 19 new tests (384 total) — owner: Claude — 2026-03-05 — PR: #14
 
 - [x] Board timeline rendering — consume SSE events, render timeline cards with typing indicators, confidence meters, cost ticker — owner: Codex — 2026-03-05 — commit: bf62ee8 — cycle: 0h08m
+
+- [x] Debate transcript view — collapsible phases, model color-coding, agreement/disagreement highlighting (consumes GET /api/debates/[id]) — owner: Codex — 2026-03-05 — commit: 31d4896 — cycle: 0h41m
 
 ## Velocity Snapshot (This Week)
 

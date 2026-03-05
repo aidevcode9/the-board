@@ -1,12 +1,11 @@
 'use client';
 
 import { BoardRuntimeView } from '@/app/board-runtime-view';
+import { DebateTranscriptView } from '@/app/debate-transcript-view';
 import { useDebateRun } from '@/hooks/use-debate-run';
-import {
-  type QuickRunResult,
-  boardRuntimeReducer,
-  createInitialBoardRuntimeState,
-} from '@/lib/board/runtime';
+import { boardRuntimeReducer, createInitialBoardRuntimeState } from '@/lib/board/runtime';
+import { isAbortError, loadDebateDetail, runQuickModeRequest } from '@/lib/board/runtime-requests';
+import type { DebateDetailPayload } from '@/lib/board/transcript';
 import type { BoardMode } from '@/lib/modes/selection';
 import { startTransition, useEffect, useReducer, useRef, useState } from 'react';
 
@@ -16,65 +15,6 @@ type BoardRuntimePanelProps = {
   activeWorkspaceId: string | null;
   activeWorkspaceName: string | null;
 };
-
-type QuickApiResponse = {
-  content?: string;
-  costUsd?: number;
-  debateId?: string;
-  latencyMs?: number;
-  model?: string;
-  provider?: string;
-};
-
-function isAbortError(error: unknown) {
-  return (
-    (error instanceof DOMException && error.name === 'AbortError') ||
-    (error instanceof Error && /abort/i.test(error.message))
-  );
-}
-
-async function runQuickModeRequest(
-  query: string,
-  domain: string | null,
-  fetchImpl: typeof fetch,
-): Promise<QuickRunResult> {
-  const response = await fetchImpl('/api/quick', {
-    body: JSON.stringify({
-      domain: domain ?? 'general',
-      personaSlot: 'analyst',
-      query,
-    }),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    method: 'POST',
-  });
-
-  const payload = (await response.json()) as QuickApiResponse & {
-    error?: string;
-    message?: string;
-  };
-  if (!response.ok) {
-    throw new Error(payload.error ?? payload.message ?? 'Quick mode request failed');
-  }
-  if (
-    typeof payload.content !== 'string' ||
-    typeof payload.debateId !== 'string' ||
-    typeof payload.model !== 'string' ||
-    typeof payload.provider !== 'string'
-  ) {
-    throw new Error('Quick mode response is missing required fields');
-  }
-
-  return {
-    content: payload.content,
-    costUsd: typeof payload.costUsd === 'number' ? payload.costUsd : 0,
-    debateId: payload.debateId,
-    latencyMs: typeof payload.latencyMs === 'number' ? payload.latencyMs : 0,
-    model: payload.model,
-    provider: payload.provider,
-  };
-}
 
 export function BoardRuntimePanel({
   activeMode,
@@ -90,7 +30,11 @@ export function BoardRuntimePanel({
   );
   const [queryInput, setQueryInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [transcriptDetail, setTranscriptDetail] = useState<DebateDetailPayload | null>(null);
+  const [transcriptErrorMessage, setTranscriptErrorMessage] = useState<string | null>(null);
+  const [transcriptLoading, setTranscriptLoading] = useState(false);
   const processedSeqRef = useRef(0);
+  const loadedDebateIdRef = useRef<string | null>(null);
   const resetRunRef = useRef(debateRun.reset);
   const isBusy = isSubmitting || debateRun.isRunning || runtime.status === 'running';
 
@@ -110,9 +54,54 @@ export function BoardRuntimePanel({
 
   useEffect(() => {
     processedSeqRef.current = 0;
+    loadedDebateIdRef.current = null;
+    setTranscriptDetail(null);
+    setTranscriptErrorMessage(null);
+    setTranscriptLoading(false);
     resetRunRef.current();
     dispatch({ mode: activeMode, type: 'reset' });
   }, [activeMode]);
+
+  useEffect(() => {
+    if (!runtime.debateId) {
+      return;
+    }
+    if (runtime.status !== 'completed' && runtime.status !== 'human_review_required') {
+      return;
+    }
+    if (loadedDebateIdRef.current === runtime.debateId) {
+      return;
+    }
+
+    const controller = new AbortController();
+    let cancelled = false;
+
+    setTranscriptLoading(true);
+    setTranscriptErrorMessage(null);
+    loadDebateDetail(runtime.debateId, fetch, controller.signal)
+      .then((detail) => {
+        if (cancelled) return;
+        loadedDebateIdRef.current = runtime.debateId;
+        setTranscriptDetail(detail);
+      })
+      .catch((error) => {
+        if (cancelled || isAbortError(error)) {
+          return;
+        }
+        const message = error instanceof Error ? error.message : 'Failed to load transcript';
+        setTranscriptErrorMessage(message);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setTranscriptLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [runtime.debateId, runtime.status]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -122,6 +111,10 @@ export function BoardRuntimePanel({
     }
 
     processedSeqRef.current = 0;
+    loadedDebateIdRef.current = null;
+    setTranscriptDetail(null);
+    setTranscriptErrorMessage(null);
+    setTranscriptLoading(false);
     dispatch({ mode: activeMode, query, type: 'submit' });
     setIsSubmitting(true);
 
@@ -165,6 +158,12 @@ export function BoardRuntimePanel({
       queryInput={queryInput}
       runtime={runtime}
       setQueryInput={setQueryInput}
-    />
+    >
+      <DebateTranscriptView
+        detail={transcriptDetail}
+        errorMessage={transcriptErrorMessage}
+        isLoading={transcriptLoading}
+      />
+    </BoardRuntimeView>
   );
 }
