@@ -2,7 +2,7 @@
 
 > Current work. Updated daily.
 
-Last updated: 2026-03-04
+Last updated: 2026-03-05
 
 ---
 
@@ -35,7 +35,7 @@ Last updated: 2026-03-04
 
 ## Next
 
-- [ ] Phase 2a /api/debate route — auth + request Zod + graph-to-SSE wiring (compare/debate entry)
+*(Human/orchestrator to seed next tasks)*
 
 ## Blocked
 
@@ -89,6 +89,10 @@ Last updated: 2026-03-04
 
 - [x] Board runtime wiring — command bar submit + timeline reducer + terminal/error/HITL-lite states — owner: Codex — 2026-03-04 — commit: 96ed755 — cycle: 0h21m
 
+- [x] Phase 2a /api/debate route — auth + Zod + graph-to-SSE wiring + Pino logging + workspace validation, 21 new tests (365 total) — owner: Claude — 2026-03-05 — PR: #13
+
+- [x] Backend read APIs — GET /api/workspaces, /api/workspaces/[id]/debates, /api/debates/[id] + CUID2 validation + column selection + pagination, 19 new tests (384 total) — owner: Claude — 2026-03-05 — PR: #14
+
 ## Velocity Snapshot (This Week)
 
 > Update from completed `CHECKPOINT.md` entries (append weekly or daily). Keep this lightweight.
@@ -120,6 +124,7 @@ Last updated: 2026-03-04
 | 2026-02-24 | Explicit public path allowlist in middleware | Prefix-based `/api/auth` matching is a security footgun; explicit list prevents accidental exposure. |
 | 2026-02-24 | ON DELETE cascade/set null on all FK references | Prevents orphaned rows; cascade for owned data, set null for optional references. |
 | 2026-02-24 | Langfuse v4 SDK (OTel-based, GA Aug 2025) | Future-proof: `@langfuse/tracing` + `@langfuse/otel` + `@opentelemetry/sdk-node`. Not the older `langfuse` v3 package. OTel spans export to any backend. |
+| 2026-03-05 | Pino for structured application logging | Separate from Langfuse (LLM observability). JSON logs with child loggers for correlation IDs (debateId, userId). No raw console.log. |
 
 ---
 
@@ -132,3 +137,5 @@ Last updated: 2026-03-04
 | API costs | Monitoring | Mode system + cost dashboard + budget alerts |
 | Edge Runtime + DB in middleware | Deferred | Session callback queries Turso; safe on Node.js host, breaks on Vercel Edge. Split auth config in Phase 4 security hardening. |
 | Beta code brute-force | Deferred | No rate limiting on /api/auth/beta-code. Add Upstash Redis rate limiter in Phase 4. |
+| Debate endpoint rate limiting | Deferred | No per-user rate limiting on POST /api/debate. Add Upstash Redis rate limiter in Phase 4. |
+| Prompt injection on debate queries | Deferred | User queries passed to LLM without sanitization. Add LLM Guard in Phase 4. |
