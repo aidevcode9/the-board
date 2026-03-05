@@ -2,7 +2,7 @@
 
 > Session progress. Updated after each FR. Read this when resuming.
 
-Last updated: 2026-02-25
+Last updated: 2026-03-04
 
 ---
 
@@ -1143,6 +1143,92 @@ Last updated: 2026-02-25
 - manual wsresearch skipped: contract already frozen in PHASE2-CONTRACT.md
 **Outcome:** shipped-local
 **Commits:** `f97f287`
+
+---
+
+### 2026-03-04 15:35 - Phase 2a Board Runtime Wiring
+
+**Task ID:** PH2A-BOARD-RUNTIME
+**Agent:** Codex
+**Branch:** feat/ph2a-board-runtime-wiring-codex
+**Scope:** Board runtime wiring — command bar submit + timeline reducer + terminal/error/HITL-lite states
+**Status:** Started
+**Started:** 2026-03-04 15:35
+**FR / Requirement:** FR-UI-001
+**Files changed:**
+- src/app/board-shell.tsx
+- src/app/board-runtime-panel.tsx
+- src/lib/board/runtime.ts
+- __tests__/board/runtime.test.ts
+- __tests__/board/runtime-panel.test.tsx
+- STATUS.md
+- CHECKPOINT.md
+**Out of scope:** /api/debate route, SSE protocol/schema changes, LangGraph node logic, DB schema changes
+**Tests (TDD/eval):**
+- TDD: reducer transitions for command/timeline terminal states
+- TDD: board runtime panel submit wiring (quick + streaming/error paths)
+**Verification (first pass?):**
+- [ ] lint
+- [ ] typecheck
+- [ ] test
+- [ ] build
+- [ ] evals (N/A)
+- First-pass all gates: TBD
+**Review (gatekeeper):** TBD
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- manual wsresearch completed against PHASE2-CONTRACT + existing streaming runtime
+- No frozen-interface changes planned
+**Outcome:** in-progress
+
+---
+
+### 2026-03-04 15:35 - Phase 2a Board Runtime Wiring
+
+**Task ID:** PH2A-BOARD-RUNTIME
+**Agent:** Codex
+**Branch:** feat/ph2a-board-runtime-wiring-codex
+**Scope:** Board runtime wiring — command bar submit + timeline reducer + terminal/error/HITL-lite states
+**Status:** Completed
+**Started:** 2026-03-04 15:35
+**Ended:** 2026-03-04 15:56
+**Cycle Time:** 0h21m
+**FR / Requirement:** FR-UI-001
+**Files changed:**
+- src/app/board-shell.tsx
+- src/app/board-runtime-panel.tsx
+- src/app/board-runtime-view.tsx
+- src/lib/board/runtime.ts
+- src/lib/board/runtime-state.ts
+- src/lib/board/runtime-reducer.ts
+- src/lib/board/runtime-stream.ts
+- __tests__/board/runtime.test.ts
+- __tests__/board/runtime-panel.test.tsx
+- STATUS.md
+- CHECKPOINT.md
+**Out of scope:** /api/debate route, SSE protocol/schema changes, LangGraph node logic, DB schema changes
+**Tests (TDD/eval):**
+- TDD: reducer transitions for command/timeline terminal states
+- TDD: board runtime panel submit wiring (quick + streaming error/HITL/cancel)
+- manual wsverify: npm run lint (pending: unrelated unowned files fail formatting/style checks)
+- manual wsverify: npx biome check <slice files> (pass)
+- manual wsverify: npm run typecheck (pass)
+- manual wsverify: npm run test (365/365 pass)
+- manual wsverify: npm run build (pass)
+**Verification (first pass?):**
+- [ ] lint
+- [x] typecheck
+- [x] test
+- [x] build
+- [ ] evals (N/A)
+- First-pass all gates: No
+**Review (gatekeeper):** manual wsskeptic (UI profile): no critical/high after abort handling fix
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- Introduced board runtime reducer + client wiring for command bar submit and timeline state
+- Terminal states rendered: completed, error, and human_review_required (HITL-lite)
+- Full lint is blocked by unrelated unowned files in this shared worktree; targeted lint on slice files passes
+**Outcome:** complete
 
 ---
 
