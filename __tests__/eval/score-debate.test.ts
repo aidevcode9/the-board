@@ -2,6 +2,7 @@
 // Tests for scoreDebate() which runs all judges and persists eval results.
 
 import { scoreDebate } from '@/lib/eval/score-debate';
+import { withTracing } from '@/lib/providers/traced';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -104,6 +105,13 @@ describe('scoreDebate', () => {
 
     expect(mockGenerate).toHaveBeenCalledTimes(4);
     expect(result.metrics).toHaveLength(4);
+
+    // Verify Langfuse tracing wraps every judge call with correct metadata
+    expect(withTracing).toHaveBeenCalledTimes(4);
+    expect(withTracing).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ debateId: 'dbt_test', phase: 'validation', persona: 'analyst' }),
+    );
   });
 
   it('returns scores for each metric', async () => {
