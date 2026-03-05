@@ -7,7 +7,7 @@
 
 import { db } from '@/lib/db/client';
 import { debates } from '@/lib/db/schema';
-import type { DebateMode, DebateStateUpdate } from '@/lib/graph/state';
+import type { DebateMode, DebateStateUpdate, SycophancyFlag } from '@/lib/graph/state';
 import { logger } from '@/lib/logger';
 import type { DebateStreamEvent, DebateStreamEventType } from '@/lib/streaming/schemas';
 import { encodeDebateStreamEventFrame } from '@/lib/streaming/sse';
@@ -119,6 +119,16 @@ export function graphToSseStream(
         }
       }
 
+      /** Accumulated sycophancy flags (appendArray semantics — concat, don't overwrite). */
+      let accumulatedSycophancyFlags: SycophancyFlag[] = [];
+
+      function accumulateSycophancyFlags(update: Partial<DebateStateUpdate>) {
+        const flags = update.sycophancyFlags;
+        if (flags?.length) {
+          accumulatedSycophancyFlags = [...accumulatedSycophancyFlags, ...flags];
+        }
+      }
+
       function getSynthesizedAnswer(): string | undefined {
         const synthesis = (finalState as Record<string, unknown>).synthesis;
         if (!synthesis) return undefined;
@@ -135,9 +145,10 @@ export function graphToSseStream(
               convergence: finalState.convergence ?? false,
               synthesizedAnswer: getSynthesizedAnswer(),
               rounds: finalState.round ?? 1,
-              sycophancyFlags: finalState.sycophancyFlags
-                ? JSON.stringify(finalState.sycophancyFlags)
-                : null,
+              sycophancyFlags:
+                accumulatedSycophancyFlags.length > 0
+                  ? JSON.stringify(accumulatedSycophancyFlags)
+                  : null,
             })
             .where(eq(debates.id, debateId));
         } catch (err) {
@@ -253,6 +264,9 @@ export function graphToSseStream(
                   }
                 }
               }
+
+              // Accumulate sycophancy flags (appendArray semantics — concat, don't overwrite)
+              accumulateSycophancyFlags(update);
               continue;
             }
 
@@ -288,7 +302,7 @@ export function graphToSseStream(
             finalAnswer,
             synthesizedAnswer: finalAnswer,
             rounds: finalState.round ?? 1,
-            sycophancyFlags: finalState.sycophancyFlags ?? [],
+            sycophancyFlags: accumulatedSycophancyFlags,
           }),
         );
 

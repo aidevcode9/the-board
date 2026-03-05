@@ -1,4 +1,4 @@
-import type { DebateStateUpdate } from '@/lib/graph/state';
+import type { DebateStateUpdate, ModelId } from '@/lib/graph/state';
 import { graphToSseStream } from '@/lib/streaming/graph-to-sse';
 import type { DebateStreamEvent } from '@/lib/streaming/schemas';
 
@@ -415,6 +415,62 @@ describe('graphToSseStream', () => {
 
       const hitlEvent = events.find((e) => e.type === 'human_review_required');
       expect(hitlEvent).toBeUndefined();
+    });
+  });
+
+  describe('sycophancy flags', () => {
+    it('accumulates sycophancy flags from validate_response into run_completed', async () => {
+      const chunks = debateStreamChunks();
+      // Replace validate_response chunks with ones that include sycophancy flags
+      const withFlags: StreamChunk[] = chunks.map(([key, chunk]) => {
+        const entry = Object.entries(chunk)[0];
+        if (!entry || entry[0] !== 'validate_response') return [key, chunk];
+
+        const [nodeName, update] = entry;
+        const participantId = Object.keys(
+          (update as Record<string, unknown>).validations as Record<string, unknown>,
+        )[0] as ModelId;
+
+        return [
+          key,
+          {
+            [nodeName]: {
+              ...update,
+              sycophancyFlags: [
+                {
+                  type: 'confidence_collapse' as const,
+                  model: participantId,
+                  round: 2,
+                  details: `Confidence dropped for ${participantId}`,
+                },
+              ],
+            },
+          },
+        ] satisfies StreamChunk;
+      });
+
+      const stream = graphToSseStream(mockGraphStream(withFlags), DEBATE_ID, 'debate');
+      const events = await collectSseEvents(stream);
+
+      const runCompleted = events.find((e) => e.type === 'run_completed');
+      expect(runCompleted).toBeDefined();
+
+      const flags = runCompleted?.payload.sycophancyFlags as Array<{
+        type: string;
+        model: string;
+      }>;
+      expect(flags).toBeDefined();
+      expect(flags.length).toBe(2); // One from each validator
+      expect(flags[0]?.type).toBe('confidence_collapse');
+      expect(flags[1]?.type).toBe('confidence_collapse');
+    });
+
+    it('returns empty sycophancyFlags array when no flags detected', async () => {
+      const stream = graphToSseStream(mockGraphStream(debateStreamChunks()), DEBATE_ID, 'debate');
+      const events = await collectSseEvents(stream);
+
+      const runCompleted = events.find((e) => e.type === 'run_completed');
+      expect(runCompleted?.payload.sycophancyFlags).toEqual([]);
     });
   });
 
