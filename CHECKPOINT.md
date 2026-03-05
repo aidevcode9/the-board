@@ -2,7 +2,7 @@
 
 > Rolling execution ledger. Keep this file small; archive older entries under `docs/checkpoints/`.
 
-Last updated: 2026-03-04
+Last updated: 2026-03-05
 
 ---
 
@@ -236,6 +236,55 @@ Last updated: 2026-03-04
 - Eval metrics and sycophancy flags are rendered from existing GET /api/debates/[id] payload only
 **Outcome:** complete
 **Commits:** `9667f7d`
+
+---
+
+### 2026-03-05 22:30 - MCP context auto-update activation
+
+**Task ID:** PH3-MCP-CONTEXT-AUTOUPDATE
+**Agent:** Claude
+**Branch:** feat/mcp-context-autoupdate-claude
+**Scope:** Activate update_domain_knowledge MCP tool — replace Phase 1 gating with CONTEXT.md file writes, hook into eval-after-stream pipeline
+**Status:** Completed
+**Started:** 2026-03-05 22:30
+**Ended:** 2026-03-05 23:30
+**Cycle Time:** 1h00m
+**FR / Requirement:** Phase 3 MCP context auto-update
+**Files changed:**
+- src/lib/context/writer.ts (new)
+- src/lib/context/errors.ts (new)
+- src/lib/context/index.ts
+- src/lib/context/loader.ts
+- src/lib/mcp/tools/update-knowledge.ts
+- src/lib/streaming/graph-to-sse.ts
+- __tests__/context/writer.test.ts (new)
+- __tests__/mcp/tools/update-knowledge-phase3.test.ts (new)
+- __tests__/mcp/tools/update-knowledge.test.ts
+- __tests__/mcp/server.test.ts
+- __tests__/api/debate.test.ts
+- __tests__/streaming/graph-to-sse.test.ts
+**Out of scope:** LLM insight distillation, section classification, DB-backed storage, concurrent write protection
+**Tests (TDD/eval):**
+- TDD: 10 writer tests (append, placeholder replace, budget, path traversal, multi-append, formatting)
+- TDD: 4 Phase 3 handler tests (success, below_threshold, file_not_found, budget_exceeded)
+- Updated 4 existing tests (Phase 1 gated → Phase 3 active)
+- All 444 tests passing
+**Verification (first pass?):**
+- [x] lint
+- [x] typecheck
+- [x] test
+- [x] build
+- [x] evals (N/A)
+- First-pass all gates: Yes
+**Review (gatekeeper):** manual wsskeptic: 16 findings (1 CRITICAL fixed, 1 HIGH fixed, 1 MEDIUM fixed, 1 INFO fixed)
+**Findings fixed:** Critical: 1 (path traversal), High: 1 (cost overwrite), Medium: 1 (unsafe cast), Info: 1 (DRY isEnoent)
+**Notes:**
+- Accepted: Vercel read-only FS (local dev/self-hosted only until DB-backed storage in Phase 4)
+- Accepted: Raw synthesis as insight (LLM distillation deferred)
+- Accepted: Hardcoded coreConcepts section (section classification deferred)
+- Accepted: No concurrent write protection (local dev acceptable)
+**Outcome:** complete
+**Commits:** `985810d`
 
 ---
 
