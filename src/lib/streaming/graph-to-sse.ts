@@ -54,6 +54,7 @@ export function graphToSseStream(
       let lastPhaseEmitted: string | undefined;
       const completedParticipants: Record<string, Set<string>> = {};
       let finalState: Partial<DebateStateUpdate> = {};
+      let abortedMessage: string | null = null;
 
       function nextSeq() {
         return ++seq;
@@ -83,6 +84,17 @@ export function graphToSseStream(
 
       function emitCostUpdate(phase?: DebateStreamEvent['phase']) {
         emit(makeEvent('cost_updated', { totalCostUsd }, phase));
+      }
+
+      function getAbortMessage() {
+        if (!signal?.aborted) {
+          return null;
+        }
+        const reason = signal.reason;
+        if (typeof reason === 'string' && reason.trim().length > 0) {
+          return reason;
+        }
+        return 'Request cancelled';
       }
 
       function trackParticipant(nodeName: string, participantId: string): number {
@@ -141,6 +153,7 @@ export function graphToSseStream(
           // Check for abort between graph updates
           if (signal?.aborted) {
             log.info('debate aborted by client disconnect or timeout');
+            abortedMessage = getAbortMessage();
             break;
           }
 
@@ -207,7 +220,11 @@ export function graphToSseStream(
               emit(
                 makeEvent(
                   'participant_completed',
-                  { participantId: synthesizedBy, synthesis },
+                  {
+                    participantId: synthesizedBy,
+                    content: typeof synthesis?.content === 'string' ? synthesis.content : '',
+                    synthesis,
+                  },
                   'synthesis',
                 ),
               );
@@ -256,12 +273,20 @@ export function graphToSseStream(
           }
         }
 
+        if (abortedMessage) {
+          emit(makeEvent('error', { message: sanitizeErrorMessage(new Error(abortedMessage)) }));
+          await persistDebateResults();
+          return;
+        }
+
         // Final event: run_completed
+        const finalAnswer = getSynthesizedAnswer();
         emit(
           makeEvent('run_completed', {
             totalCostUsd,
             convergence: finalState.convergence ?? false,
-            synthesizedAnswer: getSynthesizedAnswer(),
+            finalAnswer,
+            synthesizedAnswer: finalAnswer,
             rounds: finalState.round ?? 1,
             sycophancyFlags: finalState.sycophancyFlags ?? [],
           }),

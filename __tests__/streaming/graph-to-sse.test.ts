@@ -364,7 +364,7 @@ describe('graphToSseStream', () => {
       const runCompleted = events.find((e) => e.type === 'run_completed');
       expect(runCompleted).toBeDefined();
       expect(runCompleted?.payload.convergence).toBe(true);
-      expect(runCompleted?.payload.synthesizedAnswer).toBe('Synthesized answer');
+      expect(runCompleted?.payload.finalAnswer).toBe('Synthesized answer');
     });
 
     it('emits participant_completed for review participants', async () => {
@@ -375,6 +375,17 @@ describe('graphToSseStream', () => {
         (e) => e.type === 'participant_completed' && e.phase === 'review',
       );
       expect(reviewCompleted.length).toBe(3);
+    });
+
+    it('emits synthesis participant_completed with content', async () => {
+      const stream = graphToSseStream(mockGraphStream(debateStreamChunks()), DEBATE_ID, 'debate');
+      const events = await collectSseEvents(stream);
+
+      const synthesisCompleted = events.find(
+        (event) => event.type === 'participant_completed' && event.phase === 'synthesis',
+      );
+      expect(synthesisCompleted).toBeDefined();
+      expect(synthesisCompleted?.payload.content).toBe('Synthesized answer');
     });
   });
 
@@ -433,6 +444,49 @@ describe('graphToSseStream', () => {
       expect(errorEvent).toBeDefined();
       // Error messages are sanitized — generic ones pass through (truncated at 200 chars)
       expect(errorEvent?.payload.message).toBe('Something went wrong in the graph');
+    });
+
+    it('emits terminal error instead of run_completed when aborted', async () => {
+      const abortController = new AbortController();
+      async function* abortingStream(): AsyncGenerator<StreamChunk> {
+        yield [
+          'updates',
+          {
+            route: {
+              roleConfig: {
+                lead: 'builder',
+                challenger: 'analyst',
+                synthesizer: 'synthesizer',
+                weights: { analyst: 0.2, builder: 0.6, synthesizer: 0.2 },
+              },
+            },
+          },
+        ];
+        abortController.abort('Client disconnected');
+        yield [
+          'updates',
+          {
+            independent_response: {
+              responses: { analyst: makeModelResponse('analyst') },
+              totalCostUsd: 0.01,
+              currentPhase: 'independent',
+            },
+          },
+        ];
+      }
+
+      const stream = graphToSseStream(
+        abortingStream(),
+        DEBATE_ID,
+        'debate',
+        abortController.signal,
+      );
+      const events = await collectSseEvents(stream);
+
+      const lastEvent = events.at(-1);
+      expect(lastEvent).toBeDefined();
+      expect(lastEvent?.type).toBe('error');
+      expect(events.some((event) => event.type === 'run_completed')).toBe(false);
     });
   });
 });
