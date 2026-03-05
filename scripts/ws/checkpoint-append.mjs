@@ -17,17 +17,26 @@ function buildList(label, values, fallback) {
   return [`**${label}:**`, ...values.map((value) => `- ${value}`)];
 }
 
-function insertBeforeNextSession(content, block) {
-  const marker = '\n## Next Session';
-  const markerIndex = content.indexOf(marker);
+function insertBeforeTemplate(content, block) {
+  const templateMarker = '\n## Entry Template';
+  const templateIndex = content.indexOf(templateMarker);
 
-  if (markerIndex < 0) {
-    return `${content.replace(/\n?$/, '\n')}\n${block}`;
+  if (templateIndex >= 0) {
+    const before = content.slice(0, templateIndex).replace(/\n+$/, '\n');
+    const after = content.slice(templateIndex);
+    return `${before}\n${block}${after}`;
   }
 
-  const before = content.slice(0, markerIndex).replace(/\n+$/, '\n');
-  const after = content.slice(markerIndex);
-  return `${before}\n${block}${after}`;
+  const nextSessionMarker = '\n## Next Session';
+  const nextSessionIndex = content.indexOf(nextSessionMarker);
+
+  if (nextSessionIndex >= 0) {
+    const before = content.slice(0, nextSessionIndex).replace(/\n+$/, '\n');
+    const after = content.slice(nextSessionIndex);
+    return `${before}\n${block}${after}`;
+  }
+
+  return `${content.replace(/\n?$/, '\n')}\n${block}`;
 }
 
 function updateLastUpdated(content, dateText) {
@@ -98,7 +107,7 @@ try {
 
   const block = lines.join('\n');
   const original = readTextFile(checkpointFile);
-  const withBlock = insertBeforeNextSession(original, block);
+  const withBlock = insertBeforeTemplate(original, block);
   const updated = updateLastUpdated(withBlock, formatLocalDate());
 
   writeTextFile(checkpointFile, updated);

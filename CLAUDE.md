@@ -47,7 +47,7 @@
 
 ### When working autonomously (user said "work on this, I'll check back"):
 → Follow the Autonomous Work Protocol below.
-→ Create checkpoint file after each task.
+→ Append checkpoint entry after each task (rolling log + archive policy).
 → Stop and wait if: Red flag encountered, ambiguous requirement, or test failures you can't resolve in 2 attempts.
 
 ---
@@ -58,7 +58,7 @@
 
 ### Shared State Files
 - **`STATUS.md`** — Shared task board. Keep edits minimal: claim in `Now`, complete in `Done`.
-- **`CHECKPOINT.md`** — Append-only execution ledger. Source of truth for velocity metrics.
+- **`CHECKPOINT.md` + `docs/checkpoints/*`** — Rolling execution ledger + archived history. Source of truth for velocity metrics.
 - **`AGENTS.md`** — Build & review contract. Authority order, invariants, frozen interfaces.
 
 ### Operating Rules
@@ -78,7 +78,7 @@
 ### Claiming Work
 1. Pick an unclaimed item from `Next` in STATUS.md (human/orchestrator owns ordering).
 2. Add a claim line to `Now`: `[Claude] <task slice> — branch: <branch-name> — started: YYYY-MM-DD HH:MM`
-3. Append a start entry to CHECKPOINT.md using the entry template.
+3. Append a start entry to rolling CHECKPOINT.md using the entry template.
 4. When done, move to `Done` with: `[x] <task slice> — owner: Claude — YYYY-MM-DD — PR/commit: <ref> — cycle: <HhMm>`
 
 ### Handoffs
@@ -88,7 +88,7 @@
 ### What Claude Edits (Minimal Footprint)
 - Own claim line in `Now` (add/remove)
 - Own completion line in `Done` (append)
-- Own entries in `CHECKPOINT.md` (append only — never edit another agent's entries)
+- Own entries in rolling `CHECKPOINT.md` (append only; never edit another agent's entries)
 - Code files within own allowed-files list
 
 ---
@@ -124,7 +124,7 @@ For each task:
 ```
 
 ### 3. Checkpoint Log
-After each completed task, append to `CHECKPOINT.md` using the **Entry Template** defined at the top of that file. Required fields:
+After each completed task, append to rolling `CHECKPOINT.md` using the **Entry Template**. If size policy is exceeded, run checkpoint rollover. Required fields:
 - Task ID, Agent, Branch, Scope, Status
 - Started/Ended timestamps (for cycle time)
 - Allowed files, Out of scope
@@ -230,7 +230,7 @@ COMMIT  → Only after eval threshold met
 | ARCHITECTURE.md | Schemas, interfaces, LangGraph state | Implementing backend |
 | DESIGN_SYSTEM.md | Colors, typography, layout, components | Implementing any UI |
 | STATUS.md | Shared task board + velocity snapshot | Before picking work |
-| CHECKPOINT.md | Append-only execution ledger + entry template | Resuming work, logging progress |
+| CHECKPOINT.md + docs/checkpoints/* | Rolling execution ledger + archived history + entry template | Resuming work, logging progress |
 | EVALS.md | Golden queries + eval criteria | Adding debate/LLM logic |
 | PHASE2-CONTRACT.md | Authoritative Phase 2a API + SSE event contract | Implementing Phase 2a debate/compare streaming |
 | PHASE2-RESEARCH.md | LangGraph, Trigger.dev, SSE research + decisions | Starting Phase 2 work |
@@ -245,7 +245,7 @@ COMMIT  → Only after eval threshold met
 4. `/wsstart` → Plan + implement
 5. `/wsverify` → Quality gates
 6. `/wsskeptic` → Adversarial review (⛔ NON-NEGOTIABLE)
-7. Log to CHECKPOINT.md
+7. Log to CHECKPOINT.md (rolling) and archive if needed
 8. `/wscommit` with FR reference
 
 ---
@@ -287,6 +287,10 @@ npm run lint && npm run typecheck && npm run test && npm run build
 # Evals only
 npm run eval                   # Run golden eval suite
 npm run eval:sycophancy        # Anti-sycophancy checks
+
+# Checkpoint maintenance
+npm run checkpoint:rollover    # Move older entries from CHECKPOINT.md to docs/checkpoints/YYYY-MM.md
+npm run checkpoint:validate    # Enforce rolling-checkpoint policy and required fields
 
 # Database
 npm run db:push                # Push schema to Turso
