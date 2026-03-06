@@ -32,19 +32,31 @@ function makeSseResponse(events: DebateStreamEvent[]) {
   });
 }
 
-function makeDebateDetailResponse() {
+function makeDebateDetailResponse(
+  overrides?: Partial<{
+    evalDetails: Record<string, unknown> | null;
+    sycophancyFlags: unknown[] | null;
+  }>,
+) {
   return new Response(
     JSON.stringify({
       debate: {
         convergence: false,
         createdAt: '2026-03-05T00:00:00.000Z',
         domain: 'system-design',
+        evalDetails: overrides?.evalDetails ?? {
+          completeness: 0.88,
+          faithfulness: { reason: 'Grounded in provided evidence.', score: 0.91 },
+        },
         evalScore: 0.82,
         id: 'dbt_123',
         mode: 'debate',
         query: 'Debate this architecture tradeoff.',
         rounds: 2,
         synthesizedAnswer: 'Final synthesis text',
+        sycophancyFlags: overrides?.sycophancyFlags ?? [
+          'Confidence collapse detected in validation phase',
+        ],
       },
       responses: [
         {
@@ -264,6 +276,51 @@ describe('BoardRuntimePanel', () => {
     expect(await screen.findByText(/phase independent/i)).toBeInTheDocument();
     expect(await screen.findByText(/phase validation/i)).toBeInTheDocument();
     expect(await screen.findByText(/^disagreement$/i)).toBeInTheDocument();
+    expect(await screen.findByText(/eval metrics/i)).toBeInTheDocument();
+    expect(await screen.findByText(/completeness/i)).toBeInTheDocument();
+    expect(await screen.findByText(/faithfulness/i)).toBeInTheDocument();
+    expect(await screen.findByText(/grounded in provided evidence/i)).toBeInTheDocument();
+    expect(await screen.findByText(/sycophancy checks/i)).toBeInTheDocument();
+    expect(await screen.findByText(/confidence collapse detected/i)).toBeInTheDocument();
+  });
+
+  it('renders no-flag sycophancy state when debate detail contains zero flags', async () => {
+    const fetchMock = vi.fn().mockImplementation((input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      if (url === '/api/debate') {
+        return Promise.resolve(
+          makeSseResponse([
+            makeEvent({ seq: 1, type: 'run_started' }),
+            makeEvent({
+              payload: { finalAnswer: 'Final synthesis text' },
+              seq: 2,
+              type: 'run_completed',
+            }),
+          ]),
+        );
+      }
+      if (url === '/api/debates/dbt_123') {
+        return Promise.resolve(makeDebateDetailResponse({ sycophancyFlags: [] }));
+      }
+      return Promise.reject(new Error(`Unexpected URL: ${url}`));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <BoardRuntimePanel
+        activeMode="debate"
+        activeWorkspaceDomain="system-design"
+        activeWorkspaceId="ws_1"
+        activeWorkspaceName="System Design"
+      />,
+    );
+
+    fireEvent.change(screen.getByRole('textbox', { name: /command input/i }), {
+      target: { value: 'Debate this architecture tradeoff.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /run debate/i }));
+
+    expect(await screen.findByText(/no sycophancy flags detected/i)).toBeInTheDocument();
   });
 
   it('renders compare mode as independent side-by-side responses only', async () => {

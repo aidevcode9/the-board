@@ -5,6 +5,7 @@
 //
 // See PHASE2-CONTRACT.md for the frozen SSE event contract.
 
+import { KNOWN_DOMAINS, type KnownDomain } from '@/lib/context';
 import { db } from '@/lib/db/client';
 import { debates } from '@/lib/db/schema';
 import type { DebateMode, DebateStateUpdate, SycophancyFlag } from '@/lib/graph/state';

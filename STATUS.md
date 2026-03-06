@@ -108,6 +108,10 @@ Last updated: 2026-03-05
 
 - [x] Eval scoring integration — Langfuse LLM-as-judge (4 metrics), fire-and-forget after stream close — owner: Claude — 2026-03-05 — PR: #20 — cycle: 2h00m
 
+- [x] Phase 2 transcript UX — eval metrics + sycophancy flags read-only wiring — owner: Codex — 2026-03-05 — commit: 9667f7d — cycle: 0h10m
+
+- [x] MCP context auto-update — activate update_domain_knowledge + CONTEXT.md writes, path traversal protection, eval-after-stream hook, totalCostUsd overwrite fix — owner: Claude — 2026-03-05 — PR: #24 — cycle: 1h00m
+
 ## Velocity Snapshot (This Week)
 
 > Update from completed entries in `CHECKPOINT.md` + `docs/checkpoints/*` (append weekly or daily). Keep this lightweight.

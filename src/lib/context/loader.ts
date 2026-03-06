@@ -3,6 +3,8 @@ import 'server-only';
 import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
+import { isEnoent } from './errors';
+
 // ── Constants ────────────────────────────────────────────────────────────────
 
 /** Known domain identifiers matching contexts/ directory structure. */
@@ -168,11 +170,5 @@ function extractSection(markdown: string, heading: string): string {
   return trimmed;
 }
 
-function isEnoent(err: unknown): boolean {
-  return (
-    typeof err === 'object' &&
-    err !== null &&
-    'code' in err &&
-    (err as { code: string }).code === 'ENOENT'
-  );
-}
+// Re-export isEnoent from shared errors module
+export { isEnoent } from './errors';
