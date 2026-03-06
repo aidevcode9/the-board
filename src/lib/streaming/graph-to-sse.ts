@@ -5,13 +5,11 @@
 //
 // See PHASE2-CONTRACT.md for the frozen SSE event contract.
 
-import { KNOWN_DOMAINS, type KnownDomain } from '@/lib/context';
 import { db } from '@/lib/db/client';
 import { debates } from '@/lib/db/schema';
-import { scoreDebate } from '@/lib/eval/score-debate';
 import type { DebateMode, DebateStateUpdate, SycophancyFlag } from '@/lib/graph/state';
 import { logger } from '@/lib/logger';
-import { EVAL_SCORE_THRESHOLD, executeUpdateKnowledge } from '@/lib/mcp/tools/update-knowledge';
+import { runEvalScoring } from '@/lib/streaming/eval-after-stream';
 import type { DebateStreamEvent, DebateStreamEventType } from '@/lib/streaming/schemas';
 import { encodeDebateStreamEventFrame } from '@/lib/streaming/sse';
 import { eq } from 'drizzle-orm';
@@ -55,13 +53,15 @@ export function graphToSseStream(
     async start(controller) {
       let seq = 0;
       let totalCostUsd = 0;
+      let currentRound = 1;
       let lastPhaseEmitted: string | undefined;
       const completedParticipants: Record<string, Set<string>> = {};
       let finalState: Partial<DebateStateUpdate> = {};
       let abortedMessage: string | null = null;
       // Separate accumulators for eval scoring (loosely typed, not part of graph state)
       const evalResponses: Record<string, Record<string, unknown>> = {};
-      const evalReviews: Record<string, unknown> = {};
+      // Accumulate reviews by round to preserve cross-round debate evolution for eval scoring
+      const evalReviewsByRound: Array<{ round: number; reviews: Record<string, unknown> }> = [];
 
       function nextSeq() {
         return ++seq;
@@ -90,7 +90,7 @@ export function graphToSseStream(
       }
 
       function emitCostUpdate(phase?: DebateStreamEvent['phase']) {
-        emit(makeEvent('cost_updated', { totalCostUsd }, phase));
+        emit(makeEvent('cost_updated', { totalCostUsd }, phase, currentRound));
       }
 
       function getAbortMessage() {
@@ -104,18 +104,22 @@ export function graphToSseStream(
         return 'Request cancelled';
       }
 
+      /** Round-scoped participant tracking: resets each round so phase_completed fires correctly. */
       function trackParticipant(nodeName: string, participantId: string): number {
-        if (!completedParticipants[nodeName]) {
-          completedParticipants[nodeName] = new Set();
+        const key = `${nodeName}_r${currentRound}`;
+        if (!completedParticipants[key]) {
+          completedParticipants[key] = new Set();
         }
-        completedParticipants[nodeName].add(participantId);
-        return completedParticipants[nodeName].size;
+        completedParticipants[key].add(participantId);
+        return completedParticipants[key].size;
       }
 
+      /** Round-scoped phase emission: re-emits phase_started on new rounds. */
       function emitPhaseStartedIfNeeded(phase: DebateStreamEvent['phase']) {
-        if (lastPhaseEmitted !== phase) {
-          lastPhaseEmitted = phase;
-          emit(makeEvent('phase_started', { phase }, phase));
+        const key = `${phase}_r${currentRound}`;
+        if (lastPhaseEmitted !== key) {
+          lastPhaseEmitted = key;
+          emit(makeEvent('phase_started', { phase }, phase, currentRound));
         }
       }
 
@@ -151,7 +155,7 @@ export function graphToSseStream(
               totalCostUsd,
               convergence: finalState.convergence ?? false,
               synthesizedAnswer: getSynthesizedAnswer(),
-              rounds: finalState.round ?? 1,
+              rounds: Math.max(1, (finalState.round ?? 1) - 1),
               sycophancyFlags:
                 accumulatedSycophancyFlags.length > 0
                   ? JSON.stringify(accumulatedSycophancyFlags)
@@ -192,12 +196,20 @@ export function graphToSseStream(
                   evalResponses[pid] = resp as Record<string, unknown>;
                 }
                 for (const [participantId, response] of Object.entries(responses)) {
-                  emit(makeEvent('participant_started', { participantId }, 'independent'));
+                  emit(
+                    makeEvent(
+                      'participant_started',
+                      { participantId },
+                      'independent',
+                      currentRound,
+                    ),
+                  );
                   emit(
                     makeEvent(
                       'participant_completed',
                       { participantId, ...(response as Record<string, unknown>) },
                       'independent',
+                      currentRound,
                     ),
                   );
 
@@ -205,7 +217,14 @@ export function graphToSseStream(
                   emitCostUpdate('independent');
 
                   if (count === EXPECTED_PARTICIPANT_COUNT) {
-                    emit(makeEvent('phase_completed', { phase: 'independent' }, 'independent'));
+                    emit(
+                      makeEvent(
+                        'phase_completed',
+                        { phase: 'independent' },
+                        'independent',
+                        currentRound,
+                      ),
+                    );
                   }
                 }
               }
@@ -217,17 +236,24 @@ export function graphToSseStream(
               accumulateChunkCost(update);
               const reviews = update.reviews as Record<string, unknown> | undefined;
               if (reviews) {
-                // Accumulate reviews for eval scoring
-                Object.assign(evalReviews, reviews);
+                // Accumulate reviews by round for eval scoring (preserves cross-round evolution)
+                evalReviewsByRound.push({ round: currentRound, reviews });
                 for (const [participantId, review] of Object.entries(reviews)) {
-                  emit(makeEvent('participant_started', { participantId }, 'review'));
-                  emit(makeEvent('participant_completed', { participantId, review }, 'review'));
+                  emit(makeEvent('participant_started', { participantId }, 'review', currentRound));
+                  emit(
+                    makeEvent(
+                      'participant_completed',
+                      { participantId, review },
+                      'review',
+                      currentRound,
+                    ),
+                  );
 
                   const count = trackParticipant(nodeName, participantId);
                   emitCostUpdate('review');
 
                   if (count === EXPECTED_PARTICIPANT_COUNT) {
-                    emit(makeEvent('phase_completed', { phase: 'review' }, 'review'));
+                    emit(makeEvent('phase_completed', { phase: 'review' }, 'review', currentRound));
                   }
                 }
               }
@@ -240,7 +266,14 @@ export function graphToSseStream(
               const synthesis = update.synthesis as Record<string, unknown> | undefined;
               const synthesizedBy = synthesis?.synthesizedBy ?? 'unknown';
 
-              emit(makeEvent('participant_started', { participantId: synthesizedBy }, 'synthesis'));
+              emit(
+                makeEvent(
+                  'participant_started',
+                  { participantId: synthesizedBy },
+                  'synthesis',
+                  currentRound,
+                ),
+              );
               emit(
                 makeEvent(
                   'participant_completed',
@@ -250,11 +283,13 @@ export function graphToSseStream(
                     synthesis,
                   },
                   'synthesis',
+                  currentRound,
                 ),
               );
               emitCostUpdate('synthesis');
-              emit(makeEvent('phase_completed', { phase: 'synthesis' }, 'synthesis'));
-              finalState = { ...finalState, ...update };
+              emit(makeEvent('phase_completed', { phase: 'synthesis' }, 'synthesis', currentRound));
+              // Explicit field extraction: only track synthesis from this node
+              finalState = { ...finalState, synthesis: update.synthesis };
               continue;
             }
 
@@ -264,16 +299,30 @@ export function graphToSseStream(
               const validations = update.validations as Record<string, unknown> | undefined;
               if (validations) {
                 for (const [participantId, validation] of Object.entries(validations)) {
-                  emit(makeEvent('participant_started', { participantId }, 'validation'));
                   emit(
-                    makeEvent('participant_completed', { participantId, validation }, 'validation'),
+                    makeEvent('participant_started', { participantId }, 'validation', currentRound),
+                  );
+                  emit(
+                    makeEvent(
+                      'participant_completed',
+                      { participantId, validation },
+                      'validation',
+                      currentRound,
+                    ),
                   );
 
                   const count = trackParticipant(nodeName, participantId);
                   emitCostUpdate('validation');
 
                   if (count === VALIDATOR_COUNT) {
-                    emit(makeEvent('phase_completed', { phase: 'validation' }, 'validation'));
+                    emit(
+                      makeEvent(
+                        'phase_completed',
+                        { phase: 'validation' },
+                        'validation',
+                        currentRound,
+                      ),
+                    );
                   }
                 }
               }
@@ -292,7 +341,14 @@ export function graphToSseStream(
                   }),
                 );
               }
-              finalState = { ...finalState, ...update };
+              // Advance round counter for next iteration of the loop
+              if (typeof update.round === 'number' && update.round > currentRound) {
+                currentRound = update.round;
+              }
+              // Explicit field extraction: only track convergence/round/hitl from this node
+              if (update.convergence !== undefined) finalState.convergence = update.convergence;
+              if (update.round !== undefined) finalState.round = update.round;
+              if (update.hitlRequired !== undefined) finalState.hitlRequired = update.hitlRequired;
               continue;
             }
 
@@ -307,6 +363,9 @@ export function graphToSseStream(
         }
 
         // Final event: run_completed
+        // post_validation increments round after each completed round,
+        // so finalState.round is the next-round counter (off by 1).
+        const completedRounds = Math.max(1, (finalState.round ?? 1) - 1);
         const finalAnswer = getSynthesizedAnswer();
         emit(
           makeEvent('run_completed', {
@@ -314,7 +373,7 @@ export function graphToSseStream(
             convergence: finalState.convergence ?? false,
             finalAnswer,
             synthesizedAnswer: finalAnswer,
-            rounds: finalState.round ?? 1,
+            rounds: completedRounds,
             sycophancyFlags: accumulatedSycophancyFlags,
           }),
         );
@@ -326,7 +385,12 @@ export function graphToSseStream(
         // Eval results persist to DB; clients can poll for them.
         // NOT emitted via SSE to avoid post-close controller writes (EVAL-02).
         if (evalContext && mode !== 'quick' && finalAnswer) {
-          runEvalScoring(debateId, evalContext, mode, finalAnswer, evalResponses, evalReviews);
+          // Flatten reviews: merge all rounds (last round overwrites earlier for same keys)
+          const flatReviews: Record<string, unknown> = {};
+          for (const entry of evalReviewsByRound) {
+            Object.assign(flatReviews, entry.reviews);
+          }
+          runEvalScoring(debateId, evalContext, mode, finalAnswer, evalResponses, flatReviews);
         }
       } catch (err) {
         log.error({ err }, 'graph stream error');
@@ -338,58 +402,4 @@ export function graphToSseStream(
       }
     },
   });
-}
-
-/** Fire-and-forget eval scoring — persists to DB, never throws. */
-function runEvalScoring(
-  debateId: string,
-  evalContext: { query: string; domain: string },
-  mode: DebateMode,
-  synthesis: string,
-  responses: Record<string, Record<string, unknown>>,
-  reviews: Record<string, unknown>,
-): void {
-  const evalLog = logger.child({ debateId, component: 'eval-scoring' });
-  scoreDebate({
-    debateId,
-    query: evalContext.query,
-    domain: evalContext.domain,
-    mode,
-    synthesis,
-    responses: responses as Record<string, { content: string; confidence?: number }>,
-    reviews,
-  })
-    .then(async (evalResult) => {
-      if (evalResult.overallScore > 0) {
-        await db
-          .update(debates)
-          .set({
-            evalScore: evalResult.overallScore,
-            evalDetails: JSON.stringify(evalResult.metrics),
-            // Note: totalCostUsd not overwritten — persistDebateResults() already wrote
-            // the debate cost. Eval cost is tracked in evalDetails.metrics only.
-          })
-          .where(eq(debates.id, debateId));
-      }
-      evalLog.info({ evalScore: evalResult.overallScore }, 'eval scoring complete');
-
-      // Auto-update domain knowledge when eval score is high enough
-      const domainId = evalContext.domain;
-      const isKnownDomain = (KNOWN_DOMAINS as readonly string[]).includes(domainId);
-      if (evalResult.overallScore >= EVAL_SCORE_THRESHOLD && isKnownDomain) {
-        const insight = synthesis.length > 2000 ? `${synthesis.slice(0, 1997)}...` : synthesis;
-        executeUpdateKnowledge({
-          domain: domainId as KnownDomain,
-          section: 'coreConcepts',
-          insight,
-          debateId,
-          evalScore: evalResult.overallScore,
-        }).catch((err) => {
-          evalLog.warn({ err }, 'context auto-update failed (non-fatal)');
-        });
-      }
-    })
-    .catch((err) => {
-      evalLog.warn({ err }, 'eval scoring failed (non-fatal)');
-    });
 }
