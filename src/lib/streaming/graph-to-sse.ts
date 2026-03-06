@@ -5,11 +5,13 @@
 //
 // See PHASE2-CONTRACT.md for the frozen SSE event contract.
 
+import { KNOWN_DOMAINS, type KnownDomain } from '@/lib/context';
 import { db } from '@/lib/db/client';
 import { debates } from '@/lib/db/schema';
 import { scoreDebate } from '@/lib/eval/score-debate';
 import type { DebateMode, DebateStateUpdate, SycophancyFlag } from '@/lib/graph/state';
 import { logger } from '@/lib/logger';
+import { EVAL_SCORE_THRESHOLD, executeUpdateKnowledge } from '@/lib/mcp/tools/update-knowledge';
 import type { DebateStreamEvent, DebateStreamEventType } from '@/lib/streaming/schemas';
 import { encodeDebateStreamEventFrame } from '@/lib/streaming/sse';
 import { eq } from 'drizzle-orm';
@@ -364,11 +366,28 @@ function runEvalScoring(
           .set({
             evalScore: evalResult.overallScore,
             evalDetails: JSON.stringify(evalResult.metrics),
-            totalCostUsd: evalResult.totalCostUsd,
+            // Note: totalCostUsd not overwritten — persistDebateResults() already wrote
+            // the debate cost. Eval cost is tracked in evalDetails.metrics only.
           })
           .where(eq(debates.id, debateId));
       }
       evalLog.info({ evalScore: evalResult.overallScore }, 'eval scoring complete');
+
+      // Auto-update domain knowledge when eval score is high enough
+      const domainId = evalContext.domain;
+      const isKnownDomain = (KNOWN_DOMAINS as readonly string[]).includes(domainId);
+      if (evalResult.overallScore >= EVAL_SCORE_THRESHOLD && isKnownDomain) {
+        const insight = synthesis.length > 2000 ? `${synthesis.slice(0, 1997)}...` : synthesis;
+        executeUpdateKnowledge({
+          domain: domainId as KnownDomain,
+          section: 'coreConcepts',
+          insight,
+          debateId,
+          evalScore: evalResult.overallScore,
+        }).catch((err) => {
+          evalLog.warn({ err }, 'context auto-update failed (non-fatal)');
+        });
+      }
     })
     .catch((err) => {
       evalLog.warn({ err }, 'eval scoring failed (non-fatal)');

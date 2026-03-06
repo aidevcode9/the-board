@@ -3,6 +3,20 @@ import { describe, expect, it, vi } from 'vitest';
 // Mock server-only (no-op in test — imported transitively by context loader)
 vi.mock('server-only', () => ({}));
 
+// Mock the writer to avoid writing to real CONTEXT.md files during tests
+vi.mock('../../src/lib/context/writer', () => ({
+  SECTION_HEADINGS: {
+    coreConcepts: 'Core Concepts',
+    disagreements: 'Key Disagreements & Resolutions',
+    interviewFramings: 'Interview Framings',
+    misconceptions: 'Common Misconceptions',
+  },
+  appendInsightToSection: vi.fn().mockResolvedValue({
+    status: 'updated',
+    message: 'Insight appended (mocked).',
+  }),
+}));
+
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { KNOWN_DOMAINS } from '../../src/lib/context';
@@ -64,7 +78,7 @@ describe('tool registration', () => {
     expect(tool?.description).toContain('Phase 1');
   });
 
-  it('calling tool with valid input returns gated result', async () => {
+  it('calling tool with valid input returns successful result', async () => {
     const { client } = await createConnectedPair();
     const result = await client.callTool({
       name: 'update_domain_knowledge',
@@ -81,7 +95,8 @@ describe('tool registration', () => {
     const [first] = content;
     expect(first?.type).toBe('text');
     const parsed = JSON.parse(first?.text ?? '');
-    expect(parsed.status).toBe('gated');
+    // Phase 3: returns 'updated' or 'file_not_found' (not 'gated')
+    expect(['updated', 'file_not_found']).toContain(parsed.status);
     expect(parsed.domain).toBe('system-design');
   });
 

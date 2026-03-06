@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { KNOWN_DOMAINS } from '../../context';
+import { appendInsightToSection } from '../../context/writer';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -41,7 +42,7 @@ export type UpdateKnowledgeInput = z.infer<typeof updateKnowledgeInputSchema>;
 // ── Output Schema ────────────────────────────────────────────────────────────
 
 export const updateKnowledgeOutputSchema = z.object({
-  status: z.enum(['updated', 'gated', 'below_threshold']),
+  status: z.enum(['updated', 'gated', 'below_threshold', 'budget_exceeded', 'file_not_found']),
   domain: z.string(),
   section: z.string(),
   message: z.string(),
@@ -54,15 +55,15 @@ export type UpdateKnowledgeResult = z.infer<typeof updateKnowledgeOutputSchema>;
 /**
  * Execute the update_domain_knowledge tool.
  *
- * Phase 1: Returns "gated" for scores >= threshold (actual writes deferred to Phase 3).
+ * Phase 3: Appends insight to domain CONTEXT.md when eval score >= threshold.
  * Always returns "below_threshold" when eval score < EVAL_SCORE_THRESHOLD.
  */
 export async function executeUpdateKnowledge(
   input: UpdateKnowledgeInput,
 ): Promise<UpdateKnowledgeResult> {
-  const { domain, section, evalScore } = input;
+  const { domain, section, insight, debateId, evalScore } = input;
 
-  // Check threshold first — applies in all phases
+  // Check threshold first
   if (evalScore < EVAL_SCORE_THRESHOLD) {
     return {
       status: 'below_threshold',
@@ -72,12 +73,13 @@ export async function executeUpdateKnowledge(
     };
   }
 
-  // Phase 1: Gate execution — log intent but don't write files
-  // Phase 3 will replace this with actual CONTEXT.md file writes
+  // Append insight to domain CONTEXT.md
+  const result = await appendInsightToSection({ domain, section, insight, debateId });
+
   return {
-    status: 'gated',
+    status: result.status,
     domain,
     section,
-    message: `Tool execution gated until Phase 3. Score ${evalScore.toFixed(2)} qualifies for domain update.`,
+    message: result.message,
   };
 }
