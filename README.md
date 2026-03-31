@@ -1,6 +1,6 @@
 # The Board
 
-**Adversarial Persona Synthesis Engine for Senior AI Engineering Interview Prep**
+**Adversarial Persona Synthesis Engine**
 
 Three frontier AI models — Claude, GPT, and Gemini — operate as persistent personas that debate, challenge, and synthesize answers to complex technical questions. The debate process itself is the learning tool.
 
