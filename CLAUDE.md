@@ -4,7 +4,7 @@
 
 ---
 
-## ⚡ Auto-Trigger Rules (READ FIRST)
+##  Auto-Trigger Rules (READ FIRST)
 
 **These rules activate automatically. No command needed.**
 
@@ -52,7 +52,7 @@
 
 ---
 
-## 🤝 Multi-Agent Coordination (Codex + Claude)
+##  Multi-Agent Coordination (Codex + Claude)
 
 > Both Codex and Claude are builders on this project. These rules prevent collisions and enable velocity measurement.
 
@@ -93,7 +93,7 @@
 
 ---
 
-## 🤖 Autonomous Work Protocol
+## Autonomous Work Protocol
 
 When user indicates they'll check back later:
 
@@ -142,7 +142,7 @@ After each completed task, append to rolling `CHECKPOINT.md` using the **Entry T
 
 ---
 
-## 🧪 Testing Strategy
+##  Testing Strategy
 
 ### Infrastructure / API / Database Code → TDD
 ```
@@ -175,7 +175,7 @@ COMMIT  → Only after eval threshold met
 
 ---
 
-## 📊 Langfuse Telemetry Requirements
+##  Langfuse Telemetry Requirements
 
 **Every LLM call MUST be traced through Langfuse. No exceptions.**
 
@@ -202,7 +202,7 @@ COMMIT  → Only after eval threshold met
 
 ---
 
-## 🤖 Orchestrator Protocol
+##  Orchestrator Protocol
 
 ### Phase Order (STRICT)
 | Phase | What | Gate |
