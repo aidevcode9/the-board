@@ -2,7 +2,7 @@
 
 > Current work. Updated daily.
 
-Last updated: 2026-03-05
+Last updated: 2026-09-06
 
 ---
 
@@ -32,6 +32,10 @@ Last updated: 2026-03-05
 ## Now
 
 - [Claude] Deep Debate mode SSE + MCP context auto-update — branch: feat/deep-debate-claude — started: 2026-03-05 20:35
+
+## Local Review Handoff
+
+- [Codex] Portfolio documentation and executive image prepared on `codex/portfolio-documentation` (2026-09-06). Independent review approved; lint/types/449 tests/build passed. Local only, not shipped. [Feature plan](features/active/portfolio-credibility/03_IMPLEMENTATION_PLAN.md); validation fix and sample replay remain planned.
 
 ## Next
 
@@ -128,7 +132,7 @@ Last updated: 2026-03-05
 | Date | Decision | Rationale |
 |------|----------|-----------|
 | 2026-02-24 | 100% TypeScript, no Python sidecar | deepeval-ts + Confident AI cloud eliminates need. Langfuse LLM-as-judge for Phase 1-2. |
-| 2026-02-24 | Parallel debate, not sequential | Research proves independent responses avoid anchoring bias. A-HMAD framework validates. |
+| 2026-02-24 | Parallel debate, not sequential | Independent responses are intended to reduce anchoring; effectiveness requires evaluation. |
 | 2026-02-24 | Turso + Drizzle ORM | Free, edge-replicated. Drizzle abstracts for future Postgres migration. |
 | 2026-02-24 | Langfuse over LangSmith | Open source, self-hosted, framework-agnostic, already known from Evidence-Bound. |
 | 2026-02-24 | Trigger.dev over Inngest | Native MCP integration, TypeScript-first, streaming support. |
@@ -151,8 +155,8 @@ Last updated: 2026-03-05
 
 | Risk | Status | Mitigation |
 |------|--------|------------|
-| Sycophancy collapse | Mitigated | 8-layer anti-sycophancy stack in REQUIREMENTS.md §4 |
-| Serverless timeouts | Mitigated | Vercel `maxDuration=300` + SSE in Phase 2a; Trigger.dev v4 optional fallback if reliability thresholds are hit |
+| Sycophancy collapse | Needs evaluation | Controls and detection exist; effectiveness is not established by agreement scores. |
+| Serverless timeouts | Host verification pending | Route has a 300,000 ms application timer, not an exported host duration setting. See docs/deployment.md. |
 | API costs | Monitoring | Mode system + cost dashboard + budget alerts |
 | Edge Runtime + DB in middleware | Deferred | Session callback queries Turso; safe on Node.js host, breaks on Vercel Edge. Split auth config in Phase 4 security hardening. |
 | Beta code brute-force | Deferred | No rate limiting on /api/auth/beta-code. Add Upstash Redis rate limiter in Phase 4. |
