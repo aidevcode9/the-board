@@ -57,6 +57,43 @@ Last updated: 2026-09-06
 
 ---
 
+### 2026-09-06 16:34 - Strict validation parser regressions
+
+**Task ID:** PORTFOLIO-VALIDATION-PARSER
+**Agent:** Codex
+**Branch:** fix/strict-validation-parser
+**Scope:** Fail closed on malformed or ambiguous validation output without changing convergence behavior.
+**Status:** Started
+**Started:** 2026-09-06 16:34
+**FR / Requirement:** Portfolio credibility Slice 2; validation correctness
+**Files changed:**
+- src/lib/graph/validation-parser.ts
+- src/lib/graph/nodes/validate.ts
+- __tests__/graph/validation-parser.test.ts
+- __tests__/graph/sycophancy-wiring.test.ts
+- evals/debate/validation-parser.test.ts
+- STATUS.md
+- CHECKPOINT.md
+**Out of scope:** DebateState schema, SSE protocol, prompts, round caps, UI, provider calls, database schema, and sample replay
+**Tests (TDD/eval):**
+- Unit: valid, malformed, wrong-type, negated, and contradictory validation responses
+- Integration: validation node fails closed on negated prose
+- Golden evaluation: invalid text fails closed
+**Verification (first pass?):**
+- [ ] lint
+- [ ] typecheck
+- [ ] test
+- [ ] build
+- [ ] evals (N/A)
+- First-pass all gates: TBD
+**Review (gatekeeper):** TBD
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- Independent Debate-full gatekeeper review required before merge.
+**Outcome:** in-progress
+
+---
+
 ## Entry Template (Use For New Entries)
 
 ```markdown

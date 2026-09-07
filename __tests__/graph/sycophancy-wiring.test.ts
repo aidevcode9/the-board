@@ -246,4 +246,17 @@ describe('Sycophancy detection wiring in validate node', () => {
     expect(validation).toBeDefined();
     expect(validation?.content).toBe(responseContent);
   });
+
+  it('fails closed when a validator says it cannot agree in prose', async () => {
+    const responseContent = 'I cannot agree because the rollout has no rollback plan.';
+    mockLLMResponse(responseContent);
+
+    const update = await validateNode(makeState());
+
+    expect(update.validations?.builder).toMatchObject({
+      agrees: false,
+      disagreementReason: responseContent,
+      confidence: 0.5,
+    });
+  });
 });

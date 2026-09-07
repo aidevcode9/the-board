@@ -33,6 +33,8 @@ Last updated: 2026-09-06
 
 - [Claude] Deep Debate mode SSE + MCP context auto-update — branch: feat/deep-debate-claude — started: 2026-03-05 20:35
 
+- [Codex] Strict validation parser regressions — portfolio credibility Slice 2 — branch: fix/strict-validation-parser — started: 2026-09-06 16:34
+
 ## Local Review Handoff
 
 - [Codex] Portfolio documentation and executive image prepared on `codex/portfolio-documentation` (2026-09-06). Independent review approved; lint/types/449 tests/build passed. Local only, not shipped. [Feature plan](features/active/portfolio-credibility/03_IMPLEMENTATION_PLAN.md); validation fix and sample replay remain planned.
