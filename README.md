@@ -43,7 +43,7 @@ Quick uses a single-model path. Compare stops after independent responses. Debat
 
 - Validation currently has a text fallback that can misread negated agreement. The [active improvement plan](features/active/portfolio-credibility/03_IMPLEMENTATION_PLAN.md) makes strict validation the next implementation slice.
 - There is no calibrated correctness claim or published controlled benchmark demonstrating superiority over a single-model baseline.
-- A reviewer-friendly sample transcript and replay are planned, not available in this release.
+- A fictional, annotated sample walkthrough is available for review. A static replay remains planned and will use a sanitized fixture rather than live model calls.
 - Some mode availability labels are stale relative to backend implementation; verify the full UI path before advertising a mode as live.
 - Trigger.dev durable execution and further security/evaluation tooling are deferred.
 - Vercel is the intended host, but a deployment URL and host configuration have not been verified. See [deployment evidence and readiness](docs/deployment.md).
@@ -71,7 +71,7 @@ npm run test
 npm run build
 ```
 
-[Requirements](REQUIREMENTS.md) describe the product and phased intent. [Architecture](ARCHITECTURE.md) links the technical contracts. [EVALS.md](EVALS.md) describes evaluation plans; [STATUS.md](STATUS.md) and [CHECKPOINT.md](CHECKPOINT.md) track execution. New work uses [feature folders](features/README.md).
+[Requirements](REQUIREMENTS.md) describe the product and phased intent. [Architecture](ARCHITECTURE.md) links the technical contracts. [EVALS.md](EVALS.md) describes evaluation plans; [STATUS.md](STATUS.md) and [CHECKPOINT.md](CHECKPOINT.md) track execution. See the [fictional annotated debate](docs/annotated-sample-debate.md) for an example of the review flow. New work uses [feature folders](features/README.md).
 
 ## Visibility and licensing
 

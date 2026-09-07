@@ -99,6 +99,39 @@ Last updated: 2026-09-06
 
 ---
 
+### 2026-09-06 17:14 - Annotated sample debate
+
+**Task ID:** PORTFOLIO-ANNOTATED-SAMPLE
+**Agent:** Codex
+**Branch:** docs/portfolio-annotated-debate
+**Scope:** Add a clearly fictional, annotated operations-copilot debate that shows proposal, critique, revision, unresolved risk, and human authority.
+**Status:** Started
+**Started:** 2026-09-06 17:14
+**FR / Requirement:** Portfolio credibility Slice 3; sample walkthrough
+**Files changed:**
+- docs/annotated-sample-debate.md
+- README.md
+- features/active/portfolio-credibility/03_IMPLEMENTATION_PLAN.md
+- STATUS.md
+- CHECKPOINT.md
+**Out of scope:** Runtime replay, live model calls, protected API changes, database changes, UI, SSE, prompts, and generated performance metrics
+**Tests (TDD/eval):**
+- Documentation links and required annotation sections
+**Verification (first pass?):**
+- [ ] lint
+- [ ] typecheck
+- [ ] test
+- [ ] build
+- [ ] evals (N/A)
+- First-pass all gates: TBD
+**Review (gatekeeper):** TBD
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- Fictional scenario and all sample values must be visibly labeled.
+**Outcome:** in-progress
+
+---
+
 ## Entry Template (Use For New Entries)
 
 ```markdown
