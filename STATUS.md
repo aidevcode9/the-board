@@ -33,8 +33,6 @@ Last updated: 2026-09-06
 
 - [Claude] Deep Debate mode SSE + MCP context auto-update — branch: feat/deep-debate-claude — started: 2026-03-05 20:35
 
-- [Codex] Strict validation parser regressions — portfolio credibility Slice 2 — branch: fix/strict-validation-parser — started: 2026-09-06 16:34
-
 ## Local Review Handoff
 
 - [Codex] Portfolio documentation and executive image prepared on `codex/portfolio-documentation` (2026-09-06). Independent review approved; lint/types/449 tests/build passed. Local only, not shipped. [Feature plan](features/active/portfolio-credibility/03_IMPLEMENTATION_PLAN.md); validation fix and sample replay remain planned.
@@ -117,6 +115,8 @@ Last updated: 2026-09-06
 - [x] Phase 2 transcript UX — eval metrics + sycophancy flags read-only wiring — owner: Codex — 2026-03-05 — commit: 9667f7d — cycle: 0h10m
 
 - [x] MCP context auto-update — activate update_domain_knowledge + CONTEXT.md writes, path traversal protection, eval-after-stream hook, totalCostUsd overwrite fix — owner: Claude — 2026-03-05 — PR: #24 — cycle: 1h00m
+
+- [x] Strict validation parser regressions — portfolio credibility Slice 2 — owner: Codex — 2026-09-06 — f71996e — cycle: 0h39m
 
 ## Velocity Snapshot (This Week)
 
