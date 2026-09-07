@@ -116,6 +116,8 @@ Last updated: 2026-09-06
 
 - [x] MCP context auto-update — activate update_domain_knowledge + CONTEXT.md writes, path traversal protection, eval-after-stream hook, totalCostUsd overwrite fix — owner: Claude — 2026-03-05 — PR: #24 — cycle: 1h00m
 
+- [x] Strict validation parser regressions — portfolio credibility Slice 2 — owner: Codex — 2026-09-06 — f71996e — cycle: 0h39m
+
 ## Velocity Snapshot (This Week)
 
 > Update from completed entries in `CHECKPOINT.md` + `docs/checkpoints/*` (append weekly or daily). Keep this lightweight.

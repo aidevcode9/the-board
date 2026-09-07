@@ -17,6 +17,7 @@ import { createLLMClient } from '@/lib/providers/factory';
 import { withTracing } from '@/lib/providers/traced';
 import { resolveActivePersona } from '@/lib/quick/resolve-persona';
 import type { DebateState, DebateStateUpdate, ModelId, SycophancyFlag, Validation } from '../state';
+import { parseValidationResponse } from '../validation-parser';
 
 /** Max chars stored in Validation.content for diminishing returns comparison. Prevents state bloat. */
 const MAX_VALIDATION_CONTENT = 2000;
@@ -71,7 +72,7 @@ export async function validateNode(
   });
 
   const validation: Validation = {
-    ...parseValidation(result.content),
+    ...parseValidationResponse(result.content),
     content: result.content.slice(0, MAX_VALIDATION_CONTENT),
   };
 
@@ -136,32 +137,4 @@ function detectSycophancy(
   }
 
   return flags;
-}
-
-/** Parse validation response into a Validation object */
-function parseValidation(content: string): Validation {
-  try {
-    const jsonMatch = content.match(/\{[\s\S]*"agrees"[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      return {
-        agrees: parsed.agrees === true,
-        disagreementReason:
-          typeof parsed.disagreementReason === 'string' ? parsed.disagreementReason : undefined,
-        confidence:
-          typeof parsed.confidence === 'number' ? Math.min(1, Math.max(0, parsed.confidence)) : 0.5,
-      };
-    }
-  } catch {
-    // Fall through
-  }
-
-  // Fallback: try to infer agreement from text
-  const lowerContent = content.toLowerCase();
-  const agrees = lowerContent.includes('agree') && !lowerContent.includes('disagree');
-  return {
-    agrees,
-    disagreementReason: agrees ? undefined : content.slice(0, 500),
-    confidence: 0.5,
-  };
 }

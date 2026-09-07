@@ -57,6 +57,48 @@ Last updated: 2026-09-06
 
 ---
 
+### 2026-09-06 16:34 - Strict validation parser regressions
+
+**Task ID:** PORTFOLIO-VALIDATION-PARSER
+**Agent:** Codex
+**Branch:** fix/strict-validation-parser
+**Scope:** Fail closed on malformed or ambiguous validation output without changing convergence behavior.
+**Status:** Completed
+**Started:** 2026-09-06 16:34
+**Ended:** 2026-09-06 17:13
+**Cycle Time:** 0h39m
+**FR / Requirement:** Portfolio credibility Slice 2; validation correctness
+**Files changed:**
+- src/lib/graph/validation-parser.ts
+- src/lib/graph/nodes/validate.ts
+- __tests__/graph/validation-parser.test.ts
+- __tests__/graph/sycophancy-wiring.test.ts
+- evals/debate/validation-parser.test.ts
+- STATUS.md
+- CHECKPOINT.md
+**Out of scope:** DebateState schema, SSE protocol, prompts, round caps, UI, provider calls, database schema, and sample replay
+**Tests (TDD/eval):**
+- Unit: valid, malformed, wrong-type, negated, and contradictory validation responses
+- Integration: validation node fails closed on negated prose
+- Golden evaluation: invalid text fails closed
+**Verification (first pass?):**
+- [x] lint
+- [x] typecheck
+- [x] test
+- [x] build
+- [x] evals
+- First-pass all gates: No (import ordering corrected before the final run)
+**Review (gatekeeper):** Independent Debate-full gatekeeper: APPROVE after the missing-confidence issue was fixed; 0 critical, 0 high, 2 low findings.
+**Findings fixed:** Critical: 0, High: 0, Low: 1
+**Notes:**
+- Only a complete JSON response with a finite 0..1 confidence can report agreement; prose, embedded JSON, malformed JSON, wrong types, contradictory fields, and missing confidence fail closed.
+- `npm run eval` passed with 4 local parser evaluation cases.
+- The user explicitly excluded the pre-existing partial-validator convergence behavior from this slice.
+**Outcome:** complete
+**Commits:** `f71996e`
+
+---
+
 ## Entry Template (Use For New Entries)
 
 ```markdown
