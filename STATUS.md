@@ -117,6 +117,7 @@ Last updated: 2026-09-06
 - [x] MCP context auto-update — activate update_domain_knowledge + CONTEXT.md writes, path traversal protection, eval-after-stream hook, totalCostUsd overwrite fix — owner: Claude — 2026-03-05 — PR: #24 — cycle: 1h00m
 
 - [x] Strict validation parser regressions — portfolio credibility Slice 2 — owner: Codex — 2026-09-06 — f71996e — cycle: 0h39m
+- [x] Annotated sample debate — portfolio credibility Slice 3 — owner: Codex — 2026-09-06 — af4c30b — cycle: 0h06m
 
 ## Velocity Snapshot (This Week)
 

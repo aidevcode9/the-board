@@ -99,6 +99,43 @@ Last updated: 2026-09-06
 
 ---
 
+### 2026-09-06 17:14 - Annotated sample debate
+
+**Task ID:** PORTFOLIO-ANNOTATED-SAMPLE
+**Agent:** Codex
+**Branch:** docs/portfolio-annotated-debate
+**Scope:** Add a clearly fictional, annotated operations-copilot debate that shows proposal, critique, revision, unresolved risk, and human authority.
+**Status:** Completed
+**Started:** 2026-09-06 17:14
+**Ended:** 2026-09-06 17:20
+**Cycle Time:** 0h06m
+**FR / Requirement:** Portfolio credibility Slice 3; sample walkthrough
+**Files changed:**
+- docs/annotated-sample-debate.md
+- README.md
+- features/active/portfolio-credibility/03_IMPLEMENTATION_PLAN.md
+- STATUS.md
+- CHECKPOINT.md
+**Out of scope:** Runtime replay, live model calls, protected API changes, database changes, UI, SSE, prompts, and generated performance metrics
+**Tests (TDD/eval):**
+- Documentation links and required annotation sections
+**Verification (first pass?):**
+- [x] lint
+- [x] typecheck
+- [x] test
+- [x] build
+- [x] evals (N/A: no orchestration or runtime change)
+- First-pass all gates: Yes
+**Review (gatekeeper):** Independent documentation gatekeeper: APPROVE after two documentation-consistency fixes; 0 critical, 0 high, 0 low findings.
+**Findings fixed:** Critical: 0, High: 0, Low: 0
+**Notes:**
+- Fictional scenario and all sample values are visibly labeled; no live calls, scores, or benchmark claims are included.
+- Review fixes: distinguish the available walkthrough from the deferred static replay, and correct stale branch/delivery metadata in the feature plan.
+**Outcome:** complete
+**Commits:** `af4c30b`
+
+---
+
 ## Entry Template (Use For New Entries)
 
 ```markdown

@@ -1,7 +1,7 @@
 # Portfolio credibility: implementation plan
 
-Branch: `codex/portfolio-documentation`
-Delivery: local documentation and image now; no commit, push, PR, or deployment in this slice.
+Initial branch: `docs/portfolio-documentation`
+Delivery: Slice 1 is committed and under review in [PR #25](https://github.com/aidevcode9/the-board/pull/25). Follow-up slices use independent review branches; no deployment is included.
 Product scope: [01_PRODUCT_SPEC.md](01_PRODUCT_SPEC.md)
 Technical scope: [02_TECHNICAL_SPEC.md](02_TECHNICAL_SPEC.md)
 
@@ -9,9 +9,9 @@ Technical scope: [02_TECHNICAL_SPEC.md](02_TECHNICAL_SPEC.md)
 
 | Slice | Work | Status |
 |---|---|---|
-| 1 | Public README, architecture navigation, setup/deployment notes, image, lifecycle, bounded plan | Prepared locally; independently reviewed |
-| 2 | Strict validation parser and regression/evaluation cases | Planned; no runtime changes made |
-| 3 | Annotated sample debate, followed by optional static replay | Planned |
+| 1 | Public README, architecture navigation, setup/deployment notes, image, lifecycle, bounded plan | Committed and submitted for review in PR #25 |
+| 2 | Strict validation parser and regression/evaluation cases | Completed locally on `fix/strict-validation-parser`; review publication remains separate |
+| 3 | Annotated sample debate, followed by optional static replay | Annotated fictional walkthrough prepared locally; static replay remains planned |
 | 4 | Public About metadata and verified demo link | Deferred until publication/hosting decision |
 
 ## Manual wsresearch
@@ -77,4 +77,4 @@ Keep this entire feature folder under `active/` until all accepted slices are re
 - Generated illustration was visually reviewed and its prompt/edit recorded in docs/assets/the-board-overview.md.
 - First-pass full code gates: yes. Initial documentation link check found and corrected path depth; documentation checks were not all first-pass.
 - Next.js install security advisory is recorded in docs/deployment.md; remediation remains separate work.
-- No runtime fix, sample replay, commit, push, PR, or deployment was performed.
+- No deployment or sample replay was performed. Slice 1 was later committed, pushed, and submitted for review; runtime follow-up slices remain separately reviewable.
