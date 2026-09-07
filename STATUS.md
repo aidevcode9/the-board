@@ -33,8 +33,6 @@ Last updated: 2026-09-06
 
 - [Claude] Deep Debate mode SSE + MCP context auto-update — branch: feat/deep-debate-claude — started: 2026-03-05 20:35
 
-- [Codex] Annotated sample debate — portfolio credibility Slice 3 — branch: docs/portfolio-annotated-debate — started: 2026-09-06 17:14
-
 ## Local Review Handoff
 
 - [Codex] Portfolio documentation and executive image prepared on `codex/portfolio-documentation` (2026-09-06). Independent review approved; lint/types/449 tests/build passed. Local only, not shipped. [Feature plan](features/active/portfolio-credibility/03_IMPLEMENTATION_PLAN.md); validation fix and sample replay remain planned.
@@ -119,6 +117,7 @@ Last updated: 2026-09-06
 - [x] MCP context auto-update — activate update_domain_knowledge + CONTEXT.md writes, path traversal protection, eval-after-stream hook, totalCostUsd overwrite fix — owner: Claude — 2026-03-05 — PR: #24 — cycle: 1h00m
 
 - [x] Strict validation parser regressions — portfolio credibility Slice 2 — owner: Codex — 2026-09-06 — f71996e — cycle: 0h39m
+- [x] Annotated sample debate — portfolio credibility Slice 3 — owner: Codex — 2026-09-06 — af4c30b — cycle: 0h06m
 
 ## Velocity Snapshot (This Week)
 
