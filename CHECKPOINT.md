@@ -98,6 +98,7 @@ Last updated: 2026-10-07
 **Account:** Initial onboarding could not verify personal identity. After network access and environment reconnect, gh auth status and gh api user both verified aidevcode9. GitHub attributes the base commit email ai.devcode9@gmail.com to aidevcode9. User requested author name aidevcode9; both author settings are repository-local, with global identity unchanged. Origin verified aidevcode9/the-board.
 **Structure exception:** Existing large SSE transformer retained to preserve protocol with minimal scoped edits; validateNode remains one traced/persisted orchestration operation slightly above function target, avoiding unrelated restructuring. Changed production modules except preexisting SSE remain below250 lines.
 **Hygiene:** Only the scoped changes remain; generated dependencies/database/build are ignored; only services started in this task were stopped. Package manifest and lockfile unchanged; checkpoint validator and whitespace check passed.
+**Commits:** `1e3df6a` — scoped graph/validation/evaluation fixes, regressions and documentation.
 **Outcome:** Reviewed code handoff; user subsequently authorized committing and pushing this feature branch. No merge or deployment authorized. Web environment not fully ready; auth/database runtime prerequisite remains; publication and fresh-task restoration unverified.
 
 ---
