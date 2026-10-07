@@ -97,3 +97,20 @@ export type DebateState = z.infer<typeof DebateStateSchema>;
 ```
 
 ---
+
+## Execution corrections (2026-10-07)
+
+Serial coordinators own phase and round transitions; parallel workers only merge
+persona records and add cost/flags. The independent batch joins before one review
+fan-out. Each review batch joins before one synthesis, followed by two non-lead
+validators and one convergence decision. The compiled graph carries a 40-step
+execution budget because four cycles with barriers exceed the default 25 steps;
+routing still caps Debate at two cycles and Deep at four.
+
+`round` identifies the current/completed cycle, starting at one. Only the
+`advance_review` coordinator increments it. Validation records carry runtime
+`round` and `status` (`valid`, `invalid`, `failed`); legacy records without them
+remain readable but cannot establish convergence. Valid disagreement is distinct
+from invalid JSON or a failed provider. The final synthesis is retained at the
+cap and unresolved/incomplete validation triggers the existing review signal.
+No durable approval or resume mechanism is introduced.

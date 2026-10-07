@@ -42,7 +42,6 @@ export async function independentResponseNode(
           costUsd: 0,
         },
       },
-      currentPhase: 'independent',
     };
   }
 
@@ -95,6 +94,5 @@ export async function independentResponseNode(
   return {
     responses: { [personaSlot]: response },
     totalCostUsd: costUsd,
-    currentPhase: 'independent',
   };
 }

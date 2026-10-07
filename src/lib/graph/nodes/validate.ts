@@ -16,7 +16,14 @@ import { calculateCost } from '@/lib/providers/cost';
 import { createLLMClient } from '@/lib/providers/factory';
 import { withTracing } from '@/lib/providers/traced';
 import { resolveActivePersona } from '@/lib/quick/resolve-persona';
-import type { DebateState, DebateStateUpdate, ModelId, SycophancyFlag, Validation } from '../state';
+import {
+  type DebateState,
+  type DebateStateUpdate,
+  type ModelId,
+  type SycophancyFlag,
+  type Validation,
+  ValidationSchema,
+} from '../state';
 
 /** Max chars stored in Validation.content for diminishing returns comparison. Prevents state bloat. */
 const MAX_VALIDATION_CONTENT = 2000;
@@ -33,7 +40,7 @@ export async function validateNode(
   const resolved = await resolveActivePersona(personaSlot);
 
   if (!resolved || !state.synthesis) {
-    return { validations: {}, currentPhase: 'validation' };
+    return failedValidation(personaSlot, state.round, 'Missing persona mapping or synthesis');
   }
 
   const domainModifier = personaDef.domainModifiers[state.domain];
@@ -50,10 +57,16 @@ export async function validateNode(
   });
 
   const startTime = Date.now();
-  const result = await client.generate({
-    messages: [{ role: 'user', content: userPrompt }],
-    systemPrompt,
-  });
+  let result: Awaited<ReturnType<typeof client.generate>>;
+  try {
+    result = await client.generate({
+      messages: [{ role: 'user', content: userPrompt }],
+      systemPrompt,
+    });
+  } catch (err) {
+    logger.warn({ err, personaSlot, round: state.round }, 'validation provider failed');
+    return failedValidation(personaSlot, state.round, 'Validation provider failed');
+  }
   const latencyMs = Date.now() - startTime;
   const costUsd = calculateCost(result.usage, resolved.modelConfig);
 
@@ -70,8 +83,15 @@ export async function validateNode(
     costUsd,
   });
 
+  const parsed = parseValidation(result.content);
   const validation: Validation = {
-    ...parseValidation(result.content),
+    ...(parsed ?? {
+      agrees: false,
+      confidence: 0,
+      disagreementReason: 'Invalid validation output',
+    }),
+    status: parsed ? 'valid' : 'invalid',
+    round: state.round,
     content: result.content.slice(0, MAX_VALIDATION_CONTENT),
   };
 
@@ -81,7 +101,7 @@ export async function validateNode(
   // Wrapped in try/catch: detection is observability, not control flow — never crash validation.
   let flags: SycophancyFlag[] = [];
   try {
-    flags = detectSycophancy(personaSlot, state, validation, result.content);
+    if (parsed) flags = detectSycophancy(personaSlot, state, validation, result.content);
   } catch (err) {
     logger.warn({ err, personaSlot, round: state.round }, 'sycophancy detection failed');
   }
@@ -89,7 +109,6 @@ export async function validateNode(
   return {
     validations: { [personaSlot]: validation },
     totalCostUsd: costUsd,
-    currentPhase: 'validation',
     ...(flags.length > 0 ? { sycophancyFlags: flags } : {}),
   };
 }
@@ -105,7 +124,7 @@ function detectSycophancy(
   currentContent: string,
 ): SycophancyFlag[] {
   const prevValidation = state.validations[personaSlot];
-  if (!prevValidation) return [];
+  if (!prevValidation || (prevValidation.status && prevValidation.status !== 'valid')) return [];
 
   const flags: SycophancyFlag[] = [];
 
@@ -138,30 +157,34 @@ function detectSycophancy(
   return flags;
 }
 
-/** Parse validation response into a Validation object */
-function parseValidation(content: string): Validation {
+/** Strict JSON (including a single JSON fence); prose is never evidence of agreement. */
+export function parseValidation(content: string): Validation | null {
+  const trimmed = content.trim();
+  const fenced = trimmed.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?```$/i);
   try {
-    const jsonMatch = content.match(/\{[\s\S]*"agrees"[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      return {
-        agrees: parsed.agrees === true,
-        disagreementReason:
-          typeof parsed.disagreementReason === 'string' ? parsed.disagreementReason : undefined,
-        confidence:
-          typeof parsed.confidence === 'number' ? Math.min(1, Math.max(0, parsed.confidence)) : 0.5,
-      };
-    }
+    const parsed = ValidationSchema.safeParse(JSON.parse(fenced ? (fenced[1] ?? '') : trimmed));
+    if (!parsed.success) return null;
+    // Only model-declared validation fields are accepted; runtime supplies status and round.
+    return {
+      agrees: parsed.data.agrees,
+      confidence: parsed.data.confidence,
+      disagreementReason: parsed.data.disagreementReason,
+    };
   } catch {
-    // Fall through
+    return null;
   }
+}
 
-  // Fallback: try to infer agreement from text
-  const lowerContent = content.toLowerCase();
-  const agrees = lowerContent.includes('agree') && !lowerContent.includes('disagree');
+function failedValidation(persona: ModelId, round: number, reason: string): DebateStateUpdate {
   return {
-    agrees,
-    disagreementReason: agrees ? undefined : content.slice(0, 500),
-    confidence: 0.5,
+    validations: {
+      [persona]: {
+        agrees: false,
+        confidence: 0,
+        round,
+        status: 'failed',
+        disagreementReason: reason,
+      },
+    },
   };
 }

@@ -187,9 +187,14 @@ export function parseJudgeResponse(content: string): JudgeResult | null {
   // Try full JSON parse first (most reliable)
   try {
     const parsed = JSON.parse(content.trim());
-    if (typeof parsed.score === 'number') {
+    if (
+      typeof parsed.score === 'number' &&
+      Number.isFinite(parsed.score) &&
+      parsed.score >= 0 &&
+      parsed.score <= 1
+    ) {
       return {
-        score: Math.min(1, Math.max(0, parsed.score)),
+        score: parsed.score,
         reasoning: typeof parsed.reasoning === 'string' ? parsed.reasoning : '',
       };
     }
@@ -203,10 +208,16 @@ export function parseJudgeResponse(content: string): JudgeResult | null {
     if (!jsonMatch) return null;
 
     const parsed = JSON.parse(jsonMatch[0]);
-    if (typeof parsed.score !== 'number') return null;
+    if (
+      typeof parsed.score !== 'number' ||
+      !Number.isFinite(parsed.score) ||
+      parsed.score < 0 ||
+      parsed.score > 1
+    )
+      return null;
 
     return {
-      score: Math.min(1, Math.max(0, parsed.score)),
+      score: parsed.score,
       reasoning: typeof parsed.reasoning === 'string' ? parsed.reasoning : '',
     };
   } catch {

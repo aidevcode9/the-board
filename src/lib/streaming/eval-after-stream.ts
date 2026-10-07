@@ -5,6 +5,7 @@
 import { KNOWN_DOMAINS, type KnownDomain } from '@/lib/context';
 import { db } from '@/lib/db/client';
 import { debates } from '@/lib/db/schema';
+import { EVAL_METRICS } from '@/lib/eval/langfuse-judges';
 import { scoreDebate } from '@/lib/eval/score-debate';
 import type { DebateMode } from '@/lib/graph/state';
 import { logger } from '@/lib/logger';
@@ -31,23 +32,35 @@ export function runEvalScoring(
     reviews,
   })
     .then(async (evalResult) => {
-      if (evalResult.overallScore > 0) {
-        await db
-          .update(debates)
-          .set({
-            evalScore: evalResult.overallScore,
-            evalDetails: JSON.stringify(evalResult.metrics),
-            // Note: totalCostUsd not overwritten — persistDebateResults() already wrote
-            // the debate cost. Eval cost is tracked in evalDetails.metrics only.
-          })
-          .where(eq(debates.id, debateId));
-      }
+      await db
+        .update(debates)
+        .set({
+          evalScore: evalResult.overallScore,
+          evalDetails: JSON.stringify(evalResult.metrics),
+          // Note: totalCostUsd not overwritten — persistDebateResults() already wrote
+          // the debate cost. Eval cost is tracked in evalDetails.metrics only.
+        })
+        .where(eq(debates.id, debateId));
       evalLog.info({ evalScore: evalResult.overallScore }, 'eval scoring complete');
 
       // Auto-update domain knowledge when eval score is high enough
       const domainId = evalContext.domain;
       const isKnownDomain = (KNOWN_DOMAINS as readonly string[]).includes(domainId);
-      if (evalResult.overallScore >= EVAL_SCORE_THRESHOLD && isKnownDomain) {
+      if (
+        evalResult.status === 'complete' &&
+        evalResult.overallScore !== null &&
+        evalResult.overallScore >= EVAL_SCORE_THRESHOLD &&
+        isKnownDomain &&
+        EVAL_METRICS.every((required) => {
+          const metric = evalResult.metrics.find((item) => item.metric === required.name);
+          return (
+            metric?.status === 'success' &&
+            Number.isFinite(metric.score) &&
+            metric.score >= 0 &&
+            metric.score <= 1
+          );
+        })
+      ) {
         const insight = synthesis.length > 2000 ? `${synthesis.slice(0, 1997)}...` : synthesis;
         executeUpdateKnowledge({
           domain: domainId as KnownDomain,

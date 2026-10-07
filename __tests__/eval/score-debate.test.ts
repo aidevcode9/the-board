@@ -3,6 +3,7 @@
 
 import { scoreDebate } from '@/lib/eval/score-debate';
 import { withTracing } from '@/lib/providers/traced';
+import { resolveActivePersona } from '@/lib/quick/resolve-persona';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -36,7 +37,8 @@ vi.mock('@/lib/providers/cost', () => ({
   calculateCost: vi.fn().mockReturnValue(0.005),
 }));
 
-const mockInsert = vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) });
+const mockValues = vi.fn().mockResolvedValue(undefined);
+const mockInsert = vi.fn().mockReturnValue({ values: mockValues });
 vi.mock('@/lib/db/client', () => ({
   db: {
     insert: (...args: unknown[]) => mockInsert(...args),
@@ -171,8 +173,16 @@ describe('scoreDebate', () => {
 
     const failedMetric = result.metrics.find((m) => m.score === 0);
     expect(failedMetric).toBeDefined();
+    expect(failedMetric?.status).toBe('failed');
+    expect(result.status).toBe('partial');
     expect(failedMetric?.reasoning).toContain('failed');
     expect(result.overallScore).toBeGreaterThan(0);
+    expect(mockValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metric: failedMetric?.metric,
+        details: expect.stringContaining('"status":"failed"'),
+      }),
+    );
   });
 
   it('handles unparseable judge response with score 0', async () => {
@@ -197,6 +207,48 @@ describe('scoreDebate', () => {
 
     expect(mockGenerate).not.toHaveBeenCalled();
     expect(result.metrics).toHaveLength(0);
-    expect(result.overallScore).toBe(0);
+    expect(result.overallScore).toBeNull();
+    expect(result.status).toBe('unavailable');
   });
+});
+
+describe('evaluation completeness and successful zeros', () => {
+  it.each([
+    [0.95, 0, 0, 0, 0.2375],
+    [0, 0, 0, 0, 0],
+  ])('averages all successful scores %j', async (a, b, c, d, expected) => {
+    mockGenerate.mockReset();
+    for (const score of [a, b, c, d])
+      mockGenerate.mockResolvedValueOnce({
+        content: JSON.stringify({ score, reasoning: 'valid' }),
+        usage: { inputTokens: 1, outputTokens: 1 },
+      });
+    const result = await scoreDebate(sampleDebateData);
+    expect(result.overallScore).toBe(expected);
+    expect(result.status).toBe('complete');
+    expect(result.metrics.every((m) => m.status === 'success')).toBe(true);
+  });
+  it('reports unavailable when every metric fails', async () => {
+    mockGenerate.mockReset().mockRejectedValue(new Error('offline'));
+    const result = await scoreDebate(sampleDebateData);
+    expect(result.status).toBe('unavailable');
+    expect(result.overallScore).toBeNull();
+    expect(result.metrics.every((m) => m.status === 'failed')).toBe(true);
+    expect(mockValues).toHaveBeenCalledWith(
+      expect.objectContaining({ details: expect.stringContaining('Evaluation failed: offline') }),
+    );
+  });
+});
+
+it('retains per-metric failure reasons when no judge mapping is available', async () => {
+  vi.mocked(resolveActivePersona).mockResolvedValueOnce(null);
+  mockGenerate.mockReset();
+  const result = await scoreDebate(sampleDebateData);
+  expect(result.status).toBe('unavailable');
+  expect(result.overallScore).toBeNull();
+  expect(result.metrics).toHaveLength(4);
+  expect(
+    result.metrics.every((m) => m.status === 'failed' && m.reasoning.includes('No judge')),
+  ).toBe(true);
+  expect(mockGenerate).not.toHaveBeenCalled();
 });

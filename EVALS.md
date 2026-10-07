@@ -192,3 +192,12 @@ When a debate scores > 0.85 and is approved for golden set:
 | Date | Suite | Pass Rate | Notes |
 |------|-------|-----------|-------|
 | — | — | — | *Will be populated after Phase 3* |
+
+## Offline execution regression cases (2026-10-07)
+
+`evals/debate/execution.test.ts` invokes the compiled graph with model, database,
+tracing and post-stream context-write boundaries mocked. Before implementation,
+these cases define exact 3 independent / 3 review / 1 synthesis / 2 validator
+counts, 2/4 complete cycle caps, early convergence, completion-order invariance,
+invalid/missing/failed validators and stale agreement. They are deterministic
+control-flow evaluations, not live judge calibration or factual-quality benchmarks.

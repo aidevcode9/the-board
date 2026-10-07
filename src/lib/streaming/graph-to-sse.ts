@@ -155,7 +155,7 @@ export function graphToSseStream(
               totalCostUsd,
               convergence: finalState.convergence ?? false,
               synthesizedAnswer: getSynthesizedAnswer(),
-              rounds: Math.max(1, (finalState.round ?? 1) - 1),
+              rounds: Math.max(1, finalState.round ?? 1),
               sycophancyFlags:
                 accumulatedSycophancyFlags.length > 0
                   ? JSON.stringify(accumulatedSycophancyFlags)
@@ -332,6 +332,11 @@ export function graphToSseStream(
               continue;
             }
 
+            if (nodeName === 'advance_review') {
+              if (typeof update.round === 'number') currentRound = update.round;
+              continue;
+            }
+
             if (nodeName === 'post_validation') {
               if (update.hitlRequired) {
                 emit(
@@ -363,9 +368,8 @@ export function graphToSseStream(
         }
 
         // Final event: run_completed
-        // post_validation increments round after each completed round,
-        // so finalState.round is the next-round counter (off by 1).
-        const completedRounds = Math.max(1, (finalState.round ?? 1) - 1);
+        // post_validation reports the completed one-based cycle number.
+        const completedRounds = Math.max(1, finalState.round ?? 1);
         const finalAnswer = getSynthesizedAnswer();
         emit(
           makeEvent('run_completed', {

@@ -234,7 +234,7 @@ function debateStreamChunks(): StreamChunk[] {
         post_validation: {
           convergence: true,
           hitlRequired: false,
-          round: 2,
+          round: 1,
           currentPhase: 'validation',
         },
       },
@@ -401,7 +401,7 @@ describe('graphToSseStream', () => {
       lastChunk[1].post_validation = {
         convergence: false,
         hitlRequired: true,
-        round: 3,
+        round: 2,
         currentPhase: 'validation',
       };
 
@@ -553,15 +553,16 @@ describe('graphToSseStream', () => {
     /** Simulate 2-round deep debate: round 1 disagrees, round 2 converges. */
     function deepDebateStreamChunks(): StreamChunk[] {
       const round1 = debateStreamChunks();
-      // Modify round 1 post_validation: disagreement, convergence=false, round goes to 2
+      // Round 1 completion; the serial coordinator advances to round 2
       const r1PostVal = round1.at(-1);
       if (!r1PostVal) throw new Error('Expected post_validation chunk');
       r1PostVal[1].post_validation = {
         convergence: false,
         hitlRequired: false,
-        round: 2,
+        round: 1,
         currentPhase: 'validation',
       };
+      round1.push(['updates', { advance_review: { round: 2, currentPhase: 'review' } }]);
 
       // Round 2: review → synthesize → validate → post_validation (convergence=true)
       const round2Chunks: StreamChunk[] = [
@@ -680,7 +681,7 @@ describe('graphToSseStream', () => {
             post_validation: {
               convergence: true,
               hitlRequired: false,
-              round: 3,
+              round: 2,
               currentPhase: 'validation',
             },
           },
@@ -740,7 +741,7 @@ describe('graphToSseStream', () => {
       expect(runCompleted).toBeDefined();
       expect(runCompleted?.payload.finalAnswer).toBe('Round 2 synthesized answer');
       expect(runCompleted?.payload.convergence).toBe(true);
-      expect(runCompleted?.payload.rounds).toBe(2); // 2 completed rounds (post_validation counter is off-by-1)
+      expect(runCompleted?.payload.rounds).toBe(2); // two completed cycles
     });
 
     it('accumulates cost across rounds', async () => {

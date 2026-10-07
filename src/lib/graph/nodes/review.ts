@@ -29,13 +29,13 @@ export async function reviewNode(
 
   const resolved = await resolveActivePersona(personaSlot);
   if (!resolved) {
-    return { reviews: {}, currentPhase: 'review' };
+    return { reviews: {} };
   }
 
   // Anonymize other responses — INVARIANT: no model identity leakage
   const anonymized = anonymizeForReview(state.responses, personaSlot);
   if (anonymized.length === 0) {
-    return { reviews: {}, currentPhase: 'review' };
+    return { reviews: {} };
   }
 
   // Build review prompt with anonymized responses
@@ -89,7 +89,6 @@ export async function reviewNode(
       },
     },
     totalCostUsd: costUsd,
-    currentPhase: 'review',
   };
 }
 

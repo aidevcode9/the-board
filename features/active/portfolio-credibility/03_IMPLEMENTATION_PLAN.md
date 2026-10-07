@@ -10,7 +10,7 @@ Technical scope: [02_TECHNICAL_SPEC.md](02_TECHNICAL_SPEC.md)
 | Slice | Work | Status |
 |---|---|---|
 | 1 | Public README, architecture navigation, setup/deployment notes, image, lifecycle, bounded plan | Prepared locally; independently reviewed |
-| 2 | Strict validation parser and regression/evaluation cases | Planned; no runtime changes made |
+| 2 | Strict validation parser and regression/evaluation cases | Implemented locally on `fix/langgraph-validation-evaluation`; independently approved; lint/types/488 tests/build and 10 offline graph evals pass; authenticated live workflow remains unverified |
 | 3 | Annotated sample debate, followed by optional static replay | Planned |
 | 4 | Public About metadata and verified demo link | Deferred until publication/hosting decision |
 
