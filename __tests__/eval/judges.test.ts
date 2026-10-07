@@ -104,9 +104,13 @@ describe('Langfuse LLM-as-Judge prompts', () => {
       });
     });
 
-    it('clamps score to [0, 1] range', () => {
-      expect(parseJudgeResponse('{"score": 1.5, "reasoning": "x"}')?.score).toBe(1.0);
-      expect(parseJudgeResponse('{"score": -0.2, "reasoning": "x"}')?.score).toBe(0.0);
+    it('rejects scores outside [0, 1] range', () => {
+      expect(parseJudgeResponse('{"score": 1.5, "reasoning": "x"}')).toBeNull();
+      expect(parseJudgeResponse('{"score": -0.2, "reasoning": "x"}')).toBeNull();
+    });
+
+    it('rejects nonfinite scores', () => {
+      expect(parseJudgeResponse('{"score":1e999}')).toBeNull();
     });
 
     it('returns null for invalid JSON', () => {

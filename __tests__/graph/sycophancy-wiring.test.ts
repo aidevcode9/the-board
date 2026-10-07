@@ -160,14 +160,17 @@ describe('Sycophancy detection wiring in validate node', () => {
   it('detects diminishing returns when validation content is > 85% similar', async () => {
     const previousContent =
       'The synthesis correctly identifies key microservice patterns including service discovery and circuit breakers.';
-    const currentContent =
-      'The synthesis correctly identifies key microservice patterns including service discovery and circuit breakers.';
+    const currentContent = JSON.stringify({
+      agrees: true,
+      confidence: 0.85,
+      disagreementReason: previousContent,
+    });
 
     mockLLMResponse(`{"agrees": true, "confidence": 0.85}`);
     const state = makeState({
       round: 2,
       validations: {
-        builder: { agrees: true, confidence: 0.85, content: previousContent },
+        builder: { agrees: true, confidence: 0.85, content: currentContent },
       },
     });
 
@@ -208,19 +211,27 @@ describe('Sycophancy detection wiring in validate node', () => {
 
   it('returns both flags when confidence collapses AND content is repetitive', async () => {
     const repeatContent =
-      'The synthesis covers microservice decomposition patterns effectively with proper bounded context analysis.';
+      'The synthesis covers microservice decomposition patterns effectively with proper bounded context analysis, service isolation, message ordering, retry budgets, backpressure, observability, deployment rollback, schema evolution, and resource ownership.';
 
     mockLLMResponse(`{"agrees": true, "confidence": 0.40}`);
     // Override mockGenerate to return the same content (repetitive)
     mockGenerate.mockResolvedValue({
-      content: repeatContent,
+      content: JSON.stringify({ agrees: true, confidence: 0.4, disagreementReason: repeatContent }),
       usage: { inputTokens: 100, outputTokens: 200 },
     });
 
     const state = makeState({
       round: 2,
       validations: {
-        builder: { agrees: true, confidence: 0.85, content: repeatContent },
+        builder: {
+          agrees: true,
+          confidence: 0.85,
+          content: JSON.stringify({
+            agrees: true,
+            confidence: 0.85,
+            disagreementReason: repeatContent,
+          }),
+        },
       },
     });
 

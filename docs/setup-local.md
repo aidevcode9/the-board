@@ -28,7 +28,9 @@ Bash:
 cp .env.example .env.local
 ```
 
-For a local development database, set `TURSO_DATABASE_URL=file:local.db` and omit the Turso auth token. For a hosted database, set the URL and token for that database.
+For Node-based database tools and offline tests, set `TURSO_DATABASE_URL=file:local.db` and omit the Turso auth token. For a hosted database, set the URL and token for that database.
+
+The current middleware imports the database in the Edge runtime, whose web client rejects `file:` URLs. Thus the SQLite configuration above creates a schema but is not sufficient for a working web login. A supported HTTP/libsql database configuration or a separately scoped auth/runtime correction is required. Do not bypass middleware or authentication.
 
 Set `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `ADMIN_EMAIL`, and `NEXT_PUBLIC_APP_URL=http://localhost:3000`. Register the local Google callback URL `http://localhost:3000/api/auth/callback/google` in the OAuth configuration. Keep the sign-in flow protected.
 
@@ -61,6 +63,6 @@ Build success checks compilation and packaging. It does not validate OAuth, prov
 
 ## Evaluation commands
 
-The package exposes `eval`, `eval:debate`, `eval:sycophancy`, and `eval:persona` scripts targeting `evals/`. A dedicated golden-query suite is not present in the inspected checkout. Judge and scoring unit tests live under `__tests__/eval/`; do not describe those as a live comparative benchmark.
+The package exposes `eval`, `eval:debate`, `eval:sycophancy`, and `eval:persona` scripts targeting `evals/`. `evals/debate/execution.test.ts` now exercises the actual compiled graph against mocked external boundaries. It checks exact fan-out counts, complete 2/4-cycle caps, early convergence, worker completion ordering and missing/invalid/failed/stale validation. These are offline control-flow checks, not live golden-query benchmarks. The configured `eval:sycophancy` and `eval:persona` directories remain absent. Judge and scoring unit tests live under `__tests__/eval/`; do not describe those as a live comparative benchmark.
 
 A runtime change must define the relevant evaluation cases before implementation and report which checks actually ran.

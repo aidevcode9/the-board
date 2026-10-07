@@ -39,6 +39,7 @@ export interface ScoreDebateInput {
 /** Result of a single metric evaluation. */
 export interface MetricResult {
   metric: string;
+  status: 'success' | 'failed';
   score: number;
   reasoning: string;
   evaluator: string;
@@ -47,7 +48,8 @@ export interface MetricResult {
 
 /** Full scoring result. */
 export interface ScoreResult {
-  overallScore: number;
+  overallScore: number | null;
+  status: 'complete' | 'partial' | 'unavailable';
   metrics: MetricResult[];
   totalCostUsd: number;
 }
@@ -70,23 +72,41 @@ const JUDGE_PROMPT_BUILDERS: Record<string, JudgePromptBuilder> = {
  */
 export async function scoreDebate(input: ScoreDebateInput): Promise<ScoreResult> {
   if (input.mode === 'quick') {
-    return { overallScore: 0, metrics: [], totalCostUsd: 0 };
+    return { overallScore: null, status: 'unavailable', metrics: [], totalCostUsd: 0 };
   }
 
   const resolved = await resolveActivePersona('analyst');
   if (!resolved) {
     log.warn({ debateId: input.debateId }, 'no judge model available, skipping eval');
-    return { overallScore: 0, metrics: [], totalCostUsd: 0 };
+    return {
+      overallScore: null,
+      status: 'unavailable',
+      totalCostUsd: 0,
+      metrics: EVAL_METRICS.map((metric) => ({
+        metric: metric.name,
+        status: 'failed' as const,
+        score: 0,
+        reasoning: 'No judge model available',
+        evaluator: 'unavailable',
+        costUsd: 0,
+      })),
+    };
   }
 
   const metricPromises = EVAL_METRICS.map((metric) => evaluateMetric(input, metric.name, resolved));
   const metrics = await Promise.all(metricPromises);
 
-  const validScores = metrics.filter((m) => m.score > 0);
+  const validScores = metrics.filter((m) => m.status === 'success');
+  const status =
+    validScores.length === EVAL_METRICS.length
+      ? 'complete'
+      : validScores.length > 0
+        ? 'partial'
+        : 'unavailable';
   const overallScore =
     validScores.length > 0
       ? Number((validScores.reduce((sum, m) => sum + m.score, 0) / validScores.length).toFixed(4))
-      : 0;
+      : null;
 
   const totalCostUsd = metrics.reduce((sum, m) => sum + m.costUsd, 0);
 
@@ -100,31 +120,29 @@ export async function scoreDebate(input: ScoreDebateInput): Promise<ScoreResult>
     'debate scored',
   );
 
-  return { overallScore, metrics, totalCostUsd };
+  return { overallScore, status, metrics, totalCostUsd };
 }
 
 /**
  * Evaluate a single metric by calling the judge LLM.
- * Returns score 0 on failure (never throws).
+ * Returns explicit failed status on failure; zero remains a valid successful score.
  */
 async function evaluateMetric(
   input: ScoreDebateInput,
   metricName: string,
   resolved: { providerConfig: Parameters<typeof createLLMClient>[0]; modelConfig: ModelConfig },
 ): Promise<MetricResult> {
-  const promptBuilder = JUDGE_PROMPT_BUILDERS[metricName];
-  if (!promptBuilder) {
-    return {
-      metric: metricName,
-      score: 0,
-      reasoning: `Unknown metric: ${metricName}`,
-      evaluator: 'error',
-      costUsd: 0,
-    };
-  }
-
+  let metricResult: MetricResult = {
+    metric: metricName,
+    status: 'failed',
+    score: 0,
+    reasoning: `Unknown metric: ${metricName}`,
+    evaluator: 'error',
+    costUsd: 0,
+  };
   try {
-    const userPrompt = promptBuilder(input);
+    const promptBuilder = JUDGE_PROMPT_BUILDERS[metricName];
+    if (!promptBuilder) throw new Error(`Unknown metric: ${metricName}`);
     const rawClient = createLLMClient(resolved.providerConfig, resolved.modelConfig.modelId);
     const client = withTracing(rawClient, {
       debateId: input.debateId,
@@ -133,54 +151,45 @@ async function evaluateMetric(
       mode: input.mode,
       domain: input.domain,
     });
-
     const result = await client.generate({
-      messages: [{ role: 'user', content: userPrompt }],
+      messages: [{ role: 'user', content: promptBuilder(input) }],
       systemPrompt: 'You are an impartial debate quality evaluator. Respond only with JSON.',
       maxTokens: 512,
     });
-
     const costUsd = calculateCost(result.usage, resolved.modelConfig);
     const parsed = parseJudgeResponse(result.content);
-
-    const metricResult: MetricResult = parsed
-      ? {
-          metric: metricName,
-          score: parsed.score,
-          reasoning: parsed.reasoning,
-          evaluator: `langfuse-judge:${resolved.modelConfig.modelId}`,
-          costUsd,
-        }
-      : {
-          metric: metricName,
-          score: 0,
-          reasoning: `Judge response could not be parsed: ${result.content.slice(0, 200)}`,
-          evaluator: `langfuse-judge:${resolved.modelConfig.modelId}`,
-          costUsd,
-        };
-
+    metricResult = {
+      metric: metricName,
+      status: parsed ? 'success' : 'failed',
+      score: parsed?.score ?? 0,
+      reasoning:
+        parsed?.reasoning ?? 'Judge response could not be parsed as a finite score in [0, 1]',
+      evaluator: `langfuse-judge:${resolved.modelConfig.modelId}`,
+      costUsd,
+    };
+  } catch (err) {
+    log.warn({ err, debateId: input.debateId, metric: metricName }, 'judge evaluation failed');
+    metricResult.reasoning = `Evaluation failed: ${err instanceof Error ? err.message : 'unknown error'}`;
+  }
+  // Persist failures as well as successful zeros; status disambiguates the DB score sentinel.
+  try {
     await db.insert(evalRuns).values({
       debateId: input.debateId,
       metric: metricName,
       score: metricResult.score,
-      details: JSON.stringify({
-        reasoning: metricResult.reasoning,
-        evaluator: metricResult.evaluator,
-        costUsd: metricResult.costUsd,
-      }),
+      details: JSON.stringify(metricResult),
       evaluator: 'langfuse-judge',
     });
-
-    return metricResult;
   } catch (err) {
-    log.warn({ err, debateId: input.debateId, metric: metricName }, 'judge evaluation failed');
-
-    return {
-      metric: metricName,
-      score: 0,
-      reasoning: `Evaluation failed: ${err instanceof Error ? err.message : 'unknown error'}`,
-      evaluator: 'error',
-      costUsd: 0,
+    log.warn(
+      { err, debateId: input.debateId, metric: metricName },
+      'evaluation persistence failed',
+    );
+    metricResult = {
+      ...metricResult,
+      status: 'failed',
+      reasoning: 'Evaluation persistence failed',
     };
   }
+  return metricResult;
 }

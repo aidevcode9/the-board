@@ -35,11 +35,11 @@ See the [interface reference](docs/architecture/interfaces.md) and the authorita
 
 The protected Next.js application selects a domain/workspace and mode. Quick uses a single-model route. The debate route builds a LangGraph flow and returns an SSE stream consumed with fetch and a ReadableStream reader.
 
-Graph nodes collect independent responses, anonymize cross-review, synthesize, and validate. Compare ends after independent responses. Debate and Deep enforce maximum round counts of two and four respectively. Unresolved disagreement at the cap emits a human-review signal; it is not a durable pause-and-resume workflow.
+Graph nodes collect independent responses, anonymize cross-review, synthesize, and validate. Parallel workers return reducible records, cost and diagnostic flags; serial coordination nodes own scalar phase/round transitions and fan-out after a completed batch. Compare ends after independent responses. Debate and Deep enforce maximum round counts of two and four respectively. A round is one complete review → synthesis → validation cycle, numbered from 1 in state, database responses and SSE. The round advances only when another cycle will run. Convergence requires valid, current-round agreement from both non-lead validators; invalid, missing or failed output cannot count. Unresolved disagreement or incomplete validation at the cap retains the final synthesis and emits a human-review signal; it is not a durable pause-and-resume workflow.
 
 Provider and model settings are configuration-driven. The server resolves active persona mappings, calls through the tracing wrapper, and records response usage/cost. The streaming UI and transcript view expose execution details. Tracing needs configured Langfuse credentials; a wrapper alone does not prove trace delivery.
 
-Post-stream scoring invokes model judges and can update domain context after the configured threshold. Filesystem writes and background completion need host-specific validation. A score threshold does not establish correctness or a human-reviewed publication gate.
+Post-stream scoring invokes four model judges. Successful finite scores in [0, 1], including zero, contribute to the aggregate. Metric details retain success/failure status and failure reasons; no successful metrics yields a null score and unavailable outcome. Partial evaluations may show available scores but cannot update context. Only complete successful evaluations at the existing threshold can update domain context. Filesystem writes and background completion need host-specific validation. A score threshold does not establish correctness or a human-reviewed publication gate.
 
 ## Implementation evidence
 
@@ -61,7 +61,8 @@ Post-stream scoring invokes model judges and can update domain context after the
 - The database-backed provider resolver reads stored API keys; encryption/rotation are not asserted as implemented.
 - Langfuse hosting location is configurable; GCP hosting is not established by this repository.
 - Deep mode integration and stale availability labels need validation before a public live-mode claim.
-- Free-text validation can misinterpret negation. See the [active correction plan](features/active/portfolio-credibility/03_IMPLEMENTATION_PLAN.md).
+- Strict parsing and compiled-graph control flow are tested without live providers. Judge scores remain uncalibrated judgments, not proof of factual correctness.
+- Local `file:` SQLite cannot be imported by the current Edge middleware; local page requests fail before auth. This is a separate auth/database runtime compatibility issue.
 - Contract examples and aspirational requirements are not benchmarks or proof of production readiness.
 
 ## Change control

@@ -54,23 +54,24 @@ export function checkConvergence(state: DebateState): {
   convergence: boolean;
   hitlRequired: boolean;
 } {
-  const validations = Object.values(state.validations);
-  if (validations.length === 0) {
-    return { convergence: false, hitlRequired: false };
-  }
-
-  const allAgree = validations.every((v) => v.agrees);
-
-  if (allAgree) {
-    return { convergence: true, hitlRequired: false };
-  }
-
-  // At round cap with disagreement → HITL-lite signal
-  if (state.round >= state.maxRounds) {
-    return { convergence: false, hitlRequired: true };
-  }
-
-  return { convergence: false, hitlRequired: false };
+  const slots = getValidatorSlots(state);
+  const allAgree =
+    slots.length === 2 &&
+    slots.every((slot) => {
+      const validation = state.validations[slot];
+      return (
+        validation?.round === state.round &&
+        validation.status === 'valid' &&
+        validation.agrees === true &&
+        Number.isFinite(validation.confidence) &&
+        validation.confidence >= 0 &&
+        validation.confidence <= 1
+      );
+    });
+  return {
+    convergence: allAgree,
+    hitlRequired: !allAgree && state.round >= state.maxRounds,
+  };
 }
 
 /**

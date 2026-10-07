@@ -50,14 +50,14 @@ function fanOutToValidate(state: DebateState): Send[] {
 }
 
 /**
- * Post-validation node: check convergence + set HITL flag + increment round.
+ * Post-validation node: check convergence and HITL for the completed, one-based round.
  */
 function postValidation(state: DebateState): DebateStateUpdate {
   const { convergence, hitlRequired } = checkConvergence(state);
   return {
     convergence,
     hitlRequired,
-    round: state.round + 1,
+    round: state.round,
     currentPhase: 'validation',
   };
 }
@@ -75,6 +75,14 @@ export function buildDebateGraph() {
     .addNode('synthesize', synthesizeNode)
     .addNode('validate_response', validateNode)
     .addNode('post_validation', postValidation)
+    // Serial coordinators own scalar transitions; workers only return reducible data.
+    .addNode('independent_complete', () => ({ currentPhase: 'independent' as const }))
+    .addNode('start_review', () => ({ currentPhase: 'review' as const }))
+    .addNode('advance_review', (state: DebateState) => ({
+      round: state.round + 1,
+      currentPhase: 'review' as const,
+    }))
+    .addNode('start_validation', () => ({ currentPhase: 'validation' as const }))
 
     // ── Static edges ──
     .addEdge(START, 'route')
@@ -84,17 +92,22 @@ export function buildDebateGraph() {
     .addConditionalEdges('route', fanOutToIndependent)
 
     // Independent → decide: compare=END, debate/deep=review
-    .addConditionalEdges('independent_response', (state: DebateState) => {
+    .addEdge('independent_response', 'independent_complete')
+    .addConditionalEdges('independent_complete', (state: DebateState) => {
       const decision = shouldEnterReview(state);
       if (decision === '__end__') return END;
-      return fanOutToReview(state);
+      return 'start_review';
     })
+
+    .addConditionalEdges('start_review', fanOutToReview)
+    .addConditionalEdges('advance_review', fanOutToReview)
 
     // Review → synthesize (always)
     .addEdge('review_response', 'synthesize')
 
     // Synthesize → fan-out to validators
-    .addConditionalEdges('synthesize', fanOutToValidate)
+    .addEdge('synthesize', 'start_validation')
+    .addConditionalEdges('start_validation', fanOutToValidate)
 
     // Validate → post-validation convergence check
     .addEdge('validate_response', 'post_validation')
@@ -103,8 +116,10 @@ export function buildDebateGraph() {
     .addConditionalEdges('post_validation', (state: DebateState) => {
       const decision = shouldContinueOrEnd(state);
       if (decision === '__end__') return END;
-      return fanOutToReview(state);
+      return 'advance_review';
     });
 
-  return graph.compile();
+  // Four complete cycles plus serial barriers exceed LangGraph's default 25 steps.
+  // Routing still enforces the 2/4 cycle caps; this is only an execution safety budget.
+  return graph.compile().withConfig({ recursionLimit: 40 });
 }

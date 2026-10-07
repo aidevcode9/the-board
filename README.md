@@ -16,7 +16,7 @@ The Board gives engineering teams and interview candidates a structured way to c
 - **Engineering interviewers:** follow the [debate route](src/app/api/debate/route.ts), [graph](src/lib/graph/graph.ts), and [streaming tests](__tests__/streaming).
 - **Contributors:** start with [local setup](docs/setup-local.md) and the [feature lifecycle](features/README.md).
 
-**Current status:** implementation exists for Quick, Compare, Debate, streaming transcripts, evaluator integration, and domain-context updates. These are code-backed capabilities, not a claim that every path has been validated on a live host. Deep mode has graph support but remains under integration review in the task ledger. A public application URL has not been verified.
+**Current status:** implementation exists for Quick, Compare, Debate, streaming transcripts, evaluator integration, and domain-context updates. These are code-backed capabilities, not a claim that every path has been validated on a live host. Deep mode has graph support and offline compiled-graph coverage; its full UI/live-provider path remains unverified. A public application URL has not been verified.
 
 ## What is implemented
 
@@ -41,7 +41,7 @@ Quick uses a single-model path. Compare stops after independent responses. Debat
 
 ## Known limitations and next work
 
-- Validation currently has a text fallback that can misread negated agreement. The [active improvement plan](features/active/portfolio-credibility/03_IMPLEMENTATION_PLAN.md) makes strict validation the next implementation slice.
+- Validation accepts schema-valid JSON (including a JSON fence). Prose, invalid output, provider failure, missing validators and prior-round results cannot establish convergence. Compiled-graph regression cases run offline; live-model behavior remains unverified.
 - There is no calibrated correctness claim or published controlled benchmark demonstrating superiority over a single-model baseline.
 - A reviewer-friendly sample transcript and replay are planned, not available in this release.
 - Some mode availability labels are stale relative to backend implementation; verify the full UI path before advertising a mode as live.

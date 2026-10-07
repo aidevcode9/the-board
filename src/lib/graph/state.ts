@@ -35,6 +35,9 @@ export type Review = z.infer<typeof ReviewSchema>;
 
 export const ValidationSchema = z.object({
   agrees: z.boolean(),
+  // Optional for legacy records; convergence requires current-round successful outcomes.
+  round: z.number().int().positive().optional(),
+  status: z.enum(['valid', 'invalid', 'failed']).optional(),
   disagreementReason: z.string().optional(),
   confidence: z.number().min(0).max(1),
   /** Raw LLM response content — stored for cross-round diminishing returns detection */
